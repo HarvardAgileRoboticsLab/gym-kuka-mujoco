@@ -2,6 +2,9 @@
 
 <mujoco>
   <compiler angle="radian" coordinate="local" meshdir="meshes/"/>
+  <option>
+    <flag gravity="disable"/>
+  </option>
   <default> 
     <joint damping="0.5"/>   
     <default class="visual">

@@ -8,16 +8,17 @@ class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         utils.EzPickle.__init__(self)
         model_path = 'kuka_model_no_collision.xml'
         full_path = os.path.join(os.path.dirname(__file__), 'assets', model_path)
+        self.time_limit = 3
         mujoco_env.MujocoEnv.__init__(self, full_path, 2)
 
     def step(self, a):
         reward_dist = - np.linalg.norm(self.sim.data.qpos)
-        reward_vel = - np.linalg.norm(self.sim.data.qvel)
+        a = a*0.01
         reward_ctrl = - np.square(a).sum()
         reward = reward_dist + reward_ctrl
         self.do_simulation(a, self.frame_skip)
+        done = self.sim.data.time > self.time_limit
         ob = self._get_obs()
-        done = False
         return ob, reward, done, dict(reward_dist=reward_dist, reward_ctrl=reward_ctrl)
 
     def viewer_setup(self):
