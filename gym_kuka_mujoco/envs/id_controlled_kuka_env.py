@@ -4,27 +4,36 @@ from gym import spaces
 from gym_kuka_mujoco.envs import kuka_env
 
 class IdControlledKukaEnv(kuka_env.KukaEnv):
+    '''
+    A Kuka environment that uses a low-level inverse dynamics controller
+    '''
+    setpoint_diff = False
+
     def __init__(self,
                  kp_id=None,
                  kd_id=None,
                  kp_pd=None,
                  kd_pd=None,
                  **kwargs):
+
+
+        # Initialize control quantities
+        # Note: This must be before the super class constructor because
+        #   it calls get_torque() which requires these variables to be set
+        self.qpos_set = np.zeros(7)
+        self.qvel_set = np.zeros(7)
+        self.kp_id = np.zeros(7)
+        self.kd_id = np.zeros(7)
+        self.kp_pd = np.zeros(7)
+        self.kd_pd = np.zeros(7)
+
+        self.frame_skip = 50 # Control at 10 Hz
+
         super(IdControlledKukaEnv, self).__init__(**kwargs)
 
-        # Set the action space
-        low_pos = self.model.jnt_range[:,0]
-        high_pos = self.model.jnt_range[:,1]
-
-        low_vel = -3*np.ones(self.model.nv)
-        high_vel = 3*np.ones(self.model.nv)
-
-        low = np.concatenate((low_pos, low_vel))
-        high = np.concatenate((high_pos, high_vel))
-
-        self.action_space = spaces.Box(high, low, dtype=np.float32)
-
         # Set the controller gains
+        # Note: This must be after the super class constructor is called
+        #   because we need access to the model.
         self.kp_id = kp_id if kp_id is not None else 100
         self.kd_id = kd_id if kd_id is not None else 2 * np.sqrt(self.kp_id)
         self.kp_pd = kp_pd if kp_pd is not None else \
@@ -33,18 +42,49 @@ class IdControlledKukaEnv(kuka_env.KukaEnv):
                     np.minimum(self.kp_pd*self.model.opt.timestep,
                         2*np.sqrt(self.model.body_subtreemass[2:]*self.kp_pd))
 
-    def step(self, a):
+
+        # Set the action space
+        # Note: This must be after the super class constructor is called to
+        #   overwrite the original action space.
+        low_pos = self.model.jnt_range[:,0]
+        high_pos = self.model.jnt_range[:,1]
+
+        low_vel = -3*np.ones(self.model.nv)
+        high_vel = 3*np.ones(self.model.nv)
+
+        low = np.concatenate((low_pos, low_vel))
+        high = np.concatenate((high_pos, high_vel))
+        self.action_space = spaces.Box(high, low, dtype=np.float32)
+
+    def update_action(self, a):
+        '''
+        Set the setpoints.
+        '''
         # Hack to allow different sized action space than the super class
-        if len(a) == self.model.nu:
-            return super(IdControlledKukaEnv, self).step(a)
+        if len(a) != self.model.nq + self.model.nv:
+            self.qpos_set = np.zeros(self.model.nq)
+            self.qvel_set = np.zeros(self.model.nv)
+            return
+        
+        # Check if we are setting the action space or small differences
+        # from the action space.
+        if self.setpoint_diff:
+            # Scale to encourage only small differences from the current
+            # setpoint
+            self.qpos_set += .01*a[:7]
+            self.qvel_set += .01*a[7:14]
+        else:
+            # Set the PD setpoint directly.
+            self.qpos_set = a[:7]
+            self.qvel_set = a[7:14]
 
-        # Get the position and velocity
-        qpos_set = a[:7]
-        qvel_set = a[7:14]
-
+    def get_torque(self):
+        '''
+        Update the PD setpoint and compute the torque.
+        '''
         # Compute position and velocity errors
-        qpos_err = qpos_set - self.sim.data.qpos
-        qvel_err = qvel_set - self.sim.data.qvel
+        qpos_err = self.qpos_set - self.sim.data.qpos
+        qvel_err = self.qvel_set - self.sim.data.qvel
 
         # Compute desired acceleration using inner loop PD law
         self.sim.data.qacc[:] = self.kp_id*qpos_err + self.kd_id*qvel_err
@@ -55,6 +95,7 @@ class IdControlledKukaEnv(kuka_env.KukaEnv):
         pd_torque = self.kp_pd*qpos_err + self.kd_pd*qvel_err
 
         # Sum the torques
-        total_torque = id_torque + pd_torque
+        return id_torque + pd_torque
 
-        return super(IdControlledKukaEnv, self).step(total_torque)
+class DiffIdControlledKukaEnv(IdControlledKukaEnv):
+    setpoint_diff = False
