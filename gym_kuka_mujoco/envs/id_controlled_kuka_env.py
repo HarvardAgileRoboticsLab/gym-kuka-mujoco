@@ -27,9 +27,9 @@ class IdControlledKukaEnv(kuka_env.KukaEnv):
         self.kp_pd = np.zeros(7)
         self.kd_pd = np.zeros(7)
 
-        self.frame_skip = 50 # Control at 10 Hz
-
         super(IdControlledKukaEnv, self).__init__(**kwargs)
+
+        self.frame_skip = 50 # Control at 10 Hz
 
         # Set the controller gains
         # Note: This must be after the super class constructor is called
@@ -37,13 +37,13 @@ class IdControlledKukaEnv(kuka_env.KukaEnv):
         self.kp_id = kp_id if kp_id is not None else 100
         self.kd_id = kd_id if kd_id is not None else 2 * np.sqrt(self.kp_id)
         self.kp_pd = kp_pd if kp_pd is not None else \
-                    1e-2*self.model.body_subtreemass[2:]
+                    0*1e-2*self.model.body_subtreemass[2:]
         self.kd_pd = kd_pd if kd_pd is not None else \
-                    np.minimum(self.kp_pd*self.model.opt.timestep,
+                    0*np.minimum(self.kp_pd*self.model.opt.timestep,
                         2*np.sqrt(self.model.body_subtreemass[2:]*self.kp_pd))
 
 
-        # Set the action space
+        # Set the action and observation spaces
         # Note: This must be after the super class constructor is called to
         #   overwrite the original action space.
         low_pos = self.model.jnt_range[:,0]
@@ -52,9 +52,16 @@ class IdControlledKukaEnv(kuka_env.KukaEnv):
         low_vel = -3*np.ones(self.model.nv)
         high_vel = 3*np.ones(self.model.nv)
 
-        low = np.concatenate((low_pos, low_vel))
-        high = np.concatenate((high_pos, high_vel))
+        low = .1*np.concatenate((low_pos, low_vel))
+        high = .1*np.concatenate((high_pos, high_vel))
         self.action_space = spaces.Box(high, low, dtype=np.float32)
+        self.observation_space = spaces.Box(high, low, dtype=np.float32)
+
+        # Overwrite the action cost.
+        self.state_des = np.zeros(14)
+        self.Q = 1e-2*np.eye(14)
+        self.R = 1e-6*np.eye(14)
+        self.eps = 1e-1
 
     def update_action(self, a):
         '''
@@ -71,8 +78,9 @@ class IdControlledKukaEnv(kuka_env.KukaEnv):
         if self.setpoint_diff:
             # Scale to encourage only small differences from the current
             # setpoint
-            self.qpos_set += .01*a[:7]
-            self.qvel_set += .01*a[7:14]
+            self.qpos_set = self.sim.data.qpos + 1e-2*a[:7]
+            self.qvel_set = self.sim.data.qvel + 1e-2*a[7:14]
+            self.qvel_set = np.zeros(7)
         else:
             # Set the PD setpoint directly.
             self.qpos_set = a[:7]

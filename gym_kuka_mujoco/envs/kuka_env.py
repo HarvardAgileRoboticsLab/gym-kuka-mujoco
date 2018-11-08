@@ -5,6 +5,7 @@ from gym.envs.mujoco import mujoco_env
 
 
 class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
+    use_shaped_reward = True
     def __init__(self):
         '''
         Constructs the file, sets the time limit and calls the constructor of
@@ -15,6 +16,13 @@ class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         full_path = os.path.join(
             os.path.dirname(__file__), 'assets', model_path)
         self.time_limit = 3
+
+        # Parameters for the cost function
+        self.state_des = np.zeros(14)
+        self.Q = 1e-2*np.eye(14)
+        self.R = 1e-6*np.eye(7)
+        self.eps = 1e-1
+
         mujoco_env.MujocoEnv.__init__(self, full_path, 2)
 
     def update_action(self, a):
@@ -30,30 +38,42 @@ class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         '''
         return self.action/300.0
 
-    def step(self, a):
+    def get_reward(self, state, action):
+        '''
+        Compute single step reward.
+        '''
+        err = self.state_des - state
+        if self.use_shaped_reward:
+            # quadratic cost on the error and action
+            reward = -err.dot(self.Q).dot(err) - action.dot(self.R).dot(action)
+            reward += 1.0 if err.dot(err) < self.eps else 0.0
+            return reward
+        else:
+            # sparse reward
+            return 1.0 if err.dot(err) < self.eps else 0.0
+
+    def step(self, action):
         '''
         Simulate for `self.frame_skip` timesteps. Calls update_action() once
         and then calls get_torque() repeatedly to simulate a low-level
         controller.
         '''
-        # Get torque from action
-        self.update_action(a)
+        # Set the action to be used for the simulation.
+        self.update_action(action)
 
-        # Get the reward
-        reward_dist = -np.linalg.norm(self.sim.data.qpos)
-        reward_ctrl = -np.square(a).sum()
-        reward = reward_dist + reward_ctrl
+        # Get the reward from the state and action.
+        state = np.concatenate((self.sim.data.qpos[:], self.sim.data.qvel[:]))
+        reward = self.get_reward(state, action)
 
-        # Simulate the low level controller
+        # Simulate the low level controller.
         for _ in range(self.frame_skip):
             self.sim.data.ctrl[:] = self.get_torque()
             self.sim.step()
 
         # Get observation and check finished
         done = self.sim.data.time > self.time_limit
-        ob = self._get_obs()
-        return ob, reward, done, dict(
-            reward_dist=reward_dist, reward_ctrl=reward_ctrl)
+        obs = self._get_obs()
+        return obs, reward, done, {}
 
     def viewer_setup(self):
         '''
@@ -65,10 +85,13 @@ class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         '''
         Reset the robot state and return the observation.
         '''
-        qpos = self.init_qpos + self.np_random.uniform(
-                                    low=-0.1, high=0.1, size=self.model.nq)
-        qvel = self.init_qvel + self.np_random.uniform(
-                                    low=-.005, high=.005, size=self.model.nv)
+        if np.random.random() > -0.5:
+                qpos = 0.1*self.np_random.uniform(low=self.model.jnt_range[:,0], high=self.model.jnt_range[:,1], size=self.model.nq)
+                qvel = np.zeros(7)
+        else:
+            qpos = np.zeros(7)
+            qvel = np.zeros(7)
+        
         self.set_state(qpos, qvel)
         return self._get_obs()
 
