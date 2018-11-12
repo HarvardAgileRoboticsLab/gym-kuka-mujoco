@@ -63,6 +63,9 @@ class IdControlledKukaEnv(kuka_env.KukaEnv):
         self.eps = 1e-1
 
     def subtree_mass(self):
+        '''
+        Compute the subtree mass of the Kuka Arm using the actual link names.
+        '''
         body_names = ['kuka_link_{}'.format(i + 1) for i in range(7)]
         body_ids = [self.model.body_name2id(n) for n in body_names]
         return self.model.body_subtreemass[body_ids]
@@ -103,8 +106,6 @@ class IdControlledKukaEnv(kuka_env.KukaEnv):
         mujoco_py.functions.mj_inverse(self.model, self.sim.data)
         id_torque = self.sim.data.qfrc_inverse[:] / 300
 
-        import pdb
-        pdb.set_trace()
         # Compute torque from outer loop PD law
         pd_torque = self.kp_pd * qpos_err + self.kd_pd * qvel_err
 
