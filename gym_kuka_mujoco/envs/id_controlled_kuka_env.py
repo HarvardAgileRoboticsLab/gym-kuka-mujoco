@@ -37,10 +37,10 @@ class IdControlledKukaEnv(kuka_env.KukaEnv):
         self.kp_id = kp_id if kp_id is not None else 100
         self.kd_id = kd_id if kd_id is not None else 2 * np.sqrt(self.kp_id)
         self.kp_pd = kp_pd if kp_pd is not None else \
-                    0*1e-2*self.model.body_subtreemass[2:]
+                    0*1e-2*self.subtree_mass()
         self.kd_pd = kd_pd if kd_pd is not None else \
                     0*np.minimum(self.kp_pd*self.model.opt.timestep,
-                        2*np.sqrt(self.model.body_subtreemass[2:]*self.kp_pd))
+                        2*np.sqrt(self.subtree_mass()*self.kp_pd))
 
 
         # Set the action and observation spaces
@@ -62,6 +62,11 @@ class IdControlledKukaEnv(kuka_env.KukaEnv):
         self.Q = 1e-2*np.eye(14)
         self.R = 1e-6*np.eye(14)
         self.eps = 1e-1
+
+    def subtree_mass(self):
+        body_names = ['kuka_link_{}'.format(i+1) for i in range(7)]
+        body_ids = [self.model.body_name2id(n) for n in body_names]
+        return self.model.body_subtreemass[body_ids]
 
     def update_action(self, a):
         '''
@@ -99,6 +104,7 @@ class IdControlledKukaEnv(kuka_env.KukaEnv):
         mujoco_py.functions.mj_inverse(self.model,self.sim.data)
         id_torque = self.sim.data.qfrc_inverse[:]/300
 
+        import pdb; pdb.set_trace()
         # Compute torque from outer loop PD law
         pd_torque = self.kp_pd*qpos_err + self.kd_pd*qvel_err
 

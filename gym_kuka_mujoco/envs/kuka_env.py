@@ -14,7 +14,7 @@ class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         utils.EzPickle.__init__(self)
         model_path = 'full_kuka_no_collision.xml'
         full_path = os.path.join(
-            os.path.dirname(os.path.realname(__file__)), 'assets', model_path)
+            os.path.dirname(os.path.realpath(__file__)), 'assets', model_path)
         self.time_limit = 3
 
         # Parameters for the cost function
