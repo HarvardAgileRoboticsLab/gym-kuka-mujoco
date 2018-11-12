@@ -7,7 +7,7 @@ import os
 # model_filename = 'full_kuka_mesh_collision.xml'
 model_filename = 'full_peg_insertion_experiment.xml'
 
-model_path = os.path.join('..','..','envs','assets', model_filename)
+model_path = os.path.join('..','gym_kuka_mujoco','envs','assets', model_filename)
 
 model = mujoco_py.load_model_from_path(model_path)
 sim = mujoco_py.MjSim(model)

@@ -4,8 +4,7 @@ import numpy as np
 import os
 
 model_filename = 'full_falling_peg.xml'
-
-model_path = os.path.join('..','..','envs','assets', model_filename)
+model_path = os.path.join('..','gym_kuka_mujoco','envs','assets', model_filename)
 
 model = mujoco_py.load_model_from_path(model_path)
 sim = mujoco_py.MjSim(model)

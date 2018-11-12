@@ -5,7 +5,7 @@ import matplotlib as mpl
 mpl.use('Qt4Agg')
 import matplotlib.pyplot as plt
 
-model_path = os.path.join('..','..','envs','assets', 'full_kuka_mesh_collision.xml')
+model_path = os.path.join('..','gym_kuka_mujoco','envs','assets', 'full_kuka_mesh_collision.xml')
 model = mujoco_py.load_model_from_path(model_path)
 sim = mujoco_py.MjSim(model)
 viewer = mujoco_py.MjViewer(sim)
