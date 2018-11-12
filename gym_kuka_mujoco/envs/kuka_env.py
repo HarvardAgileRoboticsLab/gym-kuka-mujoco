@@ -12,9 +12,9 @@ class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         the super class.
         '''
         utils.EzPickle.__init__(self)
-        model_path = 'kuka_model_no_collision.xml'
+        model_path = 'full_kuka_no_collision.xml'
         full_path = os.path.join(
-            os.path.dirname(__file__), 'assets', model_path)
+            os.path.dirname(os.path.realname(__file__)), 'assets', model_path)
         self.time_limit = 3
 
         # Parameters for the cost function
