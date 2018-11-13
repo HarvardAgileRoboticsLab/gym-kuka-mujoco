@@ -63,12 +63,12 @@ class IdControlledKukaEnv(kuka_env.KukaEnv):
         self.R = 1e-6*np.eye(14)
         self.eps = 1e-1
 
-    def update_action(self, a):
+    def update_action(self, action):
         '''
         Set the setpoints.
         '''
         # Hack to allow different sized action space than the super class
-        if len(a) != self.model.nq + self.model.nv:
+        if len(action) != self.model.nq + self.model.nv:
             self.qpos_set = np.zeros(self.model.nq)
             self.qvel_set = np.zeros(self.model.nv)
             return
@@ -78,13 +78,13 @@ class IdControlledKukaEnv(kuka_env.KukaEnv):
         if self.setpoint_diff:
             # Scale to encourage only small differences from the current
             # setpoint
-            self.qpos_set = self.sim.data.qpos + 1e-2*a[:7]
-            self.qvel_set = self.sim.data.qvel + 1e-2*a[7:14]
+            self.qpos_set = self.sim.data.qpos + 1e-2*action[:7]
+            self.qvel_set = self.sim.data.qvel + 1e-2*action[7:14]
             self.qvel_set = np.zeros(7)
         else:
             # Set the PD setpoint directly.
-            self.qpos_set = a[:7]
-            self.qvel_set = a[7:14]
+            self.qpos_set = action[:7]
+            self.qvel_set = action[7:14]
 
     def get_torque(self):
         '''
@@ -100,10 +100,10 @@ class IdControlledKukaEnv(kuka_env.KukaEnv):
         id_torque = self.sim.data.qfrc_inverse[:]/300
 
         # Compute torque from outer loop PD law
-        pd_torque = self.kp_pd*qpos_err + self.kd_pd*qvel_err
+        pd_torque = self.kp_pd*qpos_err/300 + self.kd_pd*qvel_err/300
 
         # Sum the torques
         return id_torque + pd_torque
 
 class DiffIdControlledKukaEnv(IdControlledKukaEnv):
-    setpoint_diff = False
+    setpoint_diff = True

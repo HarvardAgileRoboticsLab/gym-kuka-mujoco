@@ -85,11 +85,8 @@ class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         '''
         Reset the robot state and return the observation.
         '''
-        if np.random.random() > -0.5:
-                qpos = 0.1*self.np_random.uniform(low=self.model.jnt_range[:,0], high=self.model.jnt_range[:,1], size=self.model.nq)
-                qvel = np.zeros(7)
-        else:
-            qpos = np.zeros(7)
+        if np.random.random():
+            qpos = 0.1*self.np_random.uniform(low=self.model.jnt_range[:,0], high=self.model.jnt_range[:,1], size=self.model.nq)
             qvel = np.zeros(7)
         
         self.set_state(qpos, qvel)
