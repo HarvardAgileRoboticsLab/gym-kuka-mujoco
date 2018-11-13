@@ -1,20 +1,22 @@
 import os
 import numpy as np
-from gym import utils
+from gym import utils, spaces
 from gym.envs.mujoco import mujoco_env
 
 
 class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
     use_shaped_reward = True
-    def __init__(self):
+    def __init__(self, model_path=None):
         '''
         Constructs the file, sets the time limit and calls the constructor of
         the super class.
         '''
         utils.EzPickle.__init__(self)
-        model_path = 'kuka_model_no_collision.xml'
+        if model_path is None:
+            model_path = 'full_kuka_no_collision.xml'
         full_path = os.path.join(
-            os.path.dirname(__file__), 'assets', model_path)
+            os.path.dirname(os.path.realpath(__file__)), 'assets', model_path)
+        
         self.time_limit = 3
 
         # Parameters for the cost function
@@ -23,7 +25,10 @@ class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         self.R = 1e-6*np.eye(7)
         self.eps = 1e-1
 
+        # Call the super class
+        self.initialized = False
         mujoco_env.MujocoEnv.__init__(self, full_path, 2)
+        self.initialized = True
 
     def update_action(self, a):
         '''
@@ -58,6 +63,10 @@ class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         and then calls get_torque() repeatedly to simulate a low-level
         controller.
         '''
+        # Hack to return an observation during the super class __init__ method.
+        if not self.initialized:
+            return np.zeros(7), 0, False, {}
+
         # Set the action to be used for the simulation.
         self.update_action(action)
 
