@@ -79,6 +79,9 @@ def assemble_mujoco_xml(geoms, attach_worldbody=False):
     else:
         body = ET.SubElement(data, 'body')
 
+    # Give the body a name
+    add_attributes(body, {'name':'hole'})
+
     # Adds all of the geoms to the body
     for g in geoms:
         geom_tag = ET.SubElement(body, 'geom')

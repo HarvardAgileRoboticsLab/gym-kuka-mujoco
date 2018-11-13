@@ -1,6 +1,6 @@
 import os
 import numpy as np
-from gym import utils
+from gym import utils, spaces
 from gym.envs.mujoco import mujoco_env
 
 
@@ -25,7 +25,10 @@ class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         self.R = 1e-6*np.eye(7)
         self.eps = 1e-1
 
+        # Call the super class
+        self.initialized = False
         mujoco_env.MujocoEnv.__init__(self, full_path, 2)
+        self.initialized = True
 
     def update_action(self, a):
         '''
@@ -60,6 +63,10 @@ class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         and then calls get_torque() repeatedly to simulate a low-level
         controller.
         '''
+        # Hack to return an observation during the super class __init__ method.
+        if not self.initialized:
+            return np.zeros(7), 0, False, {}
+
         # Set the action to be used for the simulation.
         self.update_action(action)
 
