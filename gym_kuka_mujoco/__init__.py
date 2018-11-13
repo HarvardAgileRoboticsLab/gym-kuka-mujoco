@@ -14,3 +14,8 @@ register(
     id='DiffIdControlledKukaMujoco-v0',
     entry_point='gym_kuka_mujoco.envs:DiffIdControlledKukaEnv',
 )
+
+register(
+    id='PegInsertion-v0',
+    entry_point='gym_kuka_mujoco.envs:PegInsertionEnv',
+)

@@ -114,4 +114,4 @@ class IdControlledKukaEnv(kuka_env.KukaEnv):
 
 
 class DiffIdControlledKukaEnv(IdControlledKukaEnv):
-    setpoint_diff = False
+    setpoint_diff = True
