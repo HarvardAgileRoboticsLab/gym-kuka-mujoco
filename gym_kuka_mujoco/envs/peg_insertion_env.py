@@ -37,3 +37,13 @@ class PegInsertionEnv(id_controlled_kuka_env.DiffIdControlledKukaEnv):
         else:
             # sparse reward
             return 1.0 if dist < self.eps else 0.0
+
+    def reset_model(self):
+        '''
+        Reset the robot state and return the observation.
+        '''
+        qpos = np.array([0., 0.94719755, 0., -1.49719755, 0., 0.69719755, 0.])
+        qvel = np.zeros(7)
+        self.set_state(qpos, qvel)
+
+        return self._get_obs()
