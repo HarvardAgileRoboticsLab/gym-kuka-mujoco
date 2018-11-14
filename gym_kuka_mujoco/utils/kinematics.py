@@ -1,6 +1,7 @@
 import mujoco_py
 import numpy as np
 import scipy.optimize
+from gym_kuka_mujoco.utils.quaternion import identity_quat, mat2Quat, subQuat
 
 identity_quat = np.array([1., 0., 0., 0.])
 
@@ -46,26 +47,34 @@ def forwardKinJacobian(sim, pos, body_id):
     
     return jacp, jacr
 
-def inverseKin(sim, q_init, q_nom, body_pos, world_pos, body_id, reg=1e-2):
+def inverseKin(sim, q_init, q_nom, body_pos, world_pos, world_quat, body_id, reg=1e-4, upper=None, lower=None):
     '''
     Use SciPy's nonlinear least-squares method to compute the inverse kinematics
     '''
 
     def residuals(q):
         sim.data.qpos[:] = q
-        xpos, _ = forwardKin(sim, body_pos, identity_quat, body_id)
-        res = np.concatenate((xpos-world_pos, reg*(q-q_nom)))
-        # import pdb; pdb.set_trace()
+        xpos, xrot = forwardKin(sim, body_pos, identity_quat, body_id)
+        quat = mat2Quat(xrot)
+        q_diff = subQuat(quat, world_quat)
+        res = np.concatenate((xpos-world_pos, q_diff, reg*(q-q_nom)))
         return res
 
     def jacobian(q):
         sim.data.qpos[:] = q
-        jacp, _ = forwardKinJacobian(sim, body_pos, body_id)
-        residual_jacobian = np.vstack((jacp, reg*np.identity(q.size)))
+        jacp, jacr = forwardKinJacobian(sim, body_pos, body_id)
+        residual_jacobian = np.vstack((jacp, jacr, reg*np.identity(q.size)))
         return residual_jacobian
 
-    lower = sim.model.jnt_range[:,0]
-    upper = sim.model.jnt_range[:,1]
+    if lower is None:
+        lower = sim.model.jnt_range[:,0]
+    else:
+        lower = np.maximum(lower, sim.model.jnt_range[:,0])
+
+    if upper is None:
+        upper = sim.model.jnt_range[:,1]
+    else:
+        upper = np.minimum(upper, sim.model.jnt_range[:,1])
 
     result = scipy.optimize.least_squares(residuals, q_init, jac=jacobian, bounds=(lower, upper))
 
