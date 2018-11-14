@@ -27,11 +27,13 @@
     <geom class="collision" type="plane" size="10 10 1" rgba=".8 .8 .8 1"/>
     <body name="kuka_table" pos="0 0 1">
       <geom class="collision" type="box" size=".5 .5 .5" pos="0 0 -.5" />
-      <include file="kuka/kuka_mesh_collision_peg_ee.xml"/>
+      <body name="kuka_base" pos=".2 0 0">
+        <include file="kuka/kuka_mesh_collision_peg_ee.xml"/>
+      </body>
     </body>
     <body name="experiment_table" pos="1.2 0 1">
       <geom type="box" size=".5 .5 .5" pos="0 0 -.5"/>
-      <body pos="-.2 0 0">
+      <body pos="-.4 0 0">
         <include file="hole/polyhedral_hole_inner=0-0068_outer=0-05_height=0-05_num_facets=16.xml"/>
       </body>
     </body>
