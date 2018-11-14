@@ -15,6 +15,7 @@
     <default class="collision">
       <geom contype="1" conaffinity="1"/>
     </default>
+    <site rgba="1 0 0 .5"/>
   </default> 
 
   <asset>

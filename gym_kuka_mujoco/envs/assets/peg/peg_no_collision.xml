@@ -3,5 +3,6 @@
     <geom class="visual" type="cylinder" pos="0 0 0.01862" size="0.031 0.01862" material="kuka_grey"/>
     <geom class="visual" type="box" pos="0 0 0.042" size="0.038125 0.02541 0.00476" material="kuka_grey"/>
     <geom class="visual" type="cylinder" pos="0 0 0.07789" size="0.006725 0.03113" material="kuka_grey"/>
+    <site name="peg_tip" pos="0 0 0.10902" euler="0 0 0" size="0.002, 0.002, 0.002"/>
   </body>
 </mujoco>

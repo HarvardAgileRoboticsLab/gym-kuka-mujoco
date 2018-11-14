@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import mujoco_py
 from gym import spaces
@@ -28,6 +29,12 @@ class IdControlledKukaEnv(kuka_env.KukaEnv):
         self.kd_pd = np.zeros(7)
 
         super(IdControlledKukaEnv, self).__init__(**kwargs)
+        
+        # Create a model for control
+        model_filename = 'full_kuka_no_collision.xml'
+        model_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),'assets', model_filename)
+        self.model_for_control = mujoco_py.load_model_from_path(model_path)
+
 
         self.frame_skip = 50  # Control at 10 Hz
 
@@ -103,7 +110,7 @@ class IdControlledKukaEnv(kuka_env.KukaEnv):
 
         # Compute desired acceleration using inner loop PD law
         self.sim.data.qacc[:] = self.kp_id * qpos_err + self.kd_id * qvel_err
-        mujoco_py.functions.mj_inverse(self.model, self.sim.data)
+        mujoco_py.functions.mj_inverse(self.model_for_control, self.sim.data)
         id_torque = self.sim.data.qfrc_inverse[:] / 300
 
         # Compute torque from outer loop PD law
