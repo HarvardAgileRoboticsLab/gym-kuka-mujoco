@@ -76,7 +76,8 @@ def inverseKin(sim, q_init, q_nom, body_pos, world_pos, world_quat, body_id, reg
     else:
         upper = np.minimum(upper, sim.model.jnt_range[:,1])
 
-    result = scipy.optimize.least_squares(residuals, q_init, jac=jacobian, bounds=(lower, upper))
+    result = scipy.optimize.least_squares(residuals, q_init, bounds=(lower, upper))
+    # result = scipy.optimize.least_squares(residuals, q_init, jac=jacobian, bounds=(lower, upper))
 
     if not result.success:
         print("Inverse kinematics failed with status: {}".format(result.status))
