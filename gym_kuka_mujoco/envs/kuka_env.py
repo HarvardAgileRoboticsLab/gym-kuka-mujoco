@@ -65,7 +65,7 @@ class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         '''
         # Hack to return an observation during the super class __init__ method.
         if not self.initialized:
-            return np.zeros(7), 0, False, {}
+            return self._get_obs(), 0, False, {}
 
         # Set the action to be used for the simulation.
         self.update_action(action)
@@ -105,5 +105,8 @@ class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         '''
         Return the full state as the observation
         '''
+        if not self.initialized:
+            return np.zeros(14)
+
         return np.concatenate(
             [self.sim.data.qpos.flat, self.sim.data.qvel.flat])

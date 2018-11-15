@@ -43,4 +43,7 @@
   <actuator>
     <include file="kuka/kuka_actuators.xml"/>
   </actuator>
+  <sensor>
+    <include file="peg/peg_sensors.xml" />
+  </sensor>
 </mujoco>

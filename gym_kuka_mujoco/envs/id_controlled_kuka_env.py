@@ -35,7 +35,6 @@ class IdControlledKukaEnv(kuka_env.KukaEnv):
         model_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),'assets', model_filename)
         self.model_for_control = mujoco_py.load_model_from_path(model_path)
 
-
         self.frame_skip = 50  # Control at 10 Hz
 
         # Set the controller gains
@@ -49,7 +48,7 @@ class IdControlledKukaEnv(kuka_env.KukaEnv):
                     0*np.minimum(self.kp_pd*self.model.opt.timestep,
                         2*np.sqrt(self.subtree_mass()*self.kp_pd))
 
-        # Set the action and observation spaces
+        # Set the action space
         # Note: This must be after the super class constructor is called to
         #   overwrite the original action space.
         low_pos = self.model.jnt_range[:, 0]
@@ -61,7 +60,6 @@ class IdControlledKukaEnv(kuka_env.KukaEnv):
         low = .1 * np.concatenate((low_pos, low_vel))
         high = .1 * np.concatenate((high_pos, high_vel))
         self.action_space = spaces.Box(high, low, dtype=np.float32)
-        self.observation_space = spaces.Box(high, low, dtype=np.float32)
 
         # Overwrite the action cost.
         self.state_des = np.zeros(14)

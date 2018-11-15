@@ -8,6 +8,7 @@ from gym_kuka_mujoco.utils.insertion import hole_insertion_samples
 class PegInsertionEnv(id_controlled_kuka_env.DiffIdControlledKukaEnv):
     setpoint_diff = True
     sample_good_states = True
+    use_ft_sensor = True
     
     def __init__(self, *args, **kwargs):
         kwargs['model_path'] = kwargs.get('model_path', 'full_peg_insertion_experiment.xml')
@@ -42,6 +43,25 @@ class PegInsertionEnv(id_controlled_kuka_env.DiffIdControlledKukaEnv):
         else:
             # sparse reward
             return 1.0 if dist < self.eps else 0.0
+
+    def _get_obs(self):
+        '''
+        Compute the observation at the current state.
+        '''
+
+        # Return superclass observation.
+        obs = super(PegInsertionEnv, self)._get_obs()
+        if not self.use_ft_sensor:
+            return obs    
+
+        # Return superclass observation stacked with the ft observation.
+        if not self.initialized:
+            ft_obs = np.zeros(6)
+        else:
+            ft_obs = self.sim.data.sensordata
+
+        obs = np.concatenate([obs, ft_obs])
+        return obs
 
     def reset_model(self):
         '''

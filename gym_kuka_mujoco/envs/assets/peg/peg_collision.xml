@@ -11,5 +11,6 @@
     <geom class="collision" type="cylinder" pos="0 0 0.07789" size="0.006725 0.03113"/>
 
     <site name="peg_tip" pos="0 0 0.10902" euler="0 0 0" size="0.005, 0.005, 0.005"/>
+    <site name="peg_ft_site" pos="0 0 0" euler="0 0 0" size="0.005, 0.005, 0.005"/>
   </body>
 </mujoco>
