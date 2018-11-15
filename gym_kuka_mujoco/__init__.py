@@ -19,3 +19,8 @@ register(
     id='PegInsertion-v0',
     entry_point='gym_kuka_mujoco.envs:PegInsertionEnv',
 )
+
+register(
+    id='PegInsertionBigHole-v0',
+    entry_point='gym_kuka_mujoco.envs:PegInsertionBigHoleEnv',
+)

@@ -8,9 +8,13 @@ from gym_kuka_mujoco.utils.insertion import hole_insertion_samples
 class PegInsertionEnv(id_controlled_kuka_env.DiffIdControlledKukaEnv):
     setpoint_diff = True
     sample_good_states = True
+    use_big_hole = False
     
     def __init__(self, *args, **kwargs):
-        kwargs['model_path'] = kwargs.get('model_path', 'full_peg_insertion_experiment.xml')
+        if self.use_big_hole:
+            kwargs['model_path'] = kwargs.get('model_path', 'full_peg_insertion_experiment_big_hole.xml')
+        else:
+            kwargs['model_path'] = kwargs.get('model_path', 'full_peg_insertion_experiment.xml')
         super(PegInsertionEnv, self).__init__(*args, **kwargs)
 
         self.time_limit = 10
@@ -56,3 +60,6 @@ class PegInsertionEnv(id_controlled_kuka_env.DiffIdControlledKukaEnv):
         self.set_state(qpos, qvel)
 
         return self._get_obs()
+
+class PegInsertionBigHoleEnv(PegInsertionEnv):
+    use_big_hole = True
