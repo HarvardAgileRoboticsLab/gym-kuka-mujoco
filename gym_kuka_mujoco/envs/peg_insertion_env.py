@@ -48,6 +48,13 @@ class PegInsertionEnv(id_controlled_kuka_env.DiffIdControlledKukaEnv):
             # sparse reward
             return 1.0 if dist < self.eps else 0.0
 
+    def get_done(self):
+        peg_tip_pos, _ = forwardKin(self.sim, self.peg_tip_pos, np.array([1.,0.,0.,0.]), self.peg_body_id)
+        err = self.hole_base_pos - peg_tip_pos
+        dist = np.sqrt(err.dot(err))
+        return dist < self.eps
+
+
     def _get_obs(self):
         '''
         Compute the observation at the current state.

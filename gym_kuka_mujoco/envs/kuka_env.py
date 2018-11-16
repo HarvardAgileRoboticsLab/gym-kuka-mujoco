@@ -80,9 +80,12 @@ class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
             self.sim.step()
 
         # Get observation and check finished
-        done = self.sim.data.time > self.time_limit
+        done = (self.sim.data.time > self.time_limit) or self.get_done()
         obs = self._get_obs()
         return obs, reward, done, {}
+
+    def get_done(self):
+        return False
 
     def viewer_setup(self):
         '''

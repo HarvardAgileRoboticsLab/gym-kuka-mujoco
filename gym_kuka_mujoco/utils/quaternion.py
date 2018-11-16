@@ -11,6 +11,22 @@ def mat2Quat(mat):
     mujoco_py.functions.mju_mat2Quat(res, mat.flatten())
     return res
 
+def quat2Vel(quat):
+    '''
+    Convenience function for mju_quat2Vel.
+    '''
+    res = np.zeros(3)
+    mujoco_py.functions.mju_quat2Vel(res, quat, 1.)
+    return res
+
+def axisAngle2Quat(axis, angle):
+    '''
+    Convenience function for mju_quat2Vel.
+    '''
+    res = np.zeros(4)
+    mujoco_py.functions.mju_axisAngle2Quat(res, axis, angle)
+    return res
+
 def subQuat(qb, qa):
     '''
     Convenience function for mju_subQuat.
@@ -28,4 +44,9 @@ def subQuat(qb, qa):
     #   Mujoco 1.50 doesn't support the subQuat function. Uncomment this when
     #   mujoco_py upgrades to Mujoco 2.0
     # mujoco_py.functions.mju_subQuat(res, qa, qb)
+    return res
+
+def mulQuat(qa, qb):
+    res = np.zeros(4)
+    mujoco_py.functions.mju_mulQuat(res, qa, qb)
     return res
