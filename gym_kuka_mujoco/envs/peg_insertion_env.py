@@ -18,6 +18,8 @@ class PegInsertionEnv(id_controlled_kuka_env.DiffIdControlledKukaEnv):
             kwargs['model_path'] = kwargs.get('model_path', 'full_peg_insertion_experiment_mid_hole.xml')
         elif self.hole_size == "small":
             kwargs['model_path'] = kwargs.get('model_path', 'full_peg_insertion_experiment_small_hole.xml')
+        elif self.hole_size == "tiny":
+            kwargs['model_path'] = kwargs.get('model_path', 'full_peg_insertion_experiment_tiny_hole.xml')
         else:
             kwargs['model_path'] = kwargs.get('model_path', 'full_peg_insertion_experiment.xml')
         super(PegInsertionEnv, self).__init__(*args, **kwargs)
@@ -100,3 +102,6 @@ class PegInsertionMidHoleEnv(PegInsertionEnv):
 
 class PegInsertionSmallHoleEnv(PegInsertionEnv):
     hole_size = "small"
+
+class PegInsertionTinyHoleEnv(PegInsertionEnv):
+    hole_size = "tiny"
