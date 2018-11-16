@@ -111,3 +111,10 @@ if __name__ == "__main__":
     filename = 'polyhedral_hole_inner=0-0075_outer=0-05_height=0-05_num_facets=16.xml'
     model_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'envs', 'assets', 'hole', filename)
     write_xml(model_path, hole_xml)
+
+    # Generate and save a hole.
+    hole_geoms = gen_hole(0.0070, .05, .05, 16)
+    hole_xml = assemble_mujoco_xml(hole_geoms)
+    filename = 'polyhedral_hole_inner=0-0070_outer=0-05_height=0-05_num_facets=16.xml'
+    model_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'envs', 'assets', 'hole', filename)
+    write_xml(model_path, hole_xml)
