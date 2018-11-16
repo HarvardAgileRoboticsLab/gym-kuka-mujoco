@@ -1,5 +1,5 @@
 import numpy as np
-from .quaternion import mulQuat, axisAngle2Quat
+from gym_kuka_mujoco.utils.quaternion import mulQuat, axisAngle2Quat
 
 def sample_pose(pos_init, quat_init):
     # Sample a change in position.

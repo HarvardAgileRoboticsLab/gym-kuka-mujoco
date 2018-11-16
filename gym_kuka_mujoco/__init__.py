@@ -24,3 +24,8 @@ register(
     id='PegInsertionBigHole-v0',
     entry_point='gym_kuka_mujoco.envs:PegInsertionBigHoleEnv',
 )
+
+register(
+    id='PegInsertionMidHole-v0',
+    entry_point='gym_kuka_mujoco.envs:PegInsertionMidHoleEnv',
+)

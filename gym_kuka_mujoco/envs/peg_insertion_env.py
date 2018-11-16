@@ -9,10 +9,12 @@ class PegInsertionEnv(id_controlled_kuka_env.DiffIdControlledKukaEnv):
     setpoint_diff = True
     sample_good_states = True
     use_ft_sensor = True
-    use_big_hole = False
+    hole_size = "tight"
     
     def __init__(self, *args, **kwargs):
-        if self.use_big_hole:
+        if self.hole_size == "big":
+            kwargs['model_path'] = kwargs.get('model_path', 'full_peg_insertion_experiment_big_hole.xml')
+        elif self.hole_size == "mid":
             kwargs['model_path'] = kwargs.get('model_path', 'full_peg_insertion_experiment_big_hole.xml')
         else:
             kwargs['model_path'] = kwargs.get('model_path', 'full_peg_insertion_experiment.xml')
@@ -89,4 +91,7 @@ class PegInsertionEnv(id_controlled_kuka_env.DiffIdControlledKukaEnv):
         return self._get_obs()
 
 class PegInsertionBigHoleEnv(PegInsertionEnv):
-    use_big_hole = True
+    hole_size = "big"
+
+class PegInsertionMidHoleEnv(PegInsertionEnv):
+    hole_size = "mid"
