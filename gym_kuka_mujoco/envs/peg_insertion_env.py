@@ -88,6 +88,7 @@ class PegInsertionEnv(id_controlled_kuka_env.DiffIdControlledKukaEnv):
             qpos = random.choice(self.good_states)
         else:
             qpos = np.array([0., 0.94719755, 0., -1.49719755, 0., 0.69719755, 0.])
+            qpos += np.random.uniform(-.01,.01,7)
         
         qvel = np.zeros(7)
         self.set_state(qpos, qvel)
