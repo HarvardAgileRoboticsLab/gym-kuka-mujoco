@@ -1,0 +1,6 @@
+<?xml version="1.0" ?>
+<mujoco>
+	<body name="hole">
+		<site euler="0 0 0" name="hole_base" pos="0 0 0" size="0.005 0.005 0.005"/>
+	</body>
+</mujoco>

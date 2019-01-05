@@ -2,7 +2,7 @@ import os
 import numpy as np
 from gym import utils, spaces
 from gym.envs.mujoco import mujoco_env
-
+from mujoco_py.builder import MujocoException
 
 class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
     use_shaped_reward = True
@@ -84,12 +84,12 @@ class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
             # Get observation and check finished
             done = (self.sim.data.time > self.time_limit) or self.get_done()
             obs = self._get_obs()
-        except mujoco_py.builder.MujocoException as e:
+        except MujocoException as e:
             print(e)
             reward = 0
             obs = np.zeros_like(self.action_space.low)
             done = True
-        
+
         return obs, reward, done, {}
 
     def get_done(self):

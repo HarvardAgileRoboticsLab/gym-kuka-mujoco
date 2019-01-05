@@ -34,7 +34,7 @@ learning_options = {
 
 # Create the environment
 print('\t--setting up environments')
-envs = [gym.make('PegInsertionHole0-v0') for _ in range(num_env)]
+envs = [gym.make('PegInsertionNoHole-v0') for _ in range(num_env)]
 
 # Wrap in a try statement to close the environment properly.
 try:
@@ -45,7 +45,7 @@ try:
 
     # Create the actor and learn
     print('\t--setting up actor')
-    actor_options['tensorboard_log'] = os.path.join(tensorboard_logdir,'PegInsertionHole0-v0')
+    actor_options['tensorboard_log'] = os.path.join(tensorboard_logdir,'PegInsertionNoHole-v0')
     print('\t--learning')
     model = PPO2(MlpPolicy, env, **actor_options)
     
@@ -57,7 +57,7 @@ finally:
 
 
 # Visualize the solution
-env = gym.make('PegInsertionHole0-v0')
+env = gym.make('PegInsertionNoHole-v0')
 env = DummyVecEnv([lambda: env])
 obs = env.reset()
 while True:

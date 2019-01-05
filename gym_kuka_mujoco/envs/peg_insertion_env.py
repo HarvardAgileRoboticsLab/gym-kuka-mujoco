@@ -15,8 +15,10 @@ class PegInsertionEnv(id_controlled_kuka_env.DiffIdControlledKukaEnv):
         print("PegInsertionEnv __init__()")
         if hole_id is None:
             kwargs['model_path'] = kwargs.get('model_path', 'full_peg_insertion_experiment.xml')
-        else:
+        elif hole_id >= 0:
             kwargs['model_path'] = kwargs.get('model_path', 'full_peg_insertion_experiment_moving_hole_id={:03d}.xml'.format(hole_id))
+        else:
+            kwargs['model_path'] = kwargs.get('model_path', 'full_peg_insertion_experiment_no_hole.xml')       
         kwargs['control_model_path'] = kwargs.get('control_model_path', 'full_peg_insertion_experiment_no_collision.xml')
         super(PegInsertionEnv, self).__init__(*args, **kwargs)
 
@@ -40,7 +42,7 @@ class PegInsertionEnv(id_controlled_kuka_env.DiffIdControlledKukaEnv):
             # quadratic cost on the error and action
             # reward = -100*np.sqrt(err.dot(err))# - action.dot(self.R).dot(action)
             reward = -100*np.sum(np.abs(err))
-            reward += 1.0 if dist < self.eps else 0.0
+            reward += 1000.0 if dist < self.eps else 0.0
             # print(err)
             # print(reward)
             return reward

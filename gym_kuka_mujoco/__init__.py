@@ -26,6 +26,12 @@ for i in range(100):
         entry_point='gym_kuka_mujoco.envs:PegInsertionEnv',
         kwargs={'hole_id' : i}
     )
+
+register(
+    id='PegInsertionNoHole-v0',
+    entry_point='gym_kuka_mujoco.envs:PegInsertionEnv',
+    kwargs={'hole_id' : -1}
+)
 # register(
 #     id='PegInsertionHugeHole-v0',
 #     entry_point='gym_kuka_mujoco.envs:PegInsertionHugeHoleEnv',
