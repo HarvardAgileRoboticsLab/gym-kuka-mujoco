@@ -22,6 +22,22 @@ def forwardKin(sim, pos, quat, body_id):
     xrot = xrot.reshape(3,3)
     return xpos, xrot
 
+def forwardKinSite(sim, site_name):
+    '''
+    Compute the forward kinematics for the position and orientation a labelled site.
+    '''
+    # Compute Kinematics and return data.
+    mujoco_py.functions.mj_kinematics(sim.model, sim.data)
+
+    if type(site_name) is list:
+        xpos = [sim.data.get_site_xpos(n) for n in site_name]
+        xrot = [sim.data.get_site_xmat(n) for n in site_name]
+    else:
+        xpos = sim.data.get_site_xpos(site_name)
+        xrot = sim.data.get_site_xrot(site_name)
+
+    return xpos, xrot
+
 def forwardKinJacobian(sim, pos, body_id):
     '''
     Compute the forward kinematics for the position and orientation of a frame

@@ -41,7 +41,7 @@ class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         This function is called multiple times per step to simulate a
         low-level controller.
         '''
-        return self.action/300.0
+        return self.action
 
     def get_reward(self, state, action):
         '''
@@ -72,16 +72,24 @@ class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
 
         # Get the reward from the state and action.
         state = np.concatenate((self.sim.data.qpos[:], self.sim.data.qvel[:]))
-        reward = self.get_reward(state, action)
 
         # Simulate the low level controller.
-        for _ in range(self.frame_skip):
-            self.sim.data.ctrl[:] = self.get_torque()
-            self.sim.step()
+        try:
+            for _ in range(self.frame_skip):
+                self.sim.data.ctrl[:] = self.get_torque()
+                self.sim.step()
 
-        # Get observation and check finished
-        done = (self.sim.data.time > self.time_limit) or self.get_done()
-        obs = self._get_obs()
+            reward = self.get_reward(state, action)
+
+            # Get observation and check finished
+            done = (self.sim.data.time > self.time_limit) or self.get_done()
+            obs = self._get_obs()
+        except mujoco_py.builder.MujocoException as e:
+            print(e)
+            reward = 0
+            obs = np.zeros_like(self.action_space.low)
+            done = True
+        
         return obs, reward, done, {}
 
     def get_done(self):

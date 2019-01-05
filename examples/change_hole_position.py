@@ -2,7 +2,7 @@ import mujoco_py
 import numpy as np
 import os
 from gym_kuka_mujoco.utils.quaternion import axisAngle2Quat, mulQuat, identity_quat
-from gym_kuka_mujoco.utils.random import sample_pose
+from gym_kuka_mujoco.utils.randomize import sample_pose
 
 # Load model
 model_filename = 'full_peg_insertion_experiment_moving_big_hole.xml'

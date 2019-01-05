@@ -16,6 +16,7 @@ class IdControlledKukaEnv(kuka_env.KukaEnv):
                  kd_id=None,
                  kp_pd=None,
                  kd_pd=None,
+                 control_model_path=None,
                  **kwargs):
 
         # Initialize control quantities
@@ -31,9 +32,8 @@ class IdControlledKukaEnv(kuka_env.KukaEnv):
         super(IdControlledKukaEnv, self).__init__(**kwargs)
         
         # Create a model for control
-        model_filename = 'full_kuka_no_collision.xml'
-        model_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),'assets', model_filename)
-        self.model_for_control = mujoco_py.load_model_from_path(model_path)
+        control_model_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),'assets', control_model_path)
+        self.model_for_control = mujoco_py.load_model_from_path(control_model_path)
 
         self.frame_skip = 50  # Control at 10 Hz
 
@@ -51,15 +51,20 @@ class IdControlledKukaEnv(kuka_env.KukaEnv):
         # Set the action space
         # Note: This must be after the super class constructor is called to
         #   overwrite the original action space.
-        low_pos = self.model.jnt_range[:, 0]
-        high_pos = self.model.jnt_range[:, 1]
+        if self.setpoint_diff:
+            low_pos = -3*np.ones_like(self.model.jnt_range[:,0])
+            high_pos = 3*np.ones_like(self.model.jnt_range[:,0])
+        else:
+            low_pos = self.model.jnt_range[:, 0]
+            high_pos = self.model.jnt_range[:, 1]
 
         low_vel = -3 * np.ones(self.model.nv)
         high_vel = 3 * np.ones(self.model.nv)
 
-        low = .1 * np.concatenate((low_pos, low_vel))
-        high = .1 * np.concatenate((high_pos, high_vel))
-        self.action_space = spaces.Box(high, low, dtype=np.float32)
+        low = np.concatenate((low_pos, low_vel))
+        high = np.concatenate((high_pos, high_vel))
+        self.action_space = spaces.Box(low, high, dtype=np.float32)
+        # self.action_space = spaces.Box(-np.inf*np.ones_like(low), np.inf*np.ones_like(high), dtype=np.float32)
 
         # Overwrite the action cost.
         self.state_des = np.zeros(14)
@@ -90,7 +95,7 @@ class IdControlledKukaEnv(kuka_env.KukaEnv):
         if self.setpoint_diff:
             # Scale to encourage only small differences from the current
             # setpoint
-            self.qpos_set = self.sim.data.qpos + 1e-2*action[:7]
+            self.qpos_set = self.sim.data.qpos + 6e-2*action[:7]
             self.qvel_set = self.sim.data.qvel + 1e-2*action[7:14]
             self.qvel_set = np.zeros(7)
         else:
@@ -109,10 +114,10 @@ class IdControlledKukaEnv(kuka_env.KukaEnv):
         # Compute desired acceleration using inner loop PD law
         self.sim.data.qacc[:] = self.kp_id * qpos_err + self.kd_id * qvel_err
         mujoco_py.functions.mj_inverse(self.model_for_control, self.sim.data)
-        id_torque = self.sim.data.qfrc_inverse[:] / 300
+        id_torque = self.sim.data.qfrc_inverse[:]
 
         # Compute torque from outer loop PD law
-        pd_torque = self.kp_pd * qpos_err / 300 + self.kd_pd * qvel_err / 300
+        pd_torque = self.kp_pd * qpos_err + self.kd_pd * qvel_err
 
         # Sum the torques
         return id_torque + pd_torque

@@ -1,7 +1,7 @@
 from gym_kuka_mujoco.utils.kinematics import forwardKin, inverseKin, identity_quat
 import numpy as np
 
-def hole_insertion_samples(sim, nsamples=10, range=(0, 0.075)):
+def hole_insertion_samples(sim, nsamples=10, range=(0, 0.05)):
     # The points to be transformed.
     pos = np.array([0., 0., 0.])
     peg_body_id = sim.model.body_name2id('peg')
