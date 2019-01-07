@@ -2,5 +2,6 @@
 <mujoco>
 	<body name="hole">
 		<site euler="0 0 0" name="hole_base" pos="0 0 0" size="0.005 0.005 0.005"/>
+    <geom class="visual" euler="0 0 0" pos="00 0 0" size=".2 .2 .2" type="ellipsoid" rgba="1 1 1 .1"/>
 	</body>
 </mujoco>

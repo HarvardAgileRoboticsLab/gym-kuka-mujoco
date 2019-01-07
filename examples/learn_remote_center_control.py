@@ -23,8 +23,8 @@ actor_options = {
     # 'learning_rate': lambda a: a*1e-3 + (1-a)*1e-4,
     'gamma':1,
     'verbose':0,
-    #'n_steps':256,
-    'n_steps':2048,
+    'n_steps':256,
+    # 'n_steps':2048,
     'ent_coef':1e-2,
 }
 
@@ -34,7 +34,7 @@ learning_options = {
 
 # Create the environment
 print('\t--setting up environments')
-envs = [gym.make('PegInsertionNoHole-v0') for _ in range(num_env)]
+envs = [gym.make('RemoteCenterControlledKukaMujoco-v0') for _ in range(num_env)]
 
 # Wrap in a try statement to close the environment properly.
 try:
@@ -45,7 +45,7 @@ try:
 
     # Create the actor and learn
     print('\t--setting up actor')
-    actor_options['tensorboard_log'] = os.path.join(tensorboard_logdir,'PegInsertionNoHole-v0')
+    actor_options['tensorboard_log'] = os.path.join(tensorboard_logdir,'RemoteCenterControlledKukaMujoco-v0')
     print('\t--learning')
     model = PPO2(MlpPolicy, env, **actor_options)
     
@@ -59,7 +59,7 @@ finally:
 
 
 # Visualize the solution
-env = gym.make('PegInsertionNoHole-v0')
+env = gym.make('RemoteCenterControlledKukaMujoco-v0')
 env = DummyVecEnv([lambda: env])
 env = VecNormalize(env, training=False, norm_reward=False, clip_obs=np.inf, clip_reward=np.inf)
 env.load_running_average(running_average_path)

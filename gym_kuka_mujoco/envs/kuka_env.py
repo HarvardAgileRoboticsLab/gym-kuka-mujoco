@@ -52,16 +52,17 @@ class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
             # quadratic cost on the error and action
             reward = -err.dot(self.Q).dot(err) - action.dot(self.R).dot(action)
             reward += 1.0 if err.dot(err) < self.eps else 0.0
-            return reward
+            return reward, {}
         else:
             # sparse reward
-            return 1.0 if err.dot(err) < self.eps else 0.0
+            return (1.0, {}) if err.dot(err) < self.eps else (0.0, {})    
 
-    def step(self, action):
+    def step(self, action, render=False):
         '''
         Simulate for `self.frame_skip` timesteps. Calls update_action() once
         and then calls get_torque() repeatedly to simulate a low-level
         controller.
+        Optional argument render will render the intermediate frames for a smooth animation.
         '''
         # Hack to return an observation during the super class __init__ method.
         if not self.initialized:
@@ -74,12 +75,20 @@ class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         state = np.concatenate((self.sim.data.qpos[:], self.sim.data.qvel[:]))
 
         # Simulate the low level controller.
+        dt = self.sim.model.opt.timestep
         try:
+            total_reward = 0
+            total_reward_info = dict()
             for _ in range(self.frame_skip):
                 self.sim.data.ctrl[:] = self.get_torque()
                 self.sim.step()
-
-            reward = self.get_reward(state, action)
+                reward, reward_info = self.get_reward(state, action)
+                total_reward += reward*dt
+                for k, v in reward_info.items():
+                    if 'reward' in k:
+                        total_reward_info[k] = total_reward_info.get(k,0) + v*self.sim.model.opt.timestep
+                if render:
+                    self.render()
 
             # Get observation and check finished
             done = (self.sim.data.time > self.time_limit) or self.get_done()
@@ -90,7 +99,7 @@ class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
             obs = np.zeros_like(self.action_space.low)
             done = True
 
-        return obs, reward, done, {}
+        return obs, total_reward, done, total_reward_info
 
     def get_done(self):
         return False
@@ -105,11 +114,17 @@ class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         '''
         Reset the robot state and return the observation.
         '''
-        if np.random.random():
-            qpos = 0.1*self.np_random.uniform(low=self.model.jnt_range[:,0], high=self.model.jnt_range[:,1], size=self.model.nq)
-            qvel = np.zeros(7)
+        while(True):
+            try:
+                if np.random.random():
+                    qpos = 0.1*self.np_random.uniform(low=self.model.jnt_range[:,0], high=self.model.jnt_range[:,1], size=self.model.nq)
+                    qvel = np.zeros(7)
         
-        self.set_state(qpos, qvel)
+                self.set_state(qpos, qvel)
+            except MujocoException as e:
+                print(e)
+                continue
+            break
         return self._get_obs()
 
     def _get_obs(self):

@@ -32,6 +32,33 @@ register(
     entry_point='gym_kuka_mujoco.envs:PegInsertionEnv',
     kwargs={'hole_id' : -1}
 )
+
+# Remote Center Control
+
+register(
+    id='RemoteCenterControlledKukaMujoco-v0',
+    entry_point='gym_kuka_mujoco.envs:RemoteCenterControlledKukaEnv'
+)
+
+
+register(
+    id='RemoteCenterPegInsertion-v0',
+    entry_point='gym_kuka_mujoco.envs:RemoteCenterPegInsertionEnv',
+)
+
+for i in range(100):
+    register(
+        id='RemoteCenterPegInsertionHole{}-v0'.format(i),
+        entry_point='gym_kuka_mujoco.envs:RemoteCenterPegInsertionEnv',
+        kwargs={'hole_id' : i}
+    )
+
+register(
+    id='RemoteCenterPegInsertionNoHole-v0',
+    entry_point='gym_kuka_mujoco.envs:RemoteCenterPegInsertionEnv',
+    kwargs={'hole_id' : -1}
+)
+
 # register(
 #     id='PegInsertionHugeHole-v0',
 #     entry_point='gym_kuka_mujoco.envs:PegInsertionHugeHoleEnv',
