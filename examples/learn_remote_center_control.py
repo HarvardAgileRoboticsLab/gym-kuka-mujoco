@@ -29,7 +29,7 @@ actor_options = {
 }
 
 learning_options = {
-    'total_timesteps': int(2e6)
+    'total_timesteps': int(1e6)
 }
 
 # Create the environment
@@ -66,7 +66,8 @@ env.load_running_average(running_average_path)
 obs = env.reset()
 while True:
     action, _states = model.predict(obs)
-    obs, rewards, dones, info = env.step(action)
+    clipped_action = np.clip(action, env.action_space.low, env.action_space.high)
+    obs, rewards, dones, info = env.step(clipped_action)
     env.render()
     if dones[0]:
         env.reset()

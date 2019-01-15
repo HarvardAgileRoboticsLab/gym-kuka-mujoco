@@ -25,7 +25,7 @@ actor_options = {
     'verbose':0,
     'n_steps':256,
     # 'n_steps':2048,
-    'ent_coef':1e-2,
+    'ent_coef':0#1e-2,
 }
 
 learning_options = {
@@ -66,6 +66,7 @@ env.load_running_average(running_average_path)
 obs = env.reset()
 while True:
     action, _states = model.predict(obs)
+    clipped_action = np.clip(action, env.action_space.low, env.action_space.high)
     obs, rewards, dones, info = env.step(action)
     env.render()
     if dones[0]:

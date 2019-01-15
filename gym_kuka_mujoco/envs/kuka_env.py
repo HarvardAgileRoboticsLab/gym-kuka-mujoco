@@ -14,6 +14,7 @@ class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         utils.EzPickle.__init__(self)
         if model_path is None:
             model_path = 'full_kuka_no_collision.xml'
+            model_path = 'full_kuka_no_collision_no_gravity.xml'
         full_path = os.path.join(
             os.path.dirname(os.path.realpath(__file__)), 'assets', model_path)
         
@@ -21,20 +22,36 @@ class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
 
         # Parameters for the cost function
         self.state_des = np.zeros(14)
-        self.Q = 1e-2*np.eye(14)
-        self.R = 1e-6*np.eye(7)
+        # self.Q = 1e-2*np.eye(14)
+        self.Q = np.diag([1,1,1,1,1,1,1,0,0,0,0,0,0,0])
+        self.R = 1e-2*np.eye(7)
         self.eps = 1e-1
 
         # Call the super class
         self.initialized = False
-        mujoco_env.MujocoEnv.__init__(self, full_path, 2)
+        mujoco_env.MujocoEnv.__init__(self, full_path, 10)
         self.initialized = True
+
+        self.torque_scaling = self.subtree_mass()
+        self.torque_scaling /= np.max(self.torque_scaling)
+        self.torque_scaling*=10
+        low = self.action_space.low/self.torque_scaling
+        high = self.action_space.high/self.torque_scaling
+        self.action_space = spaces.Box(low, high, dtype=self.action_space.low.dtype)
+
+    def subtree_mass(self):
+        '''
+        Compute the subtree mass of the Kuka Arm using the actual link names.
+        '''
+        body_names = ['kuka_link_{}'.format(i + 1) for i in range(7)]
+        body_ids = [self.model.body_name2id(n) for n in body_names]
+        return self.model.body_subtreemass[body_ids]
 
     def update_action(self, a):
         '''
         This function is called once per step.
         '''
-        self.action = a
+        self.action = a*self.torque_scaling
 
     def get_torque(self):
         '''
@@ -51,7 +68,8 @@ class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         if self.use_shaped_reward:
             # quadratic cost on the error and action
             reward = -err.dot(self.Q).dot(err) - action.dot(self.R).dot(action)
-            reward += 1.0 if err.dot(err) < self.eps else 0.0
+            # reward = -err.dot(self.Q).dot(err) - action.dot(self.R).dot(action)
+            # reward += 1.0 if err.dot(err) < self.eps else 0.0
             return reward, {}
         else:
             # sparse reward
@@ -116,10 +134,11 @@ class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         '''
         while(True):
             try:
-                if np.random.random():
-                    qpos = 0.1*self.np_random.uniform(low=self.model.jnt_range[:,0], high=self.model.jnt_range[:,1], size=self.model.nq)
-                    qvel = np.zeros(7)
-        
+                qpos = 0.1*self.np_random.uniform(low=self.model.jnt_range[:,0], high=self.model.jnt_range[:,1], size=self.model.nq)
+                # qpos = self.np_random.uniform(low=self.model.jnt_range[:,0], high=self.model.jnt_range[:,1], size=self.model.nq)
+                # qpos = 0.01*self.np_random.uniform(low=self.model.jnt_range[:,0], high=self.model.jnt_range[:,1], size=self.model.nq)
+                qvel = np.zeros(7)
+    
                 self.set_state(qpos, qvel)
             except MujocoException as e:
                 print(e)

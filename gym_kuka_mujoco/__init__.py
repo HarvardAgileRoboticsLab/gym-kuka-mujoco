@@ -40,6 +40,15 @@ register(
     entry_point='gym_kuka_mujoco.envs:RemoteCenterControlledKukaEnv'
 )
 
+num_rcc_environments = 10
+import numpy as np
+for i, scale_restart in enumerate(np.logspace(-2,0,10)):
+    register(
+        id='RemoteCenterControlledKukaMujoco{}-v0'.format(i),
+        entry_point='gym_kuka_mujoco.envs:RemoteCenterControlledKukaEnv',
+        kwargs={'scale_restart' : scale_restart}
+    )
+
 
 register(
     id='RemoteCenterPegInsertion-v0',

@@ -16,13 +16,17 @@ class RemoteCenterControlledKukaEnv(kuka_env.KukaEnv):
     def __init__(self,
                  kp=None,
                  control_model_path=None,
+                 scale_restart=0.1,
                  **kwargs):
 
         # Initialize control quantities
         # Note: This must be before the super class constructor because
         #   it calls get_torque() which requires these variables to be set
         self.kp = np.array([1, 1, 1, .1, .1, .1])
-        self.kv = 1.
+        self.kv = 0.
+
+        # randomness in the position on restart
+        self.scale_restart = scale_restart
 
         if 'model_path' not in kwargs:
             kwargs['model_path'] = kwargs.get('model_path', 'full_peg_insertion_experiment_no_hole.xml')
@@ -40,17 +44,23 @@ class RemoteCenterControlledKukaEnv(kuka_env.KukaEnv):
         # Note: This must be after the super class constructor is called to
         #   overwrite the original action space.
         # let the cartesian setpoint be maximum 10cm away in any direction
-        high_pos = 0.1*np.ones(3)
+        high_pos = np.inf*np.ones(3)
         low_pos = -high_pos
+        pos_scale = 0.1*np.ones(3)
+
         # let the rotation setpoint be maximum 0.5 rad (~30 deg) away on any axis
-        high_rot = 0.5*np.ones(3)
+        high_rot = np.inf*np.ones(3)
         low_rot = -high_rot
+        rot_scale = 0.5*np.ones(3)
 
         low = np.concatenate((low_pos, low_rot))
         high = np.concatenate((high_pos, high_rot))
+        self.action_scaling = np.concatenate((pos_scale, rot_scale))
         self.action_space = spaces.Box(low, high, dtype=np.float32)
 
         self.R = np.eye(low.size)
+
+        self.time_limit = 10
 
     def update_action(self, action):
         '''
@@ -61,6 +71,8 @@ class RemoteCenterControlledKukaEnv(kuka_env.KukaEnv):
             self.pos_set = np.zeros(3)
             self.quat_set = identity_quat.copy()
             return
+
+        action *= self.action_scaling
 
         dx = action[0:3].astype(np.float64)
         dr = action[3:6].astype(np.float64)
@@ -73,6 +85,9 @@ class RemoteCenterControlledKukaEnv(kuka_env.KukaEnv):
 
         self.pos_set = pos + dx
         self.quat_set = quatIntegrate(quat, dr)
+
+        self.sim.data.set_mocap_pos('target_frame', self.pos_set)
+        self.sim.data.set_mocap_quat('target_frame', self.quat_set)
 
     def get_torque(self):
         '''
@@ -97,3 +112,19 @@ class RemoteCenterControlledKukaEnv(kuka_env.KukaEnv):
         mujoco_py.functions.mj_inverse(self.model_for_control, self.sim.data)
         id_torque = self.sim.data.qfrc_inverse[:]
         return id_torque + external_force
+
+    def reset_model(self):
+        '''
+        Reset the robot state and return the observation.
+        '''
+        while(True):
+            try:
+                qpos = self.scale_restart*self.np_random.uniform(low=self.model.jnt_range[:,0], high=self.model.jnt_range[:,1], size=self.model.nq)
+                qvel = np.zeros(7)
+    
+                self.set_state(qpos, qvel)
+            except MujocoException as e:
+                print(e)
+                continue
+            break
+        return self._get_obs()

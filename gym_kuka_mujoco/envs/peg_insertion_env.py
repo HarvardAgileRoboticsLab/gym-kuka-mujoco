@@ -6,6 +6,7 @@ from gym_kuka_mujoco.envs import remote_center_controlled_kuka_env
 from gym_kuka_mujoco.utils.kinematics import forwardKin, forwardKinSite, forwardKinJacobianSite
 from gym_kuka_mujoco.utils.insertion import hole_insertion_samples
 from gym_kuka_mujoco.utils.projection import rotate_cost_by_matrix
+from gym_kuka_mujoco.utils.quaternion import mat2Quat, subQuat
 
 class PegInsertionEnv(id_controlled_kuka_env.DiffIdControlledKukaEnv):
     setpoint_diff = True
@@ -26,6 +27,7 @@ class PegInsertionEnv(id_controlled_kuka_env.DiffIdControlledKukaEnv):
 
         self.time_limit = 3
         self.Q_pos = np.diag([100,100,10])
+        self.Q_rot = np.diag([1,1,1])
         self.Q_vel = np.diag([1,1,.1])
         self.eps = 1e-2
 
@@ -38,10 +40,14 @@ class PegInsertionEnv(id_controlled_kuka_env.DiffIdControlledKukaEnv):
         '''
         Compute single step reward.
         '''
-        # peg_tip_pos, _ = forwardKin(self.sim, self.peg_tip_pos, np.array([1.,0.,0.,0.]), self.peg_body_id)
+        # compute position and rotation error
         pos, rot = forwardKinSite(self.sim, ['peg_tip','hole_base'])
-        err = pos[0] - pos[1]
-        dist = np.sqrt(err.dot(err))
+        pos_err = pos[0] - pos[1]
+        dist = np.sqrt(pos_err.dot(pos_err))
+        peg_quat = mat2Quat(rot[0])
+        hole_quat = mat2Quat(rot[1])
+        rot_err = quatSub(peg_quat, hole_quat)
+        
         peg_tip_id = self.model.site_name2id('peg_tip')
         jacp, jacv = forwardKinJacobianSite(self.sim, peg_tip_id)
         peg_tip_vel = jacp.dot(self.data.qvel[:])
@@ -52,8 +58,10 @@ class PegInsertionEnv(id_controlled_kuka_env.DiffIdControlledKukaEnv):
             # rotate the cost terms to align with the hole
             Q_pos = rotate_cost_by_matrix(self.Q_pos,rot[1].T)
             Q_vel = rotate_cost_by_matrix(self.Q_vel,rot[1].T)
+            Q_rot = self.Q_rot
 
-            reward_info['position_reward'] = -np.sqrt(err.dot(Q_pos).dot(err))
+            reward_info['position_reward'] = -np.sqrt(pos_err.dot(Q_pos).dot(pos_err))
+            reward_info['quaternion_reward'] = -np.sqrt(rot_err.dot(Q_rot).dot(rot_err))
             reward_info['velocity_reward'] = -np.sqrt(peg_tip_vel.dot(Q_vel).dot(peg_tip_vel)) 
             reward = reward_info['position_reward']
             reward += reward_info['velocity_reward']
@@ -131,6 +139,7 @@ class RemoteCenterPegInsertionEnv(remote_center_controlled_kuka_env.RemoteCenter
 
         self.time_limit = 3
         self.Q_pos = np.diag([100,100,10])
+        self.Q_rot = np.diag([1,1,1])
         self.Q_vel = np.diag([1,1,.1])
         self.eps = 1e-2
 
@@ -143,10 +152,10 @@ class RemoteCenterPegInsertionEnv(remote_center_controlled_kuka_env.RemoteCenter
         '''
         Compute single step reward.
         '''
-        # peg_tip_pos, _ = forwardKin(self.sim, self.peg_tip_pos, np.array([1.,0.,0.,0.]), self.peg_body_id)
-        pos, rot = forwardKinSite(self.sim, ['peg_tip','hole_base'])
-        err = pos[0] - pos[1]
-        dist = np.sqrt(err.dot(err))
+        # compute position and rotation error
+        pos, rot, pos_err, rot_err = self.get_kinematic_data()
+        dist = np.sqrt(pos_err.dot(pos_err))
+
         peg_tip_id = self.model.site_name2id('peg_tip')
         jacp, jacv = forwardKinJacobianSite(self.sim, peg_tip_id)
         peg_tip_vel = jacp.dot(self.data.qvel[:])
@@ -157,11 +166,13 @@ class RemoteCenterPegInsertionEnv(remote_center_controlled_kuka_env.RemoteCenter
             # rotate the cost terms to align with the hole
             Q_pos = rotate_cost_by_matrix(self.Q_pos,rot[1].T)
             Q_vel = rotate_cost_by_matrix(self.Q_vel,rot[1].T)
+            Q_rot = self.Q_rot
 
-            reward_info['position_reward'] = -np.sqrt(err.dot(Q_pos).dot(err))
-            reward_info['velocity_reward'] = -np.sqrt(peg_tip_vel.dot(Q_vel).dot(peg_tip_vel)) 
+            reward_info['position_reward'] = -np.sqrt(pos_err.dot(Q_pos).dot(pos_err))
+            # reward_info['quaternion_reward'] = -np.sqrt(rot_err.dot(Q_rot).dot(rot_err))
+            # reward_info['velocity_reward'] = -np.sqrt(peg_tip_vel.dot(Q_vel).dot(peg_tip_vel)) 
             reward = reward_info['position_reward']
-            reward += reward_info['velocity_reward']
+            # reward += reward_info['velocity_reward']
             #reward -= action.dot(self.R).dot(action)
             # reward += 10.0 if dist < self.eps else 0.0
             # reward -= 100.0 if dist > .2 else 0.0
@@ -172,14 +183,18 @@ class RemoteCenterPegInsertionEnv(remote_center_controlled_kuka_env.RemoteCenter
         
         return reward, reward_info
 
+    def get_kinematic_data(self):
+        pos, rot = forwardKinSite(self.sim, ['peg_tip','hole_base'])
+        pos_err = pos[0] - pos[1]
+        dist = np.sqrt(pos_err.dot(pos_err))
+        peg_quat = mat2Quat(rot[0])
+        hole_quat = mat2Quat(rot[1])
+        rot_err = subQuat(peg_quat, hole_quat)
+
+        return pos, rot, pos_err, rot_err
+
     def get_done(self):
-        pos, _ = forwardKinSite(self.sim, ['peg_tip','hole_base'])
-        err = pos[0] - pos[1]
-        dist = np.sqrt(err.dot(err))
-        # print("done_dist:   {}".format(dist))
-        # if dist < self.eps:
-            # print("done")
-        #return dist < self.eps or dist > .2 # terminate if > 20cm
+        # Don't terminate early
         return False
 
     def _get_obs(self):
@@ -189,6 +204,12 @@ class RemoteCenterPegInsertionEnv(remote_center_controlled_kuka_env.RemoteCenter
 
         # Return superclass observation.
         obs = super(RemoteCenterPegInsertionEnv, self)._get_obs()
+
+        pos, quat, pos_err, quat_err = self.get_kinematic_data()
+        obs = np.concatenate([obs, pos_err])
+        return obs
+        # obs = np.concatenate([obs, quat_err])
+
         if not self.use_ft_sensor:
             return obs    
 
@@ -205,11 +226,9 @@ class RemoteCenterPegInsertionEnv(remote_center_controlled_kuka_env.RemoteCenter
         '''
         Reset the robot state and return the observation.
         '''
-        if self.sample_good_states and np.random.random() < 0*0.5:
-            qpos = random.choice(self.good_states)
-        else:
-            qpos = self.good_states[-1]
-            qpos += np.random.uniform(-.01,.01,7)
+        qpos = self.good_states[-1]
+        qpos += np.random.uniform(-.01,.01,7)
+        qpos += np.random.uniform(-.1,.1,7)
         
         # qpos = np.zeros(7)
         qvel = np.zeros(7)

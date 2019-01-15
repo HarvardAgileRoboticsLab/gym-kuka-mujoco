@@ -72,13 +72,6 @@ class IdControlledKukaEnv(kuka_env.KukaEnv):
         self.R = 1e-6 * np.eye(14)
         self.eps = 1e-1
 
-    def subtree_mass(self):
-        '''
-        Compute the subtree mass of the Kuka Arm using the actual link names.
-        '''
-        body_names = ['kuka_link_{}'.format(i + 1) for i in range(7)]
-        body_ids = [self.model.body_name2id(n) for n in body_names]
-        return self.model.body_subtreemass[body_ids]
 
     def update_action(self, action):
         '''

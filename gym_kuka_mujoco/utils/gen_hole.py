@@ -98,51 +98,51 @@ if __name__ == "__main__":
 
     # Generate and save a hole.
     hole_geoms = gen_hole(0.0068, .05, .05, 16)
-    hole_site = {'name':'hole_base', 'pos':(0,0,0), 'euler':(0,0,0), 'size':(0.005, 0.005, 0.005)}
+    hole_site = {'name':'hole_base', 'pos':(0,0,0), 'euler':(-np.pi,0,0), 'size':(0.005, 0.005, 0.005)}
     hole_xml = assemble_mujoco_xml(hole_geoms)    
     filename = 'polyhedral_hole_inner=0-0068_outer=0-05_height=0-05_num_facets=16.xml'
     model_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'envs', 'assets', 'hole', filename)
-    # write_xml(model_path, hole_xml)
+    write_xml(model_path, hole_xml)
 
     # Generate and save a huge hole.
     hole_geoms = gen_hole(0.04, .05, .05, 16)
-    hole_site = {'name':'hole_base', 'pos':(0,0,0), 'euler':(0,0,0), 'size':(0.005, 0.005, 0.005)}
+    hole_site = {'name':'hole_base', 'pos':(0,0,0), 'euler':(-np.pi,0,0), 'size':(0.005, 0.005, 0.005)}
     hole_xml = assemble_mujoco_xml(hole_geoms)
     filename = 'polyhedral_hole_inner=0-040_outer=0-05_height=0-05_num_facets=16.xml'
     model_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'envs', 'assets', 'hole', filename)
-    # write_xml(model_path, hole_xml)
+    write_xml(model_path, hole_xml)
 
     # Generate and save a big hole.
     hole_geoms = gen_hole(0.008, .05, .05, 16)
-    hole_site = {'name':'hole_base', 'pos':(0,0,0), 'euler':(0,0,0), 'size':(0.005, 0.005, 0.005)}
+    hole_site = {'name':'hole_base', 'pos':(0,0,0), 'euler':(-np.pi,0,0), 'size':(0.005, 0.005, 0.005)}
     hole_xml = assemble_mujoco_xml(hole_geoms)
     filename = 'polyhedral_hole_inner=0-008_outer=0-05_height=0-05_num_facets=16.xml'
     model_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'envs', 'assets', 'hole', filename)
-    # write_xml(model_path, hole_xml)
+    write_xml(model_path, hole_xml)
 
     # Generate and save a medium hole.
     hole_geoms = gen_hole(0.0075, .05, .05, 16)
-    hole_site = {'name':'hole_base', 'pos':(0,0,0), 'euler':(0,0,0), 'size':(0.005, 0.005, 0.005)}
+    hole_site = {'name':'hole_base', 'pos':(0,0,0), 'euler':(-np.pi,0,0), 'size':(0.005, 0.005, 0.005)}
     hole_xml = assemble_mujoco_xml(hole_geoms)
     filename = 'polyhedral_hole_inner=0-0075_outer=0-05_height=0-05_num_facets=16.xml'
     model_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'envs', 'assets', 'hole', filename)
-    # write_xml(model_path, hole_xml)
+    write_xml(model_path, hole_xml)
 
     # Generate and save a small hole.
     hole_geoms = gen_hole(0.0070, .05, .05, 16)
-    hole_site = {'name':'hole_base', 'pos':(0,0,0), 'euler':(0,0,0), 'size':(0.005, 0.005, 0.005)}
+    hole_site = {'name':'hole_base', 'pos':(0,0,0), 'euler':(-np.pi,0,0), 'size':(0.005, 0.005, 0.005)}
     hole_xml = assemble_mujoco_xml(hole_geoms)
     filename = 'polyhedral_hole_inner=0-0070_outer=0-05_height=0-05_num_facets=16.xml'
     model_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'envs', 'assets', 'hole', filename)
-    # write_xml(model_path, hole_xml)
+    write_xml(model_path, hole_xml)
 
     # Generate and save a tiny hole.
     hole_geoms = gen_hole(0.00685, .05, .05, 16)
-    hole_site = {'name':'hole_base', 'pos':(0,0,0), 'euler':(0,0,0), 'size':(0.005, 0.005, 0.005)}
+    hole_site = {'name':'hole_base', 'pos':(0,0,0), 'euler':(-np.pi,0,0), 'size':(0.005, 0.005, 0.005)}
     hole_xml = assemble_mujoco_xml(hole_geoms)
     filename = 'polyhedral_hole_inner=0-00685_outer=0-05_height=0-05_num_facets=16.xml'
     model_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'envs', 'assets', 'hole', filename)
-    # write_xml(model_path, hole_xml)
+    write_xml(model_path, hole_xml)
 
     # Generate and save many holes
     upper = 0.04
@@ -152,7 +152,7 @@ if __name__ == "__main__":
 
     for i,s in enumerate(inner_sizes):
         hole_geoms = gen_hole(s, .05, .05, 16)
-        hole_site = {'name':'hole_base', 'pos':(0,0,0), 'euler':(0,0,0), 'size':(0.005, 0.005, 0.005)}
+        hole_site = {'name':'hole_base', 'pos':(0,0,0), 'euler':(-np.pi,0,0), 'size':(0.005, 0.005, 0.005)}
         hole_xml = assemble_mujoco_xml(hole_geoms, hole_site)
         filename = 'polyhedral_hole_inner=0-{:06d}_outer=0-05_height=0-05_num_facets=16_id={:03d}.xml'.format(int(np.round(s*1000000)), i)
         print(filename)

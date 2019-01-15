@@ -12,30 +12,30 @@ def replay_model(env, model):
     obs = env.reset()
     while True:
         action, _states = model.predict(obs)
-        obs, reward, done, info = env.step(action, render=True)
+        clipped_action = np.clip(action, env.action_space.low, env.action_space.high)
+        obs, reward, done, info = env.step(clipped_action, render=True)
         if done:
             env.reset()
 
 if __name__=='__main__':
     # Visualize the solution
-    model_path = os.path.join(os.environ['OPENAI_LOGDIR'],
-                              'stable',
-                              '2019-01-06',
-                              '22:20:55.849317',
-                              'cirriculum_learning',
-                              'PegInsertionNoHole-v0',
-                              'model.pkl')
+    environment_name = 'PegInsertionNoHole-v0'
+    environment_name = 'RemoteCenterControlledKukaMujoco-v0'
+    environment_name = 'KukaMujoco-v0'
     running_average_path = os.path.join(os.environ['OPENAI_LOGDIR'],
                           'stable',
-                          '2019-01-06',
-                          '22:20:55.849317',
+                          '2019-01-14',
+                          # '17:48:38.178209',
+                          '16:49:36.217527',
                           'cirriculum_learning',
-                          'PegInsertionNoHole-v0')
+                          environment_name)
 
-    orig_env = gym.make('PegInsertionNoHole-v0')
+    model_path = os.path.join(running_average_path,
+                              'model.pkl')
+
+    orig_env = gym.make(environment_name)
     env = DummyVecEnv([lambda: orig_env])
-    env = VecNormalize(env, training=False, norm_reward=False, clip_obs=np.inf, clip_reward=np.inf)
-    env.load_running_average(running_average_path)
-    model = PPO2(MlpPolicy, env)
-    model.load(model_path)
+    # env = VecNormalize(env, training=False, norm_reward=False, clip_obs=np.inf, clip_reward=np.inf)
+    # env.load_running_average(running_average_path)
+    model = PPO2.load(model_path, env=env)
     replay_model(orig_env, model)
