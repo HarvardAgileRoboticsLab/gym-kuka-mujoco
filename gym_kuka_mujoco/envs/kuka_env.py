@@ -29,13 +29,14 @@ class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
 
         # Call the super class
         self.initialized = False
-        mujoco_env.MujocoEnv.__init__(self, full_path, 10)
+        mujoco_env.MujocoEnv.__init__(self, full_path, 20)
         self.initialized = True
 
         self.torque_scaling = self.subtree_mass()
         self.torque_scaling /= np.max(self.torque_scaling)
+        self.torque_scaling*=10.
         # self.torque_scaling*=2.
-        self.torque_scaling*=.1
+        # self.torque_scaling*=.1
         low = self.action_space.low/self.torque_scaling
         high = self.action_space.high/self.torque_scaling
         self.action_space = spaces.Box(low, high, dtype=self.action_space.low.dtype)
@@ -69,6 +70,7 @@ class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         if self.use_shaped_reward:
             # quadratic cost on the error and action
             reward = -err.dot(self.Q).dot(err) - action.dot(self.R).dot(action)
+            reward += -np.sqrt(err.dot(self.Q).dot(err))
             # reward = -err.dot(self.Q).dot(err) - action.dot(self.R).dot(action)
             # reward += 1.0 if err.dot(err) < self.eps else 0.0
             return reward, {}
@@ -101,6 +103,8 @@ class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
             for _ in range(self.frame_skip):
                 self.sim.data.ctrl[:] = self.get_torque()
                 self.sim.step()
+                if not np.all(np.isfinite(self.sim.data.qpos)):
+                    print("Warning: simulation step returned inf or nan.")
                 reward, reward_info = self.get_reward(state, action)
                 total_reward += reward*dt
                 for k, v in reward_info.items():
