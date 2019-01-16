@@ -11,7 +11,7 @@ from stable_baselines.common.policies import MlpPolicy
 def replay_model(env, model):
     obs = env.reset()
     while True:
-        action, _states = model.predict(obs)
+        action, _states = model.predict(obs, deterministic=True)
         clipped_action = np.clip(action, env.action_space.low, env.action_space.high)
         obs, reward, done, info = env.step(clipped_action, render=True)
         if done:
@@ -25,8 +25,8 @@ if __name__=='__main__':
     running_average_path = os.path.join(os.environ['OPENAI_LOGDIR'],
                           'stable',
                           '2019-01-14',
-                          # '17:48:38.178209',
-                          '16:49:36.217527',
+                          '17:48:38.178209',
+                          # '16:49:36.217527',
                           'cirriculum_learning',
                           environment_name)
 
