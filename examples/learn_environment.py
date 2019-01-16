@@ -6,9 +6,10 @@ import numpy as np
 import argparse
 import json
 
-from stable_baselines import PPO2
+from stable_baselines import PPO2, SAC
 from stable_baselines.common.vec_env import DummyVecEnv, SubprocVecEnv, VecNormalize
-from stable_baselines.common.policies import MlpPolicy
+from stable_baselines.common.policies import MlpPolicy as AC_MlpPolicy
+from stable_baselines.sac.policies import MlpPolicy as SAC_MlpPolicy
 
 def run_learn(params):
     '''
@@ -19,23 +20,31 @@ def run_learn(params):
     learning_options = params['learning_options']
     actor_options = params['actor_options']
     save_path = save_path_from_params(params)
+    os.makedirs(save_path, exist_ok=True)
+
+    # Save the parameters that will generate the model
+    params_save_path = os.path.join(save_path,'params.json')
+    with open(params_save_path, 'w') as f:
+        json.dump(params, f, sort_keys = True, indent = 4, ensure_ascii=False)
 
     # Generate vectorized environment.
     envs = [gym.make(params['env']) for _ in range(params['n_env'])]
     env = SubprocVecEnv([lambda: e for e in envs])
 
     # Create the actor and learn
-    model = PPO2(MlpPolicy, env, tensorboard_log=save_path, **actor_options)    
+    if params['alg'] == 'PPO2':
+        model = PPO2(AC_MlpPolicy, env, tensorboard_log=save_path, **actor_options)
+    elif params['alg'] == 'SAC':
+        model = SAC(SAC_MlpPolicy, env, tensorboard_log=save_path, **actor_options)
+    else:
+        raise NotImplementedError
+    
     model.learn(**learning_options)
 
     # Save the model
     model_save_path = os.path.join(save_path,'model')
     model.save(model_save_path)
 
-    # Save the parameters that generated the model
-    params_save_path = os.path.join(save_path,'params.json')
-    with open(params_save_path, 'w') as f:
-        json.dump(params, f, sort_keys = True, indent = 4, ensure_ascii=False)
 
     return model
 

@@ -1,3 +1,3 @@
 -e .
-git+https://github.com/openai/baselines.git@master
+git+https://github.com/hill-a/stable-baselines.git
 tensorboard==1.11.0

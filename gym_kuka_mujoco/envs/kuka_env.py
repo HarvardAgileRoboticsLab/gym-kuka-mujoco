@@ -34,7 +34,8 @@ class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
 
         self.torque_scaling = self.subtree_mass()
         self.torque_scaling /= np.max(self.torque_scaling)
-        self.torque_scaling*=10
+        # self.torque_scaling*=2.
+        self.torque_scaling*=.1
         low = self.action_space.low/self.torque_scaling
         high = self.action_space.high/self.torque_scaling
         self.action_space = spaces.Box(low, high, dtype=self.action_space.low.dtype)
