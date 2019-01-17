@@ -38,7 +38,7 @@
         "alg": "SAC",
         "env": "KukaMujoco-v0",
         "learning_options": {
-            "total_timesteps": 20000000
+            "total_timesteps": 2000000
         },
         "n_env": 1
     }

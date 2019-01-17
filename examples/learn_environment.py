@@ -13,17 +13,35 @@ from stable_baselines.sac.policies import MlpPolicy as SAC_MlpPolicy
 from experiment_files import new_experiment_dir
 from play_model import replay_model
 
-def callback(_locals, _globals, log_dir):
+def PPO_callback(_locals, _globals, log_dir):
     """
     Callback called at each gradient update.
     """
     # Get the current update step.
+    import pdb; pdb.set_trace()
     n_update = _locals['update']
 
     # Save on the first update and every 10 updates after that.
     if (n_update == 1) or (n_update % 10 == 0):
         checkpoint_save_path = os.path.join(log_dir, 'model_checkpoint_{}.pkl'.format(n_update))
         _locals['self'].save(checkpoint_save_path)
+
+def SAC_callback(_locals, _globals, log_dir):
+    """
+    Callback called at each gradient update.
+    """
+    # Get the current update step.
+    # print('in callback')
+    new_update = SAC_callback.n_updates < _locals['n_updates']
+    if new_update:
+        SAC_callback.n_updates = _locals['n_updates']
+
+    # Save on the first update and every 10 updates after that.
+    if new_update and ((SAC_callback.n_updates == 1) or (SAC_callback.n_updates % 1000 == 0)):
+        print('new_update: {}'.format(SAC_callback.n_updates))
+        checkpoint_save_path = os.path.join(log_dir, 'model_checkpoint_{}.pkl'.format(SAC_callback.n_updates))
+        _locals['self'].save(checkpoint_save_path)
+SAC_callback.n_updates = 0
 
 def run_learn(params):
     '''
@@ -47,12 +65,13 @@ def run_learn(params):
     # Create the actor and learn
     if params['alg'] == 'PPO2':
         model = PPO2(AC_MlpPolicy, env, tensorboard_log=save_path, **actor_options)
+        learn_callback = lambda l, g: PPO_callback(l, g, save_path)
     elif params['alg'] == 'SAC':
         model = SAC(SAC_MlpPolicy, env, tensorboard_log=save_path, **actor_options)
+        learn_callback = lambda l, g: SAC_callback(l, g, save_path)
     else:
         raise NotImplementedError
     
-    learn_callback = lambda l, g: callback(l, g, save_path)
     model.learn(callback=learn_callback, **learning_options)
 
     # Save the model

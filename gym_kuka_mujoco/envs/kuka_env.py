@@ -161,3 +161,9 @@ class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
 
         return np.concatenate(
             [self.sim.data.qpos.flat, self.sim.data.qvel.flat])
+
+# This class is a hack to get around a bad action space initialized with the SAC policy
+class KukaEnvSAC(KukaEnv):
+    def __init__(*args, **kwargs):
+        super(KukaEnvSAC, self).__init__(*args, **kwargs)
+        self.action_space = spaces.Box(-10*np.ones(7), 10*np.ones(7))
