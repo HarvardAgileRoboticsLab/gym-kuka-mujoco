@@ -6,6 +6,11 @@ register(
 )
 
 register(
+    id='KukaMujocoSAC-v0',
+    entry_point='gym_kuka_mujoco.envs:KukaEnvSAC',
+)
+
+register(
     id='IdControlledKukaMujoco-v0',
     entry_point='gym_kuka_mujoco.envs:IdControlledKukaEnv',
 )

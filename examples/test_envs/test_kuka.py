@@ -43,8 +43,7 @@ def test_predict_SAC():
     '''
     Visualize predictions from a random policy.
     '''
-    env = gym.make('KukaMujoco-v0')
-    env.action_space = Box(-10*np.ones(7), 10*np.ones(7))
+    env = gym.make('KukaMujocoSAC-v0')
     model = SAC(SAC_MlpPolicy, env)
     obs = env.reset()
     while True:

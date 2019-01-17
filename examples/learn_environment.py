@@ -18,7 +18,6 @@ def PPO_callback(_locals, _globals, log_dir):
     Callback called at each gradient update.
     """
     # Get the current update step.
-    import pdb; pdb.set_trace()
     n_update = _locals['update']
 
     # Save on the first update and every 10 updates after that.

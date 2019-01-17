@@ -31,12 +31,12 @@
         },
         "n_env": 8
     },
-    "KukaMujoco-v0:SAC": {
+    "KukaMujocoSAC-v0:SAC": {
         "actor_options": {
             "verbose" : 1
         },
         "alg": "SAC",
-        "env": "KukaMujoco-v0",
+        "env": "KukaMujocoSAC-v0",
         "learning_options": {
             "total_timesteps": 2000000
         },
