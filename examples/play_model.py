@@ -51,7 +51,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    # Load the model.
+    # Load the model if it's availeble, otherwise that latest checkpoint.
     experiment_dir = get_experiment_dirs(args.directory)[0]
     params_path = get_params(experiment_dir)
     params = load_params(params_path)
