@@ -1,11 +1,15 @@
 import gym
-from stable_baselines import PPO2
+from gym.spaces import Box
+from stable_baselines import PPO2, SAC
+
 from stable_baselines.common.vec_env import DummyVecEnv, VecNormalize
-from stable_baselines.common.policies import MlpPolicy
+from stable_baselines.common.policies import MlpPolicy as AC_MlpPolicy
+from stable_baselines.sac.policies import MlpPolicy as SAC_MlpPolicy
 import matplotlib.pyplot as plt
 
 import gym_kuka_mujoco
 import numpy as np
+
 
 def test_random_actions():
     '''
@@ -20,23 +24,38 @@ def test_random_actions():
         action = env.action_space.sample()/10
         obs, rew, done, info = env.step(action, render=True)
 
-def test_predict():
+
+def test_predict_PPO():
     '''
     Visualize predictions from a random policy.
     '''
     env = gym.make('KukaMujoco-v0')
     env = DummyVecEnv([lambda: env])
-    model = PPO2(MlpPolicy, env)
+    model = PPO2(AC_MlpPolicy, env)
     obs = env.reset()
     while True:
         action, _ = model.predict(obs)
         obs, rew, done, info = env.step(action)
         env.render()
 
+
+def test_predict_SAC():
+    '''
+    Visualize predictions from a random policy.
+    '''
+    env = gym.make('KukaMujoco-v0')
+    env.action_space = Box(-10*np.ones(7), 10*np.ones(7))
+    model = SAC(SAC_MlpPolicy, env)
+    obs = env.reset()
+    while True:
+        action, _ = model.predict(obs)
+        obs, rew, done, info = env.step(action, render=True)
+
+
 def test_predict_distribution():
     '''
     Test that the distribution of outputs from a random policy is
-    roughly a unit Gaussian. 
+    roughly a unit Gaussian.
     '''
     env = gym.make('KukaMujoco-v0')
     env = DummyVecEnv([lambda: env])
@@ -62,6 +81,7 @@ def test_predict_distribution():
     print('Cov:\n{}'.format(cov))
     print('Sparse Cov:\n{}'.format((cov > 0.1).astype(np.float64)))
 
+
 def test_simple_controller():
     '''
     Test that we can write a simple controller that can solve the task.
@@ -80,7 +100,7 @@ def test_simple_controller():
         rewards.append(rew)
         positions.append(obs[:7])
         actions.append(action)
-        
+
     plt.figure()
     plt.subplot(311)
     plt.plot(positions)
@@ -90,11 +110,10 @@ def test_simple_controller():
     plt.plot(actions)
     plt.title('Simple Controller Trajectory')
 
-    
-if __name__=="__main__":
+
+if __name__ == "__main__":
     # test_random_actions()
-    test_predict()
+    test_predict_SAC()
     # test_predict_distribution()
     # test_simple_controller()
     plt.show()
-
