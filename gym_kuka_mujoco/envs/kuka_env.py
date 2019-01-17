@@ -120,7 +120,7 @@ class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         except MujocoException as e:
             print(e)
             reward = 0
-            obs = np.zeros_like(self.action_space.low)
+            obs = np.zeros_like(self.observation_space.low)
             done = True
 
         return obs, total_reward, done, total_reward_info
