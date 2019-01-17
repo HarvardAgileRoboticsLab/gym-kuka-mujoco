@@ -60,6 +60,13 @@ def get_checkpoints(experiment_dir):
         if entry.is_file() and 'checkpoint' in entry.name
     ]
 
+def get_model(experiment_dir):
+    '''
+    Returns the path to the final model if it exists, otherwise returns None.
+    '''
+    if 'model.pkl' in os.listdir(experiment_dir):
+        return os.path.join(experiment_dir, 'model.pkl')
+
 
 def get_latest_checkpoint(experiment_dir):
     '''
