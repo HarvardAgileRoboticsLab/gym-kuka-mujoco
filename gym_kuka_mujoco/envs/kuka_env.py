@@ -22,8 +22,8 @@ class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
 
         # Parameters for the cost function
         self.state_des = np.zeros(14)
-        # self.Q = 1e-2*np.eye(14)
-        self.Q = np.diag([1,1,1,1,1,1,1,0,0,0,0,0,0,0])
+        self.Q = np.eye(14)
+        self.Q = np.diag([1,1,1,1,1,1,1,.01,.01,.01,.01,.01,.01,.01])
         self.R = 1e-2*np.eye(7)
         self.eps = 1e-1
 
@@ -70,7 +70,8 @@ class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         if self.use_shaped_reward:
             # quadratic cost on the error and action
             reward = -err.dot(self.Q).dot(err) - action.dot(self.R).dot(action)
-            reward += -np.sqrt(err.dot(self.Q).dot(err))
+            # reward += -np.sqrt(err.dot(self.Q).dot(err))
+            # reward += -np.log(err.dot(self.Q).dot(err) + 1e-3)
             # reward = -err.dot(self.Q).dot(err) - action.dot(self.R).dot(action)
             # reward += 1.0 if err.dot(err) < self.eps else 0.0
             return reward, {}

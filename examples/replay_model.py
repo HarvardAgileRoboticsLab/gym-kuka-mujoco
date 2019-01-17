@@ -24,11 +24,9 @@ if __name__=='__main__':
     environment_name = 'KukaMujoco-v0'
     running_average_path = os.path.join(os.environ['OPENAI_LOGDIR'],
                           'stable',
-                          '2019-01-14',
-                          '17:48:38.178209',
-                          # '16:49:36.217527',
-                          'cirriculum_learning',
-                          environment_name)
+                          '2019-01-16',
+                          # '15:59:46.148298/alg=PPO2,env=KukaMujoco-v0,total_timesteps=20000000,gamma=1.0,n_steps=2048,ent_coef=0.0,verbose=0,cliprange=0.2,learning_rate=0.001')
+                          '17:26:40.194093/alg=PPO2,env=KukaMujoco-v0,total_timesteps=10000000,n_steps=2048,ent_coef=0.01,cliprange=0.2,gamma=1.0,learning_rate=0.001,verbose=0')
 
     model_path = os.path.join(running_average_path,
                               'model.pkl')

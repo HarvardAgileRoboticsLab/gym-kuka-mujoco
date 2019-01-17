@@ -1,5 +1,4 @@
 import os 
-from datetime import datetime
 import gym
 import gym_kuka_mujoco
 import numpy as np
@@ -11,15 +10,28 @@ from stable_baselines.common.vec_env import DummyVecEnv, SubprocVecEnv, VecNorma
 from stable_baselines.common.policies import MlpPolicy as AC_MlpPolicy
 from stable_baselines.sac.policies import MlpPolicy as SAC_MlpPolicy
 
+from experiment_files import new_experiment_dir
+
+def callback(_locals, _globals, log_dir):
+    """
+    Callback called at each gradient update.
+    """
+    # Get the current update step.
+    n_update = _locals['update']
+
+    # Save on the first update and every 10 updates after that.
+    if (n_update == 1) or (n_update % 10 == 0):
+        checkpoint_save_path = os.path.join(log_dir, 'model_checkpoint_{}.pkl'.format(n_update))
+        _locals['self'].save(checkpoint_save_path)
+
 def run_learn(params):
     '''
     Runs the learning experiment defined by the params dictionary.
     '''
-
     # Unpack options
     learning_options = params['learning_options']
     actor_options = params['actor_options']
-    save_path = save_path_from_params(params)
+    save_path = new_experiment_dir(params)
     os.makedirs(save_path, exist_ok=True)
 
     # Save the parameters that will generate the model
@@ -39,12 +51,12 @@ def run_learn(params):
     else:
         raise NotImplementedError
     
-    model.learn(**learning_options)
+    learn_callback = lambda l, g: callback(l, g, save_path)
+    model.learn(callback=learn_callback, **learning_options)
 
     # Save the model
     model_save_path = os.path.join(save_path,'model')
     model.save(model_save_path)
-
 
     return model
 
@@ -66,28 +78,6 @@ def visualize_solution(params, model):
         env.render()
         if dones[0]:
             env.reset()
-
-def save_path_from_params(params):
-    '''
-    Generates the path to save the model and the experiment data from a
-    dictionary of parameters.
-    '''
-
-    # Create a unique path based on the date and time of the experiment.
-    day, time = datetime.now().isoformat().split('T')
-
-    # Create a unique path based on a description of the experiment.
-    description = ['alg={}'.format(params['alg']), 'env={}'.format(params['env'])]
-    for k,v in params['learning_options'].items():
-        description.append('{}={}'.format(k,v))
-
-    for k,v in params['actor_options'].items():
-        description.append('{}={}'.format(k,v))
-    description = ','.join(description)
-    
-    # Contruct the path and return.
-    save_path = os.path.join(os.environ['OPENAI_LOGDIR'], 'stable', day, time, description)    
-    return save_path
 
 
 if __name__ == '__main__':
