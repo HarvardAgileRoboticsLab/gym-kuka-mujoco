@@ -4,7 +4,7 @@ import mujoco_py
 
 # Get the model path
 model_filename = 'full_peg_insertion_experiment.xml'
-model_path = os.path.join('..', 'gym_kuka_mujoco', 'envs', 'assets',
+model_path = os.path.join('..','..', 'gym_kuka_mujoco', 'envs', 'assets',
                           model_filename)
 
 # Construct the model and simulation objects.

@@ -7,7 +7,7 @@ from gym_kuka_mujoco.utils.randomize import sample_pose
 # Load model
 model_filename = 'full_peg_insertion_experiment_moving_big_hole.xml'
 model_filename = 'full_peg_insertion_experiment_moving_many_holes.xml'
-model_path = os.path.join('..','gym_kuka_mujoco','envs','assets', model_filename)
+model_path = os.path.join('..','..','gym_kuka_mujoco','envs','assets', model_filename)
 
 # Load path
 model = mujoco_py.load_model_from_path(model_path)
