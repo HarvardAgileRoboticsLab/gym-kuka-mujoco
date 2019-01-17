@@ -11,6 +11,7 @@ from stable_baselines.common.policies import MlpPolicy as AC_MlpPolicy
 from stable_baselines.sac.policies import MlpPolicy as SAC_MlpPolicy
 
 from experiment_files import new_experiment_dir
+from play_model import replay_model
 
 def callback(_locals, _globals, log_dir):
     """
@@ -60,26 +61,6 @@ def run_learn(params):
 
     return model
 
-def visualize_solution(params, model):
-    '''
-    Visualize the solution specified by the model.
-    '''
-
-    # Create the environment.
-    env = gym.make(params['env'])
-    env = DummyVecEnv([lambda: env])
-
-    # Simulate forward.
-    obs = env.reset()
-    while True:
-        action, _states = model.predict(obs, deterministic=True)
-        clipped_action = np.clip(action, env.action_space.low, env.action_space.high)
-        obs, rewards, dones, info = env.step(clipped_action)
-        env.render()
-        if dones[0]:
-            env.reset()
-
-
 if __name__ == '__main__':
     # Setup command line arguments.
     parser = argparse.ArgumentParser(description='Runs a learning example on a registered gym environment.')
@@ -102,6 +83,9 @@ if __name__ == '__main__':
         with open(param_file) as f:
             params = json.load(f)
     
-    # Learn and visualize.
+    # Learn.
     model = run_learn(params)
-    visualize_solution(params, model)
+    
+    # Visualize. 
+    env = gym.make(params['env'])
+    replay_model(env, model)

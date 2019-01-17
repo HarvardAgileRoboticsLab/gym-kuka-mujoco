@@ -9,7 +9,7 @@
     "alg": "PPO2",
     "env": "KukaMujoco-v0",
     "learning_options": {
-        "total_timesteps": 200000
+        "total_timesteps": 20000
     },
     "n_env": 8
 }

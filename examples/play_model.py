@@ -38,6 +38,7 @@ def replay_model(env, model):
         action, _states = model.predict(obs, deterministic=True)
         clipped_action = np.clip(action, env.action_space.low,
                                  env.action_space.high)
+
         obs, reward, done, info = env.step(clipped_action, render=True)
         if done:
             env.reset()
