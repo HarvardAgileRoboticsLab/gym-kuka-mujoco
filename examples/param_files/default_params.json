@@ -33,7 +33,8 @@
     },
     "KukaMujocoSAC-v0:SAC": {
         "actor_options": {
-            "verbose" : 1
+            "verbose" : 1,
+            "learning_starts" : 1000
         },
         "alg": "SAC",
         "env": "KukaMujocoSAC-v0",

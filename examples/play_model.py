@@ -3,7 +3,7 @@ import argparse
 import json
 import numpy as np
 
-from stable_baselines import PPO2
+from stable_baselines import PPO2, SAC
 from stable_baselines.common.vec_env import DummyVecEnv
 
 import gym
@@ -25,6 +25,8 @@ def load_model(model_path, params):
 
     if params['alg'] == 'PPO2':
         model = PPO2.load(model_path, env=env)
+    elif params['alg'] == 'SAC':
+        model = SAC.load(model_path, env=env)
     else:
         raise NotImplementedError
 
@@ -38,7 +40,7 @@ def replay_model(env, model):
         action, _states = model.predict(obs, deterministic=True)
         clipped_action = np.clip(action, env.action_space.low,
                                  env.action_space.high)
-
+        print(clipped_action)
         obs, reward, done, info = env.step(clipped_action, render=True)
         if done:
             env.reset()

@@ -22,9 +22,11 @@ class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
 
         # Parameters for the cost function
         self.state_des = np.zeros(14)
-        self.Q = np.eye(14)
-        self.Q = np.diag([1,1,1,1,1,1,1,.01,.01,.01,.01,.01,.01,.01])
+        # self.Q = np.eye(14)
+        # self.Q = np.diag([1,1,1,1,1,1,1,.01,.01,.01,.01,.01,.01,.01])
+        self.Q = np.diag([1,1,1,1,1,1,1,0,0,0,0,0,0,0])
         self.R = 1e-2*np.eye(7)
+        # self.R = 0*np.eye(7)
         self.eps = 1e-1
 
         # Call the super class

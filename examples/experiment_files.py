@@ -21,10 +21,10 @@ def new_experiment_dir(params):
 
     # Create a unique path based on a description of the experiment.
     description = ['alg={}'.format(params['alg']), 'env={}'.format(params['env'])]
-    for k,v in params['learning_options'].items():
+    for k,v in sorted(params['learning_options'].items()):
         description.append('{}={}'.format(k,v))
 
-    for k,v in params['actor_options'].items():
+    for k,v in sorted(params['actor_options'].items()):
         description.append('{}={}'.format(k,v))
     description = ','.join(description)
     
