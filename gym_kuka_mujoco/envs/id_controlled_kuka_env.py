@@ -10,6 +10,7 @@ class IdControlledKukaEnv(kuka_env.KukaEnv):
     A Kuka environment that uses a low-level inverse dynamics controller
     '''
     setpoint_diff = False
+    random_target = True
 
     def __init__(self,
                  kp_id=None,
@@ -32,6 +33,8 @@ class IdControlledKukaEnv(kuka_env.KukaEnv):
         super(IdControlledKukaEnv, self).__init__(**kwargs)
         
         # Create a model for control
+        if control_model_path is None:
+            control_model_path = 'full_kuka_no_collision_no_gravity.xml'
         control_model_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),'assets', control_model_path)
         self.model_for_control = mujoco_py.load_model_from_path(control_model_path)
 
@@ -61,16 +64,26 @@ class IdControlledKukaEnv(kuka_env.KukaEnv):
         low_vel = -3 * np.ones(self.model.nv)
         high_vel = 3 * np.ones(self.model.nv)
 
-        low = np.concatenate((low_pos, low_vel))
-        high = np.concatenate((high_pos, high_vel))
+        # low = np.concatenate((low_pos, low_vel))
+        # high = np.concatenate((high_pos, high_vel))
+        low = low_pos
+        high = high_pos
         self.action_space = spaces.Box(low, high, dtype=np.float32)
         # self.action_space = spaces.Box(-np.inf*np.ones_like(low), np.inf*np.ones_like(high), dtype=np.float32)
 
+        if self.random_target:
+            low_vel_obs = -np.inf*np.ones(7)
+            high_vel_obs = np.inf*np.ones(7)
+            low_obs = np.concatenate([low_pos, low_vel_obs, low_pos])
+            high_obs = np.concatenate([high_pos, high_vel_obs, high_pos])
+            self.observation_space = spaces.Box(low_obs, high_obs, dtype=np.float32)
+
         # Overwrite the action cost.
         self.state_des = np.zeros(14)
-        self.Q = 1e-2 * np.eye(14)
-        self.R = 1e-6 * np.eye(14)
-        self.eps = 1e-1
+        # self.state_des = np.zeros(7)
+        # self.Q = 1e-2 * np.eye(14)
+        self.R = np.zeros((7, 7))
+        # self.eps = 1e-1
 
 
     def update_action(self, action):
@@ -78,7 +91,7 @@ class IdControlledKukaEnv(kuka_env.KukaEnv):
         Set the setpoints.
         '''
         # Hack to allow different sized action space than the super class
-        if len(action) != self.model.nq + self.model.nv:
+        if len(action) != self.model.nq:
             self.qpos_set = np.zeros(self.model.nq)
             self.qvel_set = np.zeros(self.model.nv)
             return
@@ -89,12 +102,12 @@ class IdControlledKukaEnv(kuka_env.KukaEnv):
             # Scale to encourage only small differences from the current
             # setpoint
             self.qpos_set = self.sim.data.qpos + 6e-2*action[:7]
-            self.qvel_set = self.sim.data.qvel + 1e-2*action[7:14]
+            # self.qvel_set = self.sim.data.qvel + 1e-2*action[7:14]
             self.qvel_set = np.zeros(7)
         else:
             # Set the PD setpoint directly.
             self.qpos_set = action[:7]
-            self.qvel_set = action[7:14]
+            # self.qvel_set = action[7:14]
 
     def get_torque(self):
         '''
@@ -114,7 +127,6 @@ class IdControlledKukaEnv(kuka_env.KukaEnv):
 
         # Sum the torques
         return id_torque + pd_torque
-
 
 class DiffIdControlledKukaEnv(IdControlledKukaEnv):
     setpoint_diff = True

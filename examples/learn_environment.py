@@ -9,6 +9,7 @@ from stable_baselines import PPO2, SAC
 from stable_baselines.common.vec_env import DummyVecEnv, SubprocVecEnv, VecNormalize
 from stable_baselines.common.policies import MlpPolicy as AC_MlpPolicy
 from stable_baselines.sac.policies import MlpPolicy as SAC_MlpPolicy
+from stable_baselines.common import set_global_seeds
 
 from experiment_files import new_experiment_dir
 from play_model import replay_model
@@ -42,6 +43,22 @@ def SAC_callback(_locals, _globals, log_dir):
         _locals['self'].save(checkpoint_save_path)
 SAC_callback.n_updates = 0
 
+def make_env(env_id, rank, seed=0):
+    """
+    Utility function for multiprocessed env.
+
+    :param env_id: (str) the environment ID
+    :param num_env: (int) the number of environments you wish to have in subprocesses
+    :param seed: (int) the inital seed for RNG
+    :param rank: (int) index of the subprocess
+    """
+    def _init():
+        env = gym.make(env_id)
+        env.seed(seed + rank)
+        return env
+    set_global_seeds(seed)
+    return _init
+
 def run_learn(params):
     '''
     Runs the learning experiment defined by the params dictionary.
@@ -58,8 +75,13 @@ def run_learn(params):
         json.dump(params, f, sort_keys = True, indent = 4, ensure_ascii=False)
 
     # Generate vectorized environment.
-    envs = [gym.make(params['env']) for _ in range(params['n_env'])]
-    env = SubprocVecEnv([lambda: e for e in envs])
+    envs = [make_env(params['env'], i) for i in range(params['n_env'])]
+
+    if params.get('vectorized', True):
+        env = SubprocVecEnv(envs)
+    else:
+        env = DummyVecEnv(envs)
+
 
     # Create the actor and learn
     if params['alg'] == 'PPO2':
@@ -71,6 +93,7 @@ def run_learn(params):
     else:
         raise NotImplementedError
     
+    print("Learning and recording to:\n{}".format(save_path))
     model.learn(callback=learn_callback, **learning_options)
 
     # Save the model
@@ -80,6 +103,8 @@ def run_learn(params):
     return model
 
 if __name__ == '__main__':
+    import warnings
+    
     # Setup command line arguments.
     parser = argparse.ArgumentParser(description='Runs a learning example on a registered gym environment.')
     parser.add_argument('--default_name',
@@ -89,7 +114,14 @@ if __name__ == '__main__':
     parser.add_argument('--param_file',
                         type=str,
                         help='the parameter file to use')
+    parser.add_argument('--filter_warning',
+                        choices=['error','ignore','always','default','module','once'],
+                        default='default',
+                        help='the treatment of warnings')
     args = parser.parse_args()
+
+    # Change the warning behavior for debugging.
+    warnings.simplefilter(args.filter_warning, RuntimeWarning)
 
     # Load the learning parameters from a file.
     if args.param_file is None:

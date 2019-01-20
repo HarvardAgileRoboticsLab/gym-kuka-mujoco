@@ -6,6 +6,8 @@ from mujoco_py.builder import MujocoException
 
 class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
     use_shaped_reward = True
+    random_target = False
+
     def __init__(self, model_path=None):
         '''
         Constructs the file, sets the time limit and calls the constructor of
@@ -13,7 +15,6 @@ class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         '''
         utils.EzPickle.__init__(self)
         if model_path is None:
-            model_path = 'full_kuka_no_collision.xml'
             model_path = 'full_kuka_no_collision_no_gravity.xml'
         full_path = os.path.join(
             os.path.dirname(os.path.realpath(__file__)), 'assets', model_path)
@@ -22,11 +23,8 @@ class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
 
         # Parameters for the cost function
         self.state_des = np.zeros(14)
-        # self.Q = np.eye(14)
-        # self.Q = np.diag([1,1,1,1,1,1,1,.01,.01,.01,.01,.01,.01,.01])
         self.Q = np.diag([1,1,1,1,1,1,1,0,0,0,0,0,0,0])
-        self.R = 1e-2*np.eye(7)
-        # self.R = 0*np.eye(7)
+        self.R = np.zeros((7, 7))
         self.eps = 1e-1
 
         # Call the super class
@@ -142,16 +140,19 @@ class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         '''
         while(True):
             try:
+                # reset the state
                 qpos = 0.1*self.np_random.uniform(low=self.model.jnt_range[:,0], high=self.model.jnt_range[:,1], size=self.model.nq)
-                # qpos = self.np_random.uniform(low=self.model.jnt_range[:,0], high=self.model.jnt_range[:,1], size=self.model.nq)
-                # qpos = 0.01*self.np_random.uniform(low=self.model.jnt_range[:,0], high=self.model.jnt_range[:,1], size=self.model.nq)
                 qvel = np.zeros(7)
-    
                 self.set_state(qpos, qvel)
+
+                # reset the target
+                if self.random_target:
+                    self.state_des[:7] = self.np_random.uniform(self.model.jnt_range[:,0], self.model.jnt_range[:,1])
             except MujocoException as e:
                 print(e)
                 continue
             break
+
         return self._get_obs()
 
     def _get_obs(self):
@@ -161,8 +162,14 @@ class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         if not self.initialized:
             return np.zeros(14)
 
-        return np.concatenate(
-            [self.sim.data.qpos.flat, self.sim.data.qvel.flat])
+        obs = np.concatenate(
+            [self.sim.data.qpos[:], self.sim.data.qvel[:]])
+
+        if self.random_target:
+            obs = np.concatenate([obs, self.state_des[:7]])
+            # print(obs)
+
+        return obs
 
 # This class is a hack to get around a bad action space initialized with the SAC policy
 class KukaEnvSAC(KukaEnv):
