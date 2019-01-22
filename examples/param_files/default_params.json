@@ -31,6 +31,22 @@
         },
         "n_env": 8
     },
+    "DiffIdControlledKukaMujoco-v0:PPO2": {
+        "actor_options": {
+            "ent_coef": 0.01,
+            "gamma": 1.0,
+            "learning_rate": 0.001,
+            "n_steps": 2048,
+            "verbose": 0,
+            "cliprange":0.2
+        },
+        "alg": "PPO2",
+        "env": "DiffIdControlledKukaMujoco-v0",
+        "learning_options": {
+            "total_timesteps": 2000000
+        },
+        "n_env": 8
+    },
     "KukaMujocoSAC-v0:SAC": {
         "actor_options": {
             "verbose" : 1,
@@ -38,6 +54,18 @@
         },
         "alg": "SAC",
         "env": "KukaMujocoSAC-v0",
+        "learning_options": {
+            "total_timesteps": 2000000
+        },
+        "n_env": 1,
+        "vectorized": false
+    },
+    "DiffIdControlledKukaMujoco-v0:SAC": {
+        "actor_options": {
+            "learning_starts" : 1000
+        },
+        "alg": "SAC",
+        "env": "DiffIdControlledKukaMujoco-v0",
         "learning_options": {
             "total_timesteps": 2000000
         },
