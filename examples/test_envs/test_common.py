@@ -42,8 +42,7 @@ def validate_PPO(env_id):
              "\tfrac_clip_low:   {frac_clip_low}".format(env_id=env_id, **policy_stats))
 
     # Check scaling of the actions and observations
-    if np.any(np.abs(policy_stats['act_mean']) > 10.) or \
-       np.any(policy_stats['act_std'] > 10.) or \
+    if np.any(policy_stats['act_std'] > 10.) or \
        np.any(policy_stats['act_std'] < .1) or \
        np.any(policy_stats['mean_ep_act_std'] > 10.) or \
        np.any(policy_stats['mean_ep_act_std'] < .1):
@@ -52,8 +51,7 @@ def validate_PPO(env_id):
              "\tact_std:         {act_std}\n"
              "\tmean_ep_act_std: {mean_ep_act_std}".format(env_id=env_id, **policy_stats))
 
-    if np.any(np.abs(policy_stats['obs_mean']) > 10.) or \
-       np.any(policy_stats['obs_std'] > 10.) or \
+    if np.any(policy_stats['obs_std'] > 10.) or \
        np.any(policy_stats['obs_std'] < .1) or \
        np.any(policy_stats['mean_ep_obs_std'] > 10.) or \
        np.any(policy_stats['mean_ep_obs_std'] < .1):

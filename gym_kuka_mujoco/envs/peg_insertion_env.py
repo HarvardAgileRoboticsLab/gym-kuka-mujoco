@@ -11,6 +11,12 @@ from gym_kuka_mujoco.utils.quaternion import mat2Quat, subQuat
 class PegInsertionEnv(id_controlled_kuka_env.DiffIdControlledKukaEnv):
     sample_good_states = True
     use_ft_sensor = False
+    # Cost parameters
+    regularize_pose = False
+    quadratic_cost = True
+    linear_cost = False
+    logarithmic_cost = False
+    sparse_cost = False
     
     def __init__(self, *args, hole_id=0, **kwargs):
         if hole_id >= 0:
@@ -18,13 +24,17 @@ class PegInsertionEnv(id_controlled_kuka_env.DiffIdControlledKukaEnv):
         else:
             kwargs['model_path'] = kwargs.get('model_path', 'full_peg_insertion_experiment_no_hole.xml')       
         kwargs['control_model_path'] = kwargs.get('control_model_path', 'full_peg_insertion_experiment_no_collision.xml')
+        self.fine_scaling = .1
         super(PegInsertionEnv, self).__init__(*args, **kwargs)
 
         self.time_limit = 3
-        self.Q_pos = np.diag([10,10,1])
+        self.Q_pos = np.diag([10,10,10])
         self.Q_rot = np.diag([1,1,1])
+        if self.regularize_pose:
+            self.Q_pose_reg = np.eye(7)
         # self.Q_vel = np.diag([1,1,.1])
         # self.eps = 1e-2
+
 
 
         if self.sample_good_states:
@@ -41,6 +51,8 @@ class PegInsertionEnv(id_controlled_kuka_env.DiffIdControlledKukaEnv):
         peg_quat = mat2Quat(rot[0])
         hole_quat = mat2Quat(rot[1])
         rot_err = subQuat(peg_quat, hole_quat)
+
+        pose_err = self.sim.data.qpos - self.good_states[0]
         
         peg_tip_id = self.model.site_name2id('peg_tip')
         jacp, jacv = forwardKinJacobianSite(self.sim, peg_tip_id)
@@ -54,14 +66,38 @@ class PegInsertionEnv(id_controlled_kuka_env.DiffIdControlledKukaEnv):
         # Q_vel = rotate_cost_by_matrix(self.Q_vel,rot[1].T)
         Q_rot = self.Q_rot
 
-        reward_info['position_reward'] = -np.sqrt(pos_err.dot(Q_pos).dot(pos_err))
-        reward_info['quaternion_reward'] = -np.sqrt(rot_err.dot(Q_rot).dot(rot_err))
-        reward = reward_info['position_reward']
+        reward = 0.
+
+        # reward_info['quaternion_reward'] = -rot_err.dot(Q_rot).dot(rot_err)
+        
+        if self.quadratic_cost:
+            reward_info['quadratic_position_reward'] = -pos_err.dot(Q_pos).dot(pos_err)
+            reward = reward_info['quadratic_position_reward']
+
+        if self.linear_cost:
+            reward_info['linear_position_reward'] = -np.sqrt(pos_err.dot(Q_pos).dot(pos_err))
+            reward = reward_info['linear_position_reward']
+
+        if self.logarithmic_cost:
+            reward_info['logarithmic_position_reward'] = -np.log(np.sqrt(pos_err.dot(Q_pos).dot(pos_err)) + .1)
+            reward += reward_info['logarithmic_position_reward']
+
+        if self.sparse_cost:
+            reward_info['sparse_position_reward'] = 10.0 if np.sqrt(pos_err.dot(pos_err)) < 1e-2 else 0
+            reward += reward_info['sparse_position_reward']
+
+        if self.regularize_pose:
+            reward_info['pose_regularizer_reward'] = -pose_err.dot(self.Q_pose_reg).dot(pose_err)
+            reward += reward_info['pose_regularizer_reward']
         
         # reward_info['velocity_reward'] = -np.sqrt(peg_tip_vel.dot(Q_vel).dot(peg_tip_vel)) 
         # reward += reward_info['velocity_reward']
 
         return reward, reward_info
+
+    def _update_action(self, action):
+        action = action * self.fine_scaling * 0
+        super(PegInsertionEnv, self)._update_action(action)
 
     def _get_state_obs(self):
         '''
@@ -70,14 +106,19 @@ class PegInsertionEnv(id_controlled_kuka_env.DiffIdControlledKukaEnv):
 
         # Return superclass observation.
         obs = super(PegInsertionEnv, self)._get_state_obs()
-        if not self.use_ft_sensor:
-            return obs    
+
 
         # Return superclass observation stacked with the ft observation.
         if not self.initialized:
             ft_obs = np.zeros(6)
         else:
             ft_obs = self.sim.data.sensordata
+            
+            obs[:7] = obs[:7]
+            obs = obs / self.fine_scaling
+
+        if not self.use_ft_sensor:
+            return obs
 
         obs = np.concatenate([obs, ft_obs])
         return obs
@@ -97,6 +138,97 @@ class PegInsertionEnv(id_controlled_kuka_env.DiffIdControlledKukaEnv):
         
         qvel = np.zeros(7)
         self.set_state(qpos, qvel)
+
+
+class QuadraticCostPegInsertionEnv(PegInsertionEnv):
+    # Cost parameters
+    regularize_pose = False
+    quadratic_cost = True
+    linear_cost = False
+    logarithmic_cost = False
+    sparse_cost = False
+
+class LinearCostPegInsertionEnv(PegInsertionEnv):
+    # Cost parameters
+    regularize_pose = False
+    quadratic_cost = False
+    linear_cost = True
+    logarithmic_cost = False
+    sparse_cost = False
+
+class QuadraticLogarithmicCostPegInsertionEnv(PegInsertionEnv):
+    # Cost parameters
+    regularize_pose = False
+    quadratic_cost = True
+    linear_cost = False
+    logarithmic_cost = True
+    sparse_cost = False
+
+class QuadraticSparseCostPegInsertionEnv(PegInsertionEnv):
+    # Cost parameters
+    regularize_pose = False
+    quadratic_cost = True
+    linear_cost = False
+    logarithmic_cost = False
+    sparse_cost = True
+
+class QuadraticRegularizedCostPegInsertionEnv(PegInsertionEnv):
+    # Cost parameters
+    regularize_pose = True
+    quadratic_cost = True
+    linear_cost = False
+    logarithmic_cost = False
+    sparse_cost = False
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 class RemoteCenterPegInsertionEnv(remote_center_controlled_kuka_env.RemoteCenterControlledKukaEnv):
     setpoint_diff = True

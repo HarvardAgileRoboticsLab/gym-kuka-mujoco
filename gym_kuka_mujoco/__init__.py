@@ -97,3 +97,23 @@ register(
 #     id='PegInsertionTinyHole-v0',
 #     entry_point='gym_kuka_mujoco.envs:PegInsertionTinyHoleEnv',
 # )
+
+
+#############################
+# Cost tests, delete later
+#############################
+register(
+    id='QuadraticCostPegInsertionEnv-v0',
+    entry_point='gym_kuka_mujoco.envs:QuadraticCostPegInsertionEnv')
+register(
+    id='LinearCostPegInsertionEnv-v0',
+    entry_point='gym_kuka_mujoco.envs:LinearCostPegInsertionEnv')
+register(
+    id='QuadraticLogarithmicCostPegInsertionEnv-v0',
+    entry_point='gym_kuka_mujoco.envs:QuadraticLogarithmicCostPegInsertionEnv')
+register(
+    id='QuadraticSparseCostPegInsertionEnv-v0',
+    entry_point='gym_kuka_mujoco.envs:QuadraticSparseCostPegInsertionEnv')
+register(
+    id='QuadraticRegularizedCostPegInsertionEnv-v0',
+    entry_point='gym_kuka_mujoco.envs:QuadraticRegularizedCostPegInsertionEnv')
