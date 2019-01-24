@@ -34,10 +34,10 @@ def load_model(model_path, params):
     replay_model(orig_env, model)
 
 
-def replay_model(env, model):
+def replay_model(env, model, deterministic=True):
     obs = env.reset()
     while True:
-        action, _states = model.predict(obs, deterministic=True)
+        action, _states = model.predict(obs, deterministic=deterministic)
         clipped_action = np.clip(action, env.action_space.low,
                                  env.action_space.high)
         print(clipped_action)
@@ -51,6 +51,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument(
         'directory', type=str, help='The directory of the experiment.')
+    parser.add_argument(
+        '--deterministic', action='store_true', help='Optionally simulate the deterministic system.')
 
     args = parser.parse_args()
 
@@ -66,4 +68,4 @@ if __name__ == '__main__':
     env, model = load_model(model_path, params)
 
     # Replay model.
-    replay_model(env, model)
+    replay_model(env, model, deterministic=args.deterministic)

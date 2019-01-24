@@ -5,7 +5,7 @@ from gym.envs.mujoco import mujoco_env
 from mujoco_py.builder import MujocoException
 
 class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
-    use_shaped_reward = True
+    random_model = False
     random_target = False
 
     def __init__(self, model_path=None):
@@ -24,8 +24,6 @@ class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         # Parameters for the cost function
         self.state_des = np.zeros(14)
         self.Q = np.diag([1,1,1,1,1,1,1,0,0,0,0,0,0,0])
-        self.R = np.zeros((7, 7))
-        self.eps = 1e-1
 
         # Call the super class
         self.initialized = False
@@ -49,40 +47,19 @@ class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         body_ids = [self.model.body_name2id(n) for n in body_names]
         return self.model.body_subtreemass[body_ids]
 
-    def update_action(self, a):
+    def viewer_setup(self):
         '''
-        This function is called once per step.
+        Overwrites the MujocoEnv method to make the camera point at the base.
         '''
-        self.action = a*self.torque_scaling
+        self.viewer.cam.trackbodyid = 0
 
-    def get_torque(self):
-        '''
-        This function is called multiple times per step to simulate a
-        low-level controller.
-        '''
-        return self.action
-
-    def get_reward(self, state, action):
-        '''
-        Compute single step reward.
-        '''
-        err = self.state_des - state
-        if self.use_shaped_reward:
-            # quadratic cost on the error and action
-            reward = -err.dot(self.Q).dot(err) - action.dot(self.R).dot(action)
-            # reward += -np.sqrt(err.dot(self.Q).dot(err))
-            # reward += -np.log(err.dot(self.Q).dot(err) + 1e-3)
-            # reward = -err.dot(self.Q).dot(err) - action.dot(self.R).dot(action)
-            # reward += 1.0 if err.dot(err) < self.eps else 0.0
-            return reward, {}
-        else:
-            # sparse reward
-            return (1.0, {}) if err.dot(err) < self.eps else (0.0, {})    
-
+    '''
+    Step and helper methods. Only overwrite the helpers in the subclasses.
+    '''
     def step(self, action, render=False):
         '''
-        Simulate for `self.frame_skip` timesteps. Calls update_action() once
-        and then calls get_torque() repeatedly to simulate a low-level
+        Simulate for `self.frame_skip` timesteps. Calls _update_action() once
+        and then calls _get_torque() repeatedly to simulate a low-level
         controller.
         Optional argument render will render the intermediate frames for a smooth animation.
         '''
@@ -91,7 +68,7 @@ class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
             return self._get_obs(), 0, False, {}
 
         # Set the action to be used for the simulation.
-        self.update_action(action)
+        self._update_action(action)
 
         # Get the reward from the state and action.
         state = np.concatenate((self.sim.data.qpos[:], self.sim.data.qvel[:]))
@@ -102,11 +79,11 @@ class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
             total_reward = 0
             total_reward_info = dict()
             for _ in range(self.frame_skip):
-                self.sim.data.ctrl[:] = self.get_torque()
+                self.sim.data.ctrl[:] = self._get_torque()
                 self.sim.step()
                 if not np.all(np.isfinite(self.sim.data.qpos)):
                     print("Warning: simulation step returned inf or nan.")
-                reward, reward_info = self.get_reward(state, action)
+                reward, reward_info = self._get_reward(state, action)
                 total_reward += reward*dt
                 for k, v in reward_info.items():
                     if 'reward' in k:
@@ -115,7 +92,7 @@ class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
                     self.render()
 
             # Get observation and check finished
-            done = (self.sim.data.time > self.time_limit) or self.get_done()
+            done = (self.sim.data.time > self.time_limit) or self._get_done()
             obs = self._get_obs()
         except MujocoException as e:
             print(e)
@@ -125,29 +102,73 @@ class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
 
         return obs, total_reward, done, total_reward_info
 
-    def get_done(self):
+    def _update_action(self, a):
+        '''
+        This function is called once per step.
+        '''
+        self.action = a*self.torque_scaling
+
+    def _get_torque(self):
+        '''
+        This function is called multiple times per step to simulate a
+        low-level controller.
+        '''
+        return self.action
+
+    def _get_obs(self):
+        '''
+        Return the full state as the observation
+        '''
+
+        if self.random_target:
+            return np.concatenate((self._get_state_obs(), self._get_target_obs()))
+        else:
+            return self._get_state_obs()
+
+    def _get_state_obs(self):
+        '''
+        Return the observation given by the state.
+        '''
+        if not self.initialized:
+            return np.zeros(14)
+
+        return np.concatenate([self.sim.data.qpos[:], self.sim.data.qvel[:]])
+
+    def _get_target_obs(self):
+        '''
+        Return the observation given by the goal for the episode.
+        '''
+        return self.state_des[:7]
+
+    def _get_done(self):
+        '''
+        Check the termination condition.
+        '''
         return False
-
-    def viewer_setup(self):
+        
+    def _get_reward(self, state, action):
         '''
-        Make the viewer point at the base.
+        Compute single step reward.
         '''
-        self.viewer.cam.trackbodyid = 0
+        err = self.state_des - state
+        # quadratic cost on the state error
+        reward = -err.dot(self.Q).dot(err)
+        return reward, {}
 
+    '''
+    Reset and helper methods. Only overwrite the helper methods in subclasses.
+    '''
     def reset_model(self):
         '''
-        Reset the robot state and return the observation.
+        Overwrites the MujocoEnv method to reset the robot state and return the observation.
         '''
         while(True):
             try:
-                # reset the state
-                qpos = 0.1*self.np_random.uniform(low=self.model.jnt_range[:,0], high=self.model.jnt_range[:,1], size=self.model.nq)
-                qvel = np.zeros(7)
-                self.set_state(qpos, qvel)
-
-                # reset the target
+                self._reset_state()
+                if self.random_model:
+                    self._reset_model_params()
                 if self.random_target:
-                    self.state_des[:7] = self.np_random.uniform(self.model.jnt_range[:,0], self.model.jnt_range[:,1])
+                    self._reset_target()
             except MujocoException as e:
                 print(e)
                 continue
@@ -155,21 +176,26 @@ class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
 
         return self._get_obs()
 
-    def _get_obs(self):
+    def _reset_state(self):
         '''
-        Return the full state as the observation
+        Reset the state of the model (i.e. the joint positions and velocities).
         '''
-        if not self.initialized:
-            return np.zeros(14)
+        qpos = 0.1*self.np_random.uniform(low=self.model.jnt_range[:,0], high=self.model.jnt_range[:,1], size=self.model.nq)
+        qvel = np.zeros(7)
+        self.set_state(qpos, qvel)
 
-        obs = np.concatenate(
-            [self.sim.data.qpos[:], self.sim.data.qvel[:]])
+    def _reset_target(self):
+        '''
+        Reset the goal parameters. Target pose for the base environment, but may change with subclasses.
+        '''
+        self.state_des[:7] = self.np_random.uniform(self.model.jnt_range[:,0], self.model.jnt_range[:,1])
 
-        if self.random_target:
-            obs = np.concatenate([obs, self.state_des[:7]])
-            # print(obs)
+    def _reset_model_params(self):
+        '''
+        TODO: implement this for domain randomization.
+        '''
+        raise NotImplementedError
 
-        return obs
 
 # This class is a hack to get around a bad action space initialized with the SAC policy
 class KukaEnvSAC(KukaEnv):

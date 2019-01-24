@@ -47,6 +47,22 @@
         },
         "n_env": 8
     },
+    "PegInsertionNoHole-v0:PPO2": {
+        "actor_options": {
+            "ent_coef": 0.01,
+            "gamma": 1.0,
+            "learning_rate": 0.001,
+            "n_steps": 256,
+            "verbose": 0,
+            "cliprange":0.2
+        },
+        "alg": "PPO2",
+        "env": "PegInsertionNoHole-v0",
+        "learning_options": {
+            "total_timesteps": 2000000
+        },
+        "n_env": 8
+    },
     "KukaMujocoSAC-v0:SAC": {
         "actor_options": {
             "verbose" : 1,

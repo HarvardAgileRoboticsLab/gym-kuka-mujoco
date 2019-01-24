@@ -62,7 +62,7 @@ class RemoteCenterControlledKukaEnv(kuka_env.KukaEnv):
 
         self.time_limit = 10
 
-    def update_action(self, action):
+    def _update_action(self, action):
         '''
         Set the setpoints.
         '''
@@ -89,7 +89,7 @@ class RemoteCenterControlledKukaEnv(kuka_env.KukaEnv):
         self.sim.data.set_mocap_pos('target_frame', self.pos_set)
         self.sim.data.set_mocap_quat('target_frame', self.quat_set)
 
-    def get_torque(self):
+    def _get_torque(self):
         '''
         Update the PD setpoint and compute the torque.
         '''
@@ -113,18 +113,10 @@ class RemoteCenterControlledKukaEnv(kuka_env.KukaEnv):
         id_torque = self.sim.data.qfrc_inverse[:]
         return id_torque + external_force
 
-    def reset_model(self):
+    def _reset_state(self):
         '''
         Reset the robot state and return the observation.
         '''
-        while(True):
-            try:
-                qpos = self.scale_restart*self.np_random.uniform(low=self.model.jnt_range[:,0], high=self.model.jnt_range[:,1], size=self.model.nq)
-                qvel = np.zeros(7)
-    
-                self.set_state(qpos, qvel)
-            except MujocoException as e:
-                print(e)
-                continue
-            break
-        return self._get_obs()
+        qpos = self.scale_restart*self.np_random.uniform(low=self.model.jnt_range[:,0], high=self.model.jnt_range[:,1], size=self.model.nq)
+        qvel = np.zeros(7)
+        self.set_state(qpos, qvel)
