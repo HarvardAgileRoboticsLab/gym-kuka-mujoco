@@ -8,6 +8,8 @@ class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
     random_model = False
     random_target = False
 
+    info_keywords = tuple()
+    
     def __init__(self, model_path=None):
         '''
         Constructs the file, sets the time limit and calls the constructor of
@@ -75,6 +77,7 @@ class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
 
         # Simulate the low level controller.
         dt = self.sim.model.opt.timestep
+
         try:
             total_reward = 0
             total_reward_info = dict()
@@ -94,13 +97,16 @@ class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
             # Get observation and check finished
             done = (self.sim.data.time > self.time_limit) or self._get_done()
             obs = self._get_obs()
+            info = self._get_info()
+            info.update(total_reward_info)
         except MujocoException as e:
             print(e)
             reward = 0
             obs = np.zeros_like(self.observation_space.low)
             done = True
+            info = {}
 
-        return obs, total_reward, done, total_reward_info
+        return obs, total_reward, done, info
 
     def _update_action(self, a):
         '''
@@ -140,11 +146,6 @@ class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         '''
         return self.state_des[:7]
 
-    def _get_done(self):
-        '''
-        Check the termination condition.
-        '''
-        return False
         
     def _get_reward(self, state, action):
         '''
@@ -154,6 +155,18 @@ class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         # quadratic cost on the state error
         reward = -err.dot(self.Q).dot(err)
         return reward, {}
+
+    def _get_done(self):
+        '''
+        Check the termination condition.
+        '''
+        return False
+
+    def _get_info(self):
+        '''
+        Get any additional info.
+        '''
+        return {}
 
     '''
     Reset and helper methods. Only overwrite the helper methods in subclasses.

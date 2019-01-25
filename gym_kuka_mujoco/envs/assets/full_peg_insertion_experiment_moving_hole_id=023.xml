@@ -33,7 +33,7 @@
       </body>
     </body>
     <body pos=".85 0 1.3" mocap="true">
-      <include file="hole/polyhedral_hole_inner=0-014800_outer=0-05_height=0-05_num_facets=16_id=023.xml"/>
+      <include file="hole/polyhedral_hole_inner=0-014800_outer=0-10_height=0-05_num_facets=16_id=023.xml"/>
     </body>
   </worldbody>
 

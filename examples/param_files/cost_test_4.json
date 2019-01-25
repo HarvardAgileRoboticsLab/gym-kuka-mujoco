@@ -1,6 +1,6 @@
 {
     "actor_options": {
-        "ent_coef": 0.01,
+        "ent_coef": 0.001,
         "gamma": 1.0,
         "learning_rate": 0.001,
         "n_steps": 256,

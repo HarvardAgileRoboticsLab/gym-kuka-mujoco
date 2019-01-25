@@ -151,10 +151,10 @@ if __name__ == "__main__":
     inner_sizes = np.logspace(np.log10(upper-minimum),np.log10(lower-minimum),100) + minimum
 
     for i,s in enumerate(inner_sizes):
-        hole_geoms = gen_hole(s, .05, .05, 16)
+        hole_geoms = gen_hole(s, .10, .05, 16)
         hole_site = {'name':'hole_base', 'pos':(0,0,0), 'euler':(-np.pi,0,0), 'size':(0.005, 0.005, 0.005)}
         hole_xml = assemble_mujoco_xml(hole_geoms, hole_site)
-        filename = 'polyhedral_hole_inner=0-{:06d}_outer=0-05_height=0-05_num_facets=16_id={:03d}.xml'.format(int(np.round(s*1000000)), i)
+        filename = 'polyhedral_hole_inner=0-{:06d}_outer=0-10_height=0-05_num_facets=16_id={:03d}.xml'.format(int(np.round(s*1000000)), i)
         print(filename)
         model_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'envs', 'assets', 'hole', filename)
         write_xml(model_path, hole_xml)

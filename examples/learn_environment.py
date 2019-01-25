@@ -10,6 +10,8 @@ from stable_baselines.common.vec_env import DummyVecEnv, SubprocVecEnv, VecNorma
 from stable_baselines.common.policies import MlpPolicy as AC_MlpPolicy
 from stable_baselines.sac.policies import MlpPolicy as SAC_MlpPolicy
 from stable_baselines.common import set_global_seeds
+from stable_baselines.bench import Monitor
+from stable_baselines.results_plotter import load_results
 
 from experiment_files import new_experiment_dir
 from play_model import replay_model
@@ -21,10 +23,21 @@ def PPO_callback(_locals, _globals, log_dir):
     # Get the current update step.
     n_update = _locals['update']
 
+
     # Save on the first update and every 10 updates after that.
     if (n_update == 1) or (n_update % 10 == 0):
         checkpoint_save_path = os.path.join(log_dir, 'model_checkpoint_{}.pkl'.format(n_update))
         _locals['self'].save(checkpoint_save_path)
+
+
+    # import pdb; pdb.set_trace()
+    # load_results(log_dir)
+    # if len(_locals.get('ep_infos',[])) > 0:
+    #     if 'tip_distance' in _locals['ep_infos'][0]
+    #         distances = np.array([info['tip_distance'] for i, info in _locals['ep_infos']])
+    #         final_distances = distances[_locals['masks']]
+
+
 
 def SAC_callback(_locals, _globals, log_dir):
     """
@@ -43,7 +56,7 @@ def SAC_callback(_locals, _globals, log_dir):
         _locals['self'].save(checkpoint_save_path)
 SAC_callback.n_updates = 0
 
-def make_env(env_id, rank, seed=0):
+def make_env(env_id, rank, save_path, seed=0):
     """
     Utility function for multiprocessed env.
 
@@ -55,6 +68,7 @@ def make_env(env_id, rank, seed=0):
     def _init():
         env = gym.make(env_id)
         env.seed(seed + rank)
+        env = Monitor(env, save_path, info_keywords=env.info_keywords)
         return env
     set_global_seeds(seed)
     return _init
@@ -75,13 +89,12 @@ def run_learn(params):
         json.dump(params, f, sort_keys = True, indent = 4, ensure_ascii=False)
 
     # Generate vectorized environment.
-    envs = [make_env(params['env'], i) for i in range(params['n_env'])]
+    envs = [make_env(params['env'], i, save_path) for i in range(params['n_env'])]
 
     if params.get('vectorized', True):
         env = SubprocVecEnv(envs)
     else:
         env = DummyVecEnv(envs)
-
 
     # Create the actor and learn
     if params['alg'] == 'PPO2':
