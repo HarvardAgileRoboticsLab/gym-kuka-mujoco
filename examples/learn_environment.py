@@ -98,7 +98,7 @@ def run_learn(params):
         env = SubprocVecEnv(envs)
     else:
         env = DummyVecEnv(envs)
-    env = TBVecEnvWrapper(env, save_path, info_keywords=params['info_keywords'])
+    env = TBVecEnvWrapper(env, save_path, info_keywords=params.get('info_keywords', tuple()))
 
     # Create the actor and learn
     if params['alg'] == 'PPO2':

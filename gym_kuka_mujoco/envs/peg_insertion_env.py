@@ -75,11 +75,11 @@ class PegInsertionEnv(id_controlled_kuka_env.DiffIdControlledKukaEnv):
         
         if self.quadratic_cost:
             reward_info['quadratic_position_reward'] = -pos_err.dot(Q_pos).dot(pos_err)
-            reward = reward_info['quadratic_position_reward']
+            reward += reward_info['quadratic_position_reward']
 
         if self.linear_cost:
             reward_info['linear_position_reward'] = -np.sqrt(pos_err.dot(Q_pos).dot(pos_err))
-            reward = reward_info['linear_position_reward']
+            reward += reward_info['linear_position_reward']
 
         if self.logarithmic_cost:
             rew_scale = 2
