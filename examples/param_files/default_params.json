@@ -4,7 +4,7 @@
             "ent_coef": 0.01,
             "gamma": 1.0,
             "learning_rate": 0.001,
-            "n_steps": 2048,
+            "n_steps": 512,
             "verbose": 0,
             "cliprange":0.2
         },
@@ -16,8 +16,7 @@
         "learning_options": {
             "total_timesteps": 2000000
         },
-        "n_env": 8,
-        "vectorized": true
+        "n_env": 8
     },
     "IdControlledKukaMujoco-v0:PPO2": {
         "actor_options": {

@@ -114,7 +114,7 @@ def run_learn(params):
     model.learn(callback=learn_callback, **learning_options)
 
     # Save the model
-    model_save_path = os.path.join(save_path,'model')
+    model_save_path = os.path.join(save_path, 'model')
     model.save(model_save_path)
 
     return model

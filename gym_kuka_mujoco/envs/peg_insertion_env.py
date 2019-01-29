@@ -155,8 +155,7 @@ class PegInsertionEnv(id_controlled_kuka_env.DiffIdControlledKukaEnv):
         if self.sample_good_states and self.np_random.uniform() < 0*0.5:
             qpos = self.np_random.choice(self.good_states)
         else:
-            qpos = self.good_states[-1]
-            qpos += self.np_random.uniform(-.01,.01,7)
+            qpos = self.good_states[-1] + self.np_random.uniform(-.01,.01,7)
         
         qvel = np.zeros(7)
         self.set_state(qpos, qvel)
@@ -364,8 +363,7 @@ class RemoteCenterPegInsertionEnv(remote_center_controlled_kuka_env.RemoteCenter
         '''
         Reset the robot state and return the observation.
         '''
-        qpos = self.good_states[-1]
-        qpos += self.np_random.uniform(-.1,.1,7)
+        qpos = self.good_states[-1] + self.np_random.uniform(-.1,.1,7)
         
         # qpos = np.zeros(7)
         qvel = np.zeros(7)
