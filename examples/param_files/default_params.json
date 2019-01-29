@@ -10,10 +10,14 @@
         },
         "alg": "PPO2",
         "env": "KukaMujoco-v0",
+        "info_keywords": [
+            "distance"
+        ],
         "learning_options": {
             "total_timesteps": 2000000
         },
-        "n_env": 8
+        "n_env": 8,
+        "vectorized": true
     },
     "IdControlledKukaMujoco-v0:PPO2": {
         "actor_options": {
@@ -26,6 +30,9 @@
         },
         "alg": "PPO2",
         "env": "IdControlledKukaMujoco-v0",
+        "info_keywords": [
+            "distance"
+        ],
         "learning_options": {
             "total_timesteps": 2000000
         },
@@ -42,6 +49,9 @@
         },
         "alg": "PPO2",
         "env": "DiffIdControlledKukaMujoco-v0",
+        "info_keywords": [
+            "distance"
+        ],
         "learning_options": {
             "total_timesteps": 2000000
         },

@@ -16,6 +16,9 @@ from stable_baselines.results_plotter import load_results
 from experiment_files import new_experiment_dir
 from play_model import replay_model
 
+# from gym_kuka_mujoco.wrappers import TBWrapper
+from gym_kuka_mujoco.wrappers import TBVecEnvWrapper
+
 def PPO_callback(_locals, _globals, log_dir):
     """
     Callback called at each gradient update.
@@ -95,6 +98,7 @@ def run_learn(params):
         env = SubprocVecEnv(envs)
     else:
         env = DummyVecEnv(envs)
+    env = TBVecEnvWrapper(env, save_path, info_keywords=params['info_keywords'])
 
     # Create the actor and learn
     if params['alg'] == 'PPO2':

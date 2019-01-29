@@ -8,8 +8,12 @@
     },
     "alg": "PPO2",
     "env": "KukaMujoco-v0",
+    "info_keywords": [
+        "distance"
+    ],
     "learning_options": {
         "total_timesteps": 20000
     },
-    "n_env": 8
+    "n_env": 1,
+    "vectorized": false
 }

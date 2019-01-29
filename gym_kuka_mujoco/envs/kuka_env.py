@@ -8,7 +8,7 @@ class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
     random_model = False
     random_target = False
 
-    info_keywords = tuple()
+    info_keywords = ('distance',)
     
     def __init__(self, model_path=None):
         '''
@@ -166,7 +166,14 @@ class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         '''
         Get any additional info.
         '''
-        return {}
+        q_err = self.state_des[:7] - self.sim.data.qpos
+        v_err = self.state_des[7:] - self.sim.data.qvel
+        dist = q_err.dot(q_err)
+        velocity = v_err.dot(v_err)
+        return {
+            'distance': dist,
+            'velocity': velocity
+        }
 
     '''
     Reset and helper methods. Only overwrite the helper methods in subclasses.
