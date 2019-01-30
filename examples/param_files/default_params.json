@@ -16,7 +16,8 @@
         "learning_options": {
             "total_timesteps": 2000000
         },
-        "n_env": 8
+        "n_env": 8,
+        "policy_type": "MlpPolicy"
     },
     "IdControlledKukaMujoco-v0:PPO2": {
         "actor_options": {
@@ -35,7 +36,8 @@
         "learning_options": {
             "total_timesteps": 2000000
         },
-        "n_env": 8
+        "n_env": 8,
+        "policy_type": "MlpPolicy"
     },
     "DiffIdControlledKukaMujoco-v0:PPO2": {
         "actor_options": {
@@ -54,7 +56,8 @@
         "learning_options": {
             "total_timesteps": 2000000
         },
-        "n_env": 8
+        "n_env": 8,
+        "policy_type": "MlpPolicy"
     },
     "PegInsertionNoHole-v0:PPO2": {
         "actor_options": {
@@ -73,7 +76,8 @@
         "learning_options": {
             "total_timesteps": 2000000
         },
-        "n_env": 8
+        "n_env": 8,
+        "policy_type": "MlpPolicy"
     },
     // PegInsertionHole50-v0:PPO2 learns a peg insertion task
     "PegInsertionHole50-v0:PPO2": {
@@ -94,7 +98,8 @@
         "learning_options": {
             "total_timesteps": 2000000
         },
-        "n_env": 8
+        "n_env": 8,
+        "policy_type": "MlpPolicy"
     },
     // A larger network to test dependence on network size.
     "PegInsertionHole50-v0:PPO2:128-128": {
@@ -106,10 +111,12 @@
             "verbose": 0,
             "cliprange": 0.2,
             "policy_kwargs": {
-                "net_arch": {
-                    "pi": [128, 128],
-                    "vf": [128, 128]
-                }
+                "net_arch": [
+                    {
+                        "pi": [128, 128],
+                        "vf": [128, 128]
+                    }
+                ]
             }
         },
         "alg": "PPO2",
@@ -121,7 +128,37 @@
         "learning_options": {
             "total_timesteps": 2000000
         },
-        "n_env": 8
+        "n_env": 8,
+        "policy_type": "MlpPolicy"
+    },
+    "PegInsertionHole50-v0:PPO2:128-128:LstmPolicy": {
+        "actor_options": {
+            "ent_coef": 0.01,
+            "gamma": 1.0,
+            "learning_rate": 0.001,
+            "n_steps": 256,
+            "verbose": 0,
+            "cliprange": 0.2,
+            "policy_kwargs": {
+                "net_arch": ["lstm",
+                    {
+                        "pi": [128, 128],
+                        "vf": [128, 128]
+                    }
+                ]
+            }
+        },
+        "alg": "PPO2",
+        "env": "PegInsertionHole50-v0",
+        "info_keywords": [
+            "tip_distance",
+            "success"
+        ],
+        "learning_options": {
+            "total_timesteps": 2000000
+        },
+        "n_env": 8,
+        "policy_type": "MlpLstmPolicy"
     },
     "KukaMujocoSAC-v0:SAC": {
         "actor_options": {
@@ -137,6 +174,7 @@
             "distance"
         ],
         "n_env": 1,
+        "policy_type": "MlpPolicy",
         "vectorized": false
     },
     "DiffIdControlledKukaMujoco-v0:SAC": {
@@ -151,6 +189,7 @@
         "learning_options": {
             "total_timesteps": 2000000
         },
-        "n_env": 1
+        "n_env": 1,
+        "policy_type": "MlpPolicy"
     }
 }

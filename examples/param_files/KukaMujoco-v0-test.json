@@ -15,5 +15,6 @@
         "total_timesteps": 20000
     },
     "n_env": 1,
+    "policy_type": "MlpPolicy",
     "vectorized": false
 }

@@ -89,7 +89,7 @@ def run_learn(params):
     # Save the parameters that will generate the model
     params_save_path = os.path.join(save_path,'params.json')
     with open(params_save_path, 'w') as f:
-        commentjson.dump(params, f, sort_keys = True, indent = 4, ensure_ascii=False)
+        commentjson.dump(params, f, sort_keys = True, indent = 4, ensure_ascii = False)
 
     # Generate vectorized environment.
     envs = [make_env(params['env'], i, save_path) for i in range(params['n_env'])]
@@ -98,20 +98,20 @@ def run_learn(params):
         env = SubprocVecEnv(envs)
     else:
         env = DummyVecEnv(envs)
-    env = TBVecEnvWrapper(env, save_path, info_keywords=params.get('info_keywords', tuple()))
+    env = TBVecEnvWrapper(env, save_path, info_keywords = params.get('info_keywords', tuple()))
 
     # Create the actor and learn
     if params['alg'] == 'PPO2':
-        model = PPO2(AC_MlpPolicy, env, tensorboard_log=save_path, **actor_options)
+        model = PPO2(params['policy_type'], env, tensorboard_log = save_path, **actor_options)
         learn_callback = lambda l, g: PPO_callback(l, g, save_path)
     elif params['alg'] == 'SAC':
-        model = SAC(SAC_MlpPolicy, env, tensorboard_log=save_path, **actor_options)
+        model = SAC(params['policy_type'], env, tensorboard_log = save_path, **actor_options)
         learn_callback = lambda l, g: SAC_callback(l, g, save_path)
     else:
         raise NotImplementedError
     
     print("Learning and recording to:\n{}".format(save_path))
-    model.learn(callback=learn_callback, **learning_options)
+    model.learn(callback = learn_callback, **learning_options)
 
     # Save the model
     model_save_path = os.path.join(save_path, 'model')

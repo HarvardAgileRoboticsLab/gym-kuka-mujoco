@@ -12,5 +12,6 @@
     "learning_options": {
         "total_timesteps": 2000000
     },
-    "n_env": 8
+    "n_env": 8,
+    "policy_type": "MlpPolicy"
 }

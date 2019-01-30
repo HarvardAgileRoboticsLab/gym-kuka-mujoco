@@ -132,7 +132,6 @@ class PegInsertionEnv(id_controlled_kuka_env.DiffIdControlledKukaEnv):
             pos, rot = forwardKinSite(self.sim, ['peg_tip','hole_base'])
             pos_err = pos[0] - pos[1]
 
-            obs[:7] = obs[:7]
             obs = obs / self.fine_scaling
 
         if self.use_ft_sensor:

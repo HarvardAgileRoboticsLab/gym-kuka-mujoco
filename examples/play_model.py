@@ -40,7 +40,6 @@ def replay_model(env, model, deterministic=True):
         action, _states = model.predict(obs, deterministic=deterministic)
         clipped_action = np.clip(action, env.action_space.low,
                                  env.action_space.high)
-        print(clipped_action)
         obs, reward, done, info = env.step(clipped_action, render=True)
         if done:
             env.reset()
