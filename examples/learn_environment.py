@@ -3,7 +3,7 @@ import gym
 import gym_kuka_mujoco
 import numpy as np
 import argparse
-import json
+import commentjson
 
 from stable_baselines import PPO2, SAC
 from stable_baselines.common.vec_env import DummyVecEnv, SubprocVecEnv, VecNormalize
@@ -89,7 +89,7 @@ def run_learn(params):
     # Save the parameters that will generate the model
     params_save_path = os.path.join(save_path,'params.json')
     with open(params_save_path, 'w') as f:
-        json.dump(params, f, sort_keys = True, indent = 4, ensure_ascii=False)
+        commentjson.dump(params, f, sort_keys = True, indent = 4, ensure_ascii=False)
 
     # Generate vectorized environment.
     envs = [make_env(params['env'], i, save_path) for i in range(params['n_env'])]
@@ -144,11 +144,11 @@ if __name__ == '__main__':
     if args.param_file is None:
         default_path = os.path.join('param_files', 'default_params.json')
         with open(default_path) as f:
-            params = json.load(f)[args.default_name]
+            params = commentjson.load(f)[args.default_name]
     else:
         param_file = os.path.join('param_files', args.param_file)
         with open(param_file) as f:
-            params = json.load(f)
+            params = commentjson.load(f)
     
     # Learn.
     model = run_learn(params)

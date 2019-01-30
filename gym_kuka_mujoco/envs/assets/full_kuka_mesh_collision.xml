@@ -11,7 +11,7 @@
       <geom contype="0" conaffinity="0"/>
     </default>
     <default class="collision">
-      <geom contype="1" conaffinity="1"/>
+      <geom contype="1" conaffinity="1" friction=".6 0.005 0.0001"/>
     </default>
   </default>  
   <asset>

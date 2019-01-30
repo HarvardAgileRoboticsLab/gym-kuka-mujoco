@@ -67,12 +67,16 @@
         },
         "alg": "PPO2",
         "env": "PegInsertionNoHole-v0",
+        "info_keywords": [
+            "tip_distance"
+        ],
         "learning_options": {
             "total_timesteps": 2000000
         },
         "n_env": 8
     },
-    "PegInsertionHole99-v0:PPO2": {
+    // PegInsertionHole50-v0:PPO2 learns a peg insertion task
+    "PegInsertionHole50-v0:PPO2": {
         "actor_options": {
             "ent_coef": 0.01,
             "gamma": 1.0,
@@ -82,7 +86,10 @@
             "cliprange":0.2
         },
         "alg": "PPO2",
-        "env": "PegInsertionHole99-v0",
+        "env": "PegInsertionHole50-v0",
+        "info_keywords": [
+            "tip_distance"
+        ],
         "learning_options": {
             "total_timesteps": 2000000
         },
@@ -98,6 +105,9 @@
         "learning_options": {
             "total_timesteps": 2000000
         },
+        "info_keywords": [
+            "distance"
+        ],
         "n_env": 1,
         "vectorized": false
     },
@@ -107,6 +117,9 @@
         },
         "alg": "SAC",
         "env": "DiffIdControlledKukaMujoco-v0",
+        "info_keywords": [
+            "distance"
+        ],
         "learning_options": {
             "total_timesteps": 2000000
         },
