@@ -88,7 +88,35 @@
         "alg": "PPO2",
         "env": "PegInsertionHole50-v0",
         "info_keywords": [
-            "tip_distance"
+            "tip_distance",
+            "success"
+        ],
+        "learning_options": {
+            "total_timesteps": 2000000
+        },
+        "n_env": 8
+    },
+    // A larger network to test dependence on network size.
+    "PegInsertionHole50-v0:PPO2:128-128": {
+        "actor_options": {
+            "ent_coef": 0.01,
+            "gamma": 1.0,
+            "learning_rate": 0.001,
+            "n_steps": 256,
+            "verbose": 0,
+            "cliprange": 0.2,
+            "policy_kwargs": {
+                "net_arch": {
+                    "pi": [128, 128],
+                    "vf": [128, 128]
+                }
+            }
+        },
+        "alg": "PPO2",
+        "env": "PegInsertionHole50-v0",
+        "info_keywords": [
+            "tip_distance",
+            "success"
         ],
         "learning_options": {
             "total_timesteps": 2000000

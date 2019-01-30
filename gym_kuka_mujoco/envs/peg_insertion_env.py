@@ -9,8 +9,8 @@ from gym_kuka_mujoco.utils.projection import rotate_cost_by_matrix
 from gym_kuka_mujoco.utils.quaternion import mat2Quat, subQuat
 
 class PegInsertionEnv(id_controlled_kuka_env.DiffIdControlledKukaEnv):
-    sample_good_states = True
-    use_ft_sensor = False
+    sample_good_states = False
+    use_ft_sensor = True
     use_rel_pos_err = False
     # Cost parameters
     regularize_pose = True
@@ -38,10 +38,7 @@ class PegInsertionEnv(id_controlled_kuka_env.DiffIdControlledKukaEnv):
         # self.Q_vel = np.diag([1,1,.1])
         # self.eps = 1e-2
 
-
-
-        if self.sample_good_states:
-            self.good_states = hole_insertion_samples(self.sim, range=[0.,0.06])
+        self.good_states = hole_insertion_samples(self.sim, range=[0.,0.06])
 
     def _get_reward(self, state, action):
         '''
@@ -107,6 +104,7 @@ class PegInsertionEnv(id_controlled_kuka_env.DiffIdControlledKukaEnv):
         pos_err = pos[0] - pos[1]
         dist = np.sqrt(pos_err.dot(pos_err))
         info['tip_distance'] = dist
+        info['success'] = float(dist < 1e-2)
         return info
 
     def _update_action(self, action):
@@ -152,7 +150,7 @@ class PegInsertionEnv(id_controlled_kuka_env.DiffIdControlledKukaEnv):
         '''
         Reset the robot state and return the observation.
         '''
-        if self.sample_good_states and self.np_random.uniform() < 0*0.5:
+        if self.sample_good_states and self.np_random.uniform() < 0.5:
             qpos = self.np_random.choice(self.good_states)
         else:
             qpos = self.good_states[-1] + self.np_random.uniform(-.01,.01,7)
