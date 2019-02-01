@@ -135,6 +135,9 @@ if __name__ == '__main__':
                         choices=['error','ignore','always','default','module','once'],
                         default='default',
                         help='the treatment of warnings')
+    parser.add_argument('--debug',
+                        action='store_true',
+                        help='enables useful debug settings')
     args = parser.parse_args()
 
     # Change the warning behavior for debugging.
@@ -150,6 +153,10 @@ if __name__ == '__main__':
         with open(param_file) as f:
             params = commentjson.load(f)
     
+    # Override some arguments in debug mode
+    if args.debug:
+        params['vectorized'] = False
+
     # Learn.
     model = run_learn(params)
     

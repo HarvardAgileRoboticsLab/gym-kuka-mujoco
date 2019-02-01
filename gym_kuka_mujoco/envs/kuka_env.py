@@ -4,20 +4,28 @@ from gym import utils, spaces
 from gym.envs.mujoco import mujoco_env
 from mujoco_py.builder import MujocoException
 
+from gym_kuka_mujoco.controllers import DirectTorqueController, InverseDynamicsController, ImpedanceController
+
 class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
     random_model = False
     random_target = False
 
     info_keywords = ('distance',)
     
-    def __init__(self, model_path=None):
+    def __init__(self, model_path='full_kuka_no_collision_no_gravity.xml', controller='ImpedanceController', **kwargs):
         '''
         Constructs the file, sets the time limit and calls the constructor of
         the super class.
         '''
+        ############
+        # Kuka and Inverse Dynamics options
+        'full_kuka_no_collision_no_gravity.xml'
+        # Impedance Control options
+        model_path = 'full_peg_insertion_experiment_no_collision.xml'
+        ############
+
         utils.EzPickle.__init__(self)
-        if model_path is None:
-            model_path = 'full_kuka_no_collision_no_gravity.xml'
+
         full_path = os.path.join(
             os.path.dirname(os.path.realpath(__file__)), 'assets', model_path)
         
@@ -32,14 +40,35 @@ class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         mujoco_env.MujocoEnv.__init__(self, full_path, 20)
         self.initialized = True
 
-        self.torque_scaling = self.subtree_mass()
-        self.torque_scaling /= np.max(self.torque_scaling)
-        self.torque_scaling*=10.
-        # self.torque_scaling*=2.
-        # self.torque_scaling*=.1
-        low = self.action_space.low/self.torque_scaling
-        high = self.action_space.high/self.torque_scaling
+        torque_scaling = self.subtree_mass()
+        torque_scaling /= np.max(torque_scaling)
+        torque_scaling*=10.
+
+        low = self.action_space.low/torque_scaling
+        high = self.action_space.high/torque_scaling
         self.action_space = spaces.Box(low, high, dtype=self.action_space.low.dtype)
+
+        if controller=='DirectTorqueController':
+            torque_scaling = self.subtree_mass()
+            torque_scaling *= 10./np.max(torque_scaling)
+
+            low = self.action_space.low/torque_scaling
+            high = self.action_space.high/torque_scaling
+            self.action_space = spaces.Box(low, high, dtype=self.action_space.low.dtype)
+            self.controller = DirectTorqueController(self.action_space, torque_scaling)
+        elif controller=='InverseDynamicsController':
+            self.frame_skip = 50
+            controller_model_path = kwargs.get('controller_model_path', model_path)
+            self.controller = InverseDynamicsController(model_path=controller_model_path)
+        elif controller=='ImpedanceController':
+            self.frame_skip = 50
+            self.time_limit = 10
+            controller_model_path = kwargs.get('controller_model_path', model_path)
+            self.controller = ImpedanceController(model_path=controller_model_path)
+        else:
+            raise NotImplementedError
+
+        self.action_space = self.controller.action_space
 
     def subtree_mass(self):
         '''
@@ -112,14 +141,14 @@ class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         '''
         This function is called once per step.
         '''
-        self.action = a*self.torque_scaling
+        self.controller.set_action(a, self.sim)
 
     def _get_torque(self):
         '''
         This function is called multiple times per step to simulate a
         low-level controller.
         '''
-        return self.action
+        return self.controller.get_torque(self.sim)
 
     def _get_obs(self):
         '''
@@ -168,8 +197,8 @@ class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         '''
         q_err = self.state_des[:7] - self.sim.data.qpos
         v_err = self.state_des[7:] - self.sim.data.qvel
-        dist = q_err.dot(q_err)
-        velocity = v_err.dot(v_err)
+        dist = np.sqrt(q_err.dot(q_err))
+        velocity = np.sqrt(v_err.dot(v_err))
         return {
             'distance': dist,
             'velocity': velocity

@@ -72,7 +72,7 @@ class RemoteCenterControlledKukaEnv(kuka_env.KukaEnv):
             self.quat_set = identity_quat.copy()
             return
 
-        action *= self.action_scaling
+        action = action * self.action_scaling
 
         dx = action[0:3].astype(np.float64)
         dr = action[3:6].astype(np.float64)
@@ -104,8 +104,7 @@ class RemoteCenterControlledKukaEnv(kuka_env.KukaEnv):
         J = np.vstack((jpos, jrot))
 
         external_force = J.T.dot(self.kp*dframe) # virtual force on the end effector
-        acc_des = np.zeros(7)
-        acc_des -= self.kv*self.sim.data.qvel # virtual damping on the joints
+        acc_des = -self.kv*self.sim.data.qvel # virtual damping on the joints
 
         # Compute torques using inverse dynamics
         self.sim.data.qacc[:] = acc_des

@@ -254,12 +254,12 @@ def vis_random_policy_SAC(env_id):
 
 if __name__ == "__main__":
     PPO_envs = [
-        'KukaMujoco-v0',
-        'IdControlledKukaMujoco-v0',
-        'DiffIdControlledKukaMujoco-v0',
-        'PegInsertion-v0',
-        'PegInsertionNoHole-v0',
-        # 'RemoteCenterControlledKukaMujoco-v0',
+        # 'KukaMujoco-v0',
+        # 'IdControlledKukaMujoco-v0',
+        # 'DiffIdControlledKukaMujoco-v0',
+        # 'PegInsertion-v0',
+        # 'PegInsertionNoHole-v0',
+        'RemoteCenterControlledKukaMujoco-v0',
         # 'RemoteCenterPegInsertion-v0'
     ]
 
