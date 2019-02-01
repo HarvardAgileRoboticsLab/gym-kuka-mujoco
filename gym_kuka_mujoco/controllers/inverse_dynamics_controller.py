@@ -12,10 +12,11 @@ class InverseDynamicsController(BaseController):
     '''
 
     def __init__(self,
+                 env,
                  model_path='full_kuka_no_collision_no_gravity',
                  kp_id=100.,
                  kd_id=None):
-        super(InverseDynamicsController, self).__init__()
+        super(InverseDynamicsController, self).__init__(env)
         
         # Create a model for control
         model_path = os.path.join(
@@ -36,24 +37,29 @@ class InverseDynamicsController(BaseController):
         self.qvel_set = np.zeros(7)
 
 
-    def set_action(self, action, sim):
+    def set_action(self, action):
         '''
         Set the setpoint.
         '''
         self.qpos_set = action[:7]
 
-    def get_torque(self, sim):
+    def get_torque(self):
         '''
         Update the PD setpoint and compute the torque.
         '''
         # Compute position and velocity errors
-        qpos_err = self.qpos_set - sim.data.qpos
-        qvel_err = self.qvel_set - sim.data.qvel
+        qpos_err = self.qpos_set - self.env.sim.data.qpos
+        qvel_err = self.qvel_set - self.env.sim.data.qvel
 
         # Compute desired acceleration using inner loop PD law
-        sim.data.qacc[:] = self.kp_id * qpos_err + self.kd_id * qvel_err
-        mujoco_py.functions.mj_inverse(self.model, sim.data)
-        id_torque = sim.data.qfrc_inverse[:]
+        self.env.sim.data.qacc[:] = self.kp_id * qpos_err + self.kd_id * qvel_err
+        mujoco_py.functions.mj_inverse(self.model, self.env.sim.data)
+        id_torque = self.env.sim.data.qfrc_inverse[:]
 
         # Sum the torques
         return id_torque
+
+class RelativeInverseDynamicsController(InverseDynamicsController):
+    def set_action(self, action):
+        # Set the setpoint difference from the current position.
+        self.qpos_set = self.env.sim.data.qpos + action[:7]

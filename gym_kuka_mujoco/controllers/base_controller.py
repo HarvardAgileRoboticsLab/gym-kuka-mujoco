@@ -4,18 +4,19 @@ class BaseController(abc.ABC):
     '''
     An abstract base class for low level controllers.
     '''
-    def __init__(self):
+    def __init__(self, env):
+        self.env = env
         self.action_space = None
 
     @abc.abstractmethod
-    def set_action(self, action, sim):
+    def set_action(self, action):
         '''
         Stores an action that will later affect the torques.
         '''
         pass
 
     @abc.abstractmethod
-    def get_torque(self, sim):
+    def get_torque(self):
         '''
         Computes the raw motor torques/
         '''

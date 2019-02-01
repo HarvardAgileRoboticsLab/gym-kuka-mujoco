@@ -1,3 +1,3 @@
-from .direct_torque_controller import DirectTorqueController
-from .inverse_dynamics_controller import InverseDynamicsController
+from .direct_torque_controller import DirectTorqueController, SACTorqueController
+from .inverse_dynamics_controller import (InverseDynamicsController, RelativeInverseDynamicsController)
 from .impedance_controller import ImpedanceController

@@ -14,11 +14,12 @@ class ImpedanceController(BaseController):
     '''
 
     def __init__(self,
+                 env,
                  pos_scale=0.1,
                  rot_scale=0.5,
                  model_path='full_kuka_no_collision_no_gravity.xml'):
-        super(ImpedanceController, self).__init__()
-        
+        super(ImpedanceController, self).__init__(env)
+
         # Create a model for control
         model_path = os.path.join(
             os.path.dirname(os.path.realpath(__file__)), '..','envs', 'assets', model_path)
@@ -46,7 +47,7 @@ class ImpedanceController(BaseController):
         self.stiffness = np.array([1., 1., 1., .1, .1, .1])
         self.damping = 0.
 
-    def set_action(self, action, sim):
+    def set_action(self, action):
         '''
         Set the setpoint.
         '''
@@ -55,32 +56,32 @@ class ImpedanceController(BaseController):
         dx = action[0:3].astype(np.float64)
         dr = action[3:6].astype(np.float64)
 
-        pos, mat = forwardKinSite(sim, 'peg_tip')
+        pos, mat = forwardKinSite(self.env.sim, 'peg_tip')
         quat = mat2Quat(mat)
 
         self.pos_set = pos + dx
         self.quat_set = quatIntegrate(quat, dr)
 
-    def get_torque(self, sim):
+    def get_torque(self):
         '''
         Update the impedance control setpoint and compute the torque.
         '''
         # Compute the pose difference.
-        pos, mat = forwardKinSite(sim, 'peg_tip')
+        pos, mat = forwardKinSite(self.env.sim, 'peg_tip')
         quat = mat2Quat(mat)
         dx = self.pos_set - pos
         dr = subQuat(self.quat_set, quat)
         dframe = np.concatenate((dx,dr))
 
         # Compute generalized forces from a virtual external force.
-        jpos, jrot = forwardKinJacobianSite(sim, 'peg_tip')
+        jpos, jrot = forwardKinJacobianSite(self.env.sim, 'peg_tip')
         J = np.vstack((jpos, jrot))
         external_force = J.T.dot(self.stiffness*dframe) # virtual force on the end effector
 
         # Cancel other dynamics and add virtual damping using inverse dynamics.
-        acc_des = -self.damping*sim.data.qvel
-        sim.data.qacc[:] = acc_des
-        mujoco_py.functions.mj_inverse(self.model, sim.data)
-        id_torque = sim.data.qfrc_inverse[:]
+        acc_des = -self.damping*self.env.sim.data.qvel
+        self.env.sim.data.qacc[:] = acc_des
+        mujoco_py.functions.mj_inverse(self.model, self.env.sim.data)
+        id_torque = self.env.sim.data.qfrc_inverse[:]
         
         return id_torque + external_force

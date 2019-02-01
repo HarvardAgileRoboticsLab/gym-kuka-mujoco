@@ -18,6 +18,7 @@ from play_model import replay_model
 
 # from gym_kuka_mujoco.wrappers import TBWrapper
 from gym_kuka_mujoco.wrappers import TBVecEnvWrapper
+from gym_kuka_mujoco.envs import *
 
 def PPO_callback(_locals, _globals, log_dir):
     """
@@ -31,16 +32,6 @@ def PPO_callback(_locals, _globals, log_dir):
     if (n_update == 1) or (n_update % 10 == 0):
         checkpoint_save_path = os.path.join(log_dir, 'model_checkpoint_{}.pkl'.format(n_update))
         _locals['self'].save(checkpoint_save_path)
-
-
-    # import pdb; pdb.set_trace()
-    # load_results(log_dir)
-    # if len(_locals.get('ep_infos',[])) > 0:
-    #     if 'tip_distance' in _locals['ep_infos'][0]
-    #         distances = np.array([info['tip_distance'] for i, info in _locals['ep_infos']])
-    #         final_distances = distances[_locals['masks']]
-
-
 
 def SAC_callback(_locals, _globals, log_dir):
     """
@@ -59,9 +50,9 @@ def SAC_callback(_locals, _globals, log_dir):
         _locals['self'].save(checkpoint_save_path)
 SAC_callback.n_updates = 0
 
-def make_env(env_id, rank, save_path, seed=0):
+def make_env(env_cls, rank, save_path, seed=0, **env_options):
     """
-    Utility function for multiprocessed env.
+    Utility function for vectorized env.
 
     :param env_id: (str) the environment ID
     :param num_env: (int) the number of environments you wish to have in subprocesses
@@ -69,9 +60,10 @@ def make_env(env_id, rank, save_path, seed=0):
     :param rank: (int) index of the subprocess
     """
     def _init():
-        env = gym.make(env_id)
+        env = env_cls(**env_options)
         env.seed(seed + rank)
-        env = Monitor(env, save_path, info_keywords=env.info_keywords)
+        # TODO: add options for monitor_keywords
+        # env = Monitor(env, save_path, info_keywords=(,))
         return env
     set_global_seeds(seed)
     return _init
@@ -79,6 +71,8 @@ def make_env(env_id, rank, save_path, seed=0):
 def run_learn(params):
     '''
     Runs the learning experiment defined by the params dictionary.
+
+    :param params: (dict) the parameters for the learning experiment
     '''
     # Unpack options
     learning_options = params['learning_options']
@@ -92,7 +86,9 @@ def run_learn(params):
         commentjson.dump(params, f, sort_keys = True, indent = 4, ensure_ascii = False)
 
     # Generate vectorized environment.
-    envs = [make_env(params['env'], i, save_path) for i in range(params['n_env'])]
+    env_cls = globals()[params['env']]
+    envs = [make_env(env_cls, i, save_path, **params['env_options']) for i in range(params['n_env'])]
+    # envs = [make_env(params['env'], i, save_path) for i in range(params['n_env'])]
 
     if params.get('vectorized', True):
         env = SubprocVecEnv(envs)
@@ -144,12 +140,13 @@ if __name__ == '__main__':
     warnings.simplefilter(args.filter_warning, RuntimeWarning)
 
     # Load the learning parameters from a file.
+    param_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'param_files')
     if args.param_file is None:
-        default_path = os.path.join('param_files', 'default_params.json')
+        default_path = os.path.join(param_dir, 'default_params.json')
         with open(default_path) as f:
             params = commentjson.load(f)[args.default_name]
     else:
-        param_file = os.path.join('param_files', args.param_file)
+        param_file = os.path.join(param_dir, args.param_file)
         with open(param_file) as f:
             params = commentjson.load(f)
     
@@ -160,6 +157,7 @@ if __name__ == '__main__':
     # Learn.
     model = run_learn(params)
     
-    # Visualize. 
-    env = gym.make(params['env'])
+    # Visualize.
+    env_cls = globals()[params['env']]
+    env = env_cls(**params['env_options'])
     replay_model(env, model)

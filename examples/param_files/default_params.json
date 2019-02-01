@@ -9,7 +9,15 @@
             "cliprange":0.2
         },
         "alg": "PPO2",
-        "env": "KukaMujoco-v0",
+        "env": "KukaEnv",
+        "env_options": {
+            "controller": "DirectTorqueController",
+            "controller_options": {
+                "action_scaling": 10.0
+            },
+            "frame_skip": 20,
+            "time_limit": 3.0
+        },
         "info_keywords": [
             "distance"
         ],
@@ -29,27 +37,15 @@
             "cliprange":0.2
         },
         "alg": "PPO2",
-        "env": "IdControlledKukaMujoco-v0",
-        "info_keywords": [
-            "distance"
-        ],
-        "learning_options": {
-            "total_timesteps": 2000000
+        "env": "KukaEnv",
+        "env_options": {
+            "controller": "InverseDynamicsController",
+            "controller_options": {
+                "model_path": "full_kuka_no_collision_no_gravity.xml"
+            },
+            "frame_skip": 50,
+            "time_limit": 3.0
         },
-        "n_env": 8,
-        "policy_type": "MlpPolicy"
-    },
-    "IdControlledKukaMujoco-v0:PPO2:new": {
-        "actor_options": {
-            "ent_coef": 0.01,
-            "gamma": 1.0,
-            "learning_rate": 0.001,
-            "n_steps": 2048,
-            "verbose": 0,
-            "cliprange":0.2
-        },
-        "alg": "PPO2",
-        "env": "KukaMujoco-v0",
         "info_keywords": [
             "distance"
         ],
@@ -69,7 +65,44 @@
             "cliprange":0.2
         },
         "alg": "PPO2",
-        "env": "DiffIdControlledKukaMujoco-v0",
+        "env": "KukaEnv",
+        "env_options": {
+            "controller": "RelativeInverseDynamicsController",
+            "controller_options": {
+                "model_path": "full_kuka_no_collision_no_gravity.xml"
+            },
+            "frame_skip": 50,
+            "time_limit": 3.0
+        },
+        "info_keywords": [
+            "distance"
+        ],
+        "learning_options": {
+            "total_timesteps": 2000000
+        },
+        "n_env": 8,
+        "policy_type": "MlpPolicy"
+    },
+    "RemoteCenterControlledKukaMujoco-v0:PPO2": {
+        "actor_options": {
+            "ent_coef": 0.01,
+            "gamma": 1.0,
+            "learning_rate": 0.001,
+            "n_steps": 256,
+            "verbose": 0,
+            "cliprange":0.2
+        },
+        "alg": "PPO2",
+        "env": "KukaEnv",
+        "env_options": {
+            "model_path": "full_peg_insertion_experiment_no_hole.xml",
+            "controller": "ImpedanceController",
+            "controller_options": {
+                "model_path": "full_peg_insertion_experiment_no_collision.xml"
+            },
+            "frame_skip":50,
+            "time_limit": 10.0
+        },
         "info_keywords": [
             "distance"
         ],
@@ -89,7 +122,16 @@
             "cliprange":0.2
         },
         "alg": "PPO2",
-        "env": "PegInsertionNoHole-v0",
+        "env": "PegInsertionEnv",
+        "env_options": {
+            "controller": "RelativeInverseDynamicsController",
+            "controller_options": {
+                "model_path": "full_peg_insertion_experiment_no_collision.xml"
+            },
+            "frame_skip": 50,
+            "time_limit": 2.0,
+            "hole_id": -1
+        },
         "info_keywords": [
             "tip_distance"
         ],
@@ -99,7 +141,6 @@
         "n_env": 8,
         "policy_type": "MlpPolicy"
     },
-    // PegInsertionHole50-v0:PPO2 learns a peg insertion task
     "PegInsertionHole50-v0:PPO2": {
         "actor_options": {
             "ent_coef": 0.01,
@@ -110,7 +151,16 @@
             "cliprange":0.2
         },
         "alg": "PPO2",
-        "env": "PegInsertionHole50-v0",
+        "env": "PegInsertionEnv",
+        "env_options": {
+            "controller": "RelativeInverseDynamicsController",
+            "controller_options": {
+                "model_path": "full_peg_insertion_experiment_no_collision.xml"
+            },
+            "frame_skip": 50,
+            "time_limit": 2.0,
+            "hole_id": 50
+        },
         "info_keywords": [
             "tip_distance",
             "success"
@@ -121,7 +171,39 @@
         "n_env": 8,
         "policy_type": "MlpPolicy"
     },
-    // A larger network to test dependence on network size.
+    "PegInsertionHole50-v0:PPO2:log": {
+        "actor_options": {
+            "ent_coef": 0.01,
+            "gamma": 1.0,
+            "learning_rate": 0.001,
+            "n_steps": 256,
+            "verbose": 0,
+            "cliprange":0.2
+        },
+        "alg": "PPO2",
+        "env": "PegInsertionEnv",
+        "env_options": {
+            "controller": "RelativeInverseDynamicsController",
+            "controller_options": {
+                "model_path": "full_peg_insertion_experiment_no_collision.xml"
+            },
+            "logarithmic_cost": true,
+            "quadratic_cost": true,
+            "regularized_cost": false,
+            "frame_skip": 50,
+            "time_limit": 2.0,
+            "hole_id": 50
+        },
+        "info_keywords": [
+            "tip_distance",
+            "success"
+        ],
+        "learning_options": {
+            "total_timesteps": 2000000
+        },
+        "n_env": 8,
+        "policy_type": "MlpPolicy"
+    },
     "PegInsertionHole50-v0:PPO2:128-128": {
         "actor_options": {
             "ent_coef": 0.01,
@@ -129,7 +211,7 @@
             "learning_rate": 0.001,
             "n_steps": 256,
             "verbose": 0,
-            "cliprange": 0.2,
+            "cliprange":0.2,
             "policy_kwargs": {
                 "net_arch": [
                     {
@@ -140,7 +222,16 @@
             }
         },
         "alg": "PPO2",
-        "env": "PegInsertionHole50-v0",
+        "env": "PegInsertionEnv",
+        "env_options": {
+            "controller": "RelativeInverseDynamicsController",
+            "controller_options": {
+                "model_path": "full_peg_insertion_experiment_no_collision.xml"
+            },
+            "frame_skip": 50,
+            "time_limit": 2.0,
+            "hole_id": -1
+        },
         "info_keywords": [
             "tip_distance",
             "success"
@@ -151,76 +242,78 @@
         "n_env": 8,
         "policy_type": "MlpPolicy"
     },
-    "RemoteCenterControlledKukaMujoco-v0:PPO2": {
+    /////////////////////
+    // SAC Environments
+    /////////////////////
+    "KukaMujoco-v0:SAC": {
         "actor_options": {
-            "ent_coef": 0.01,
-            "gamma": 1.0,
-            "learning_rate": 0.001,
-            "n_steps": 256,
-            "verbose": 0,
-            "cliprange":0.2
-        },
-        "alg": "PPO2",
-        "env": "RemoteCenterControlledKukaMujoco-v0",
-        "info_keywords": [
-            "distance"
-        ],
-        "learning_options": {
-            "total_timesteps": 2000000
-        },
-        "n_env": 8,
-        "policy_type": "MlpPolicy"
-    },
-    "RemoteCenterControlledKukaMujoco-v0:PPO2:new": {
-        "actor_options": {
-            "ent_coef": 0.01,
-            "gamma": 1.0,
-            "learning_rate": 0.001,
-            "n_steps": 256,
-            "verbose": 0,
-            "cliprange":0.2
-        },
-        "alg": "PPO2",
-        "env": "KukaMujoco-v0",
-        "info_keywords": [
-            "distance"
-        ],
-        "learning_options": {
-            "total_timesteps": 2000000
-        },
-        "n_env": 8,
-        "policy_type": "MlpPolicy"
-    },
-    "KukaMujocoSAC-v0:SAC": {
-        "actor_options": {
-            "verbose" : 1,
+            "verbose" : 0,
             "learning_starts" : 1000
         },
         "alg": "SAC",
-        "env": "KukaMujocoSAC-v0",
-        "learning_options": {
-            "total_timesteps": 2000000
+        "env": "KukaEnv",
+        "env_options": {
+            "controller": "SACTorqueController",
+            "controller_options": {
+                "action_scaling": 10.0,
+                "limit_scale": 30.0
+            },
+            "frame_skip": 20,
+            "time_limit": 3.0
         },
         "info_keywords": [
             "distance"
         ],
+        "learning_options": {
+            "total_timesteps": 2000000
+        },
+        "n_env": 1,
+        "policy_type": "MlpPolicy",
+        "vectorized": false
+    },
+    // "DiffIdControlledKukaMujoco-v0:SAC": {
+    //     "actor_options": {
+    //         "learning_starts" : 1000
+    //     },
+    //     "alg": "SAC",
+    //     "env": "DiffIdControlledKukaMujoco-v0",
+    //     "info_keywords": [
+    //         "distance"
+    //     ],
+    //     "learning_options": {
+    //         "total_timesteps": 2000000
+    //     },
+    //     "n_env": 1,
+    //     "policy_type": "MlpPolicy"
+    // },
+    "PegInsertion-v0:SAC": {
+        "actor_options": {
+            "learning_starts": 1000,
+            "verbose": 0
+        },
+        "alg": "SAC",
+        "env": "PegInsertionEnv",
+        "env_options": {
+            "logarithmic_cost": true,
+            "quadratic_cost": true,
+            "regularized_cost": false,
+            "controller" : "RelativeInverseDynamicsController",
+            "controller_options" : {
+                "model_path": "full_peg_insertion_experiment_no_collision.xml"
+            },
+            "frame_skip": 50,
+            "time_limit": 2.0,
+            "hole_id": 50
+        },
+        "info_keywords": [
+            "tip_distance",
+            "success"
+        ],
+        "learning_options": {
+            "total_timesteps": 2000000
+        },
         "n_env": 1,
         "policy_type": "MlpPolicy",
         "vectorized": false
-    },
-    "DiffIdControlledKukaMujoco-v0:SAC": {
-        "actor_options": {
-            "learning_starts" : 1000
-        },
-        "alg": "SAC",
-        "env": "DiffIdControlledKukaMujoco-v0",
-        "info_keywords": [
-            "distance"
-        ],
-        "learning_options": {
-            "total_timesteps": 2000000
-        },
-        "n_env": 1,
-        "policy_type": "MlpPolicy"
     }
 }

@@ -4,7 +4,7 @@ from gym import utils, spaces
 from gym.envs.mujoco import mujoco_env
 from mujoco_py.builder import MujocoException
 
-from gym_kuka_mujoco.controllers import DirectTorqueController, InverseDynamicsController, ImpedanceController
+from gym_kuka_mujoco.controllers import DirectTorqueController, SACTorqueController, InverseDynamicsController, RelativeInverseDynamicsController, ImpedanceController
 
 class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
     random_model = False
@@ -12,24 +12,24 @@ class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
 
     info_keywords = ('distance',)
     
-    def __init__(self, model_path='full_kuka_no_collision_no_gravity.xml', controller='ImpedanceController', **kwargs):
+    def __init__(self,
+                 controller,
+                 controller_options,
+                 model_path='full_kuka_no_collision_no_gravity.xml',
+                 frame_skip=20,
+                 time_limit=3.,
+                 **kwargs):
         '''
         Constructs the file, sets the time limit and calls the constructor of
         the super class.
         '''
-        ############
-        # Kuka and Inverse Dynamics options
-        'full_kuka_no_collision_no_gravity.xml'
-        # Impedance Control options
-        model_path = 'full_peg_insertion_experiment_no_collision.xml'
-        ############
 
         utils.EzPickle.__init__(self)
 
         full_path = os.path.join(
             os.path.dirname(os.path.realpath(__file__)), 'assets', model_path)
         
-        self.time_limit = 3
+        self.time_limit = time_limit
 
         # Parameters for the cost function
         self.state_des = np.zeros(14)
@@ -37,37 +37,26 @@ class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
 
         # Call the super class
         self.initialized = False
-        mujoco_env.MujocoEnv.__init__(self, full_path, 20)
+        mujoco_env.MujocoEnv.__init__(self, full_path, frame_skip)
         self.initialized = True
 
-        torque_scaling = self.subtree_mass()
-        torque_scaling /= np.max(torque_scaling)
-        torque_scaling*=10.
-
-        low = self.action_space.low/torque_scaling
-        high = self.action_space.high/torque_scaling
-        self.action_space = spaces.Box(low, high, dtype=self.action_space.low.dtype)
-
+        # Create the desired controller.
+        # TODO: grab this from a "controller registry".
+        # TODO: add controller_options and pass to the controller, for e.g. fixed stiffness/damping or learned stiffness/damping
         if controller=='DirectTorqueController':
-            torque_scaling = self.subtree_mass()
-            torque_scaling *= 10./np.max(torque_scaling)
-
-            low = self.action_space.low/torque_scaling
-            high = self.action_space.high/torque_scaling
-            self.action_space = spaces.Box(low, high, dtype=self.action_space.low.dtype)
-            self.controller = DirectTorqueController(self.action_space, torque_scaling)
+            self.controller = DirectTorqueController(env=self,  **controller_options)
+        elif controller=='SACTorqueController':
+            self.controller = SACTorqueController(env=self,  **controller_options)
         elif controller=='InverseDynamicsController':
-            self.frame_skip = 50
-            controller_model_path = kwargs.get('controller_model_path', model_path)
-            self.controller = InverseDynamicsController(model_path=controller_model_path)
+            self.controller = InverseDynamicsController(env=self, **controller_options)
+        elif controller=='RelativeInverseDynamicsController':
+            self.controller = RelativeInverseDynamicsController(env=self, **controller_options)
         elif controller=='ImpedanceController':
-            self.frame_skip = 50
-            self.time_limit = 10
-            controller_model_path = kwargs.get('controller_model_path', model_path)
-            self.controller = ImpedanceController(model_path=controller_model_path)
+            self.controller = ImpedanceController(env=self, **controller_options)
         else:
             raise NotImplementedError
 
+        # Take the action space from the controller.
         self.action_space = self.controller.action_space
 
     def subtree_mass(self):
@@ -141,14 +130,14 @@ class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         '''
         This function is called once per step.
         '''
-        self.controller.set_action(a, self.sim)
+        self.controller.set_action(a)
 
     def _get_torque(self):
         '''
         This function is called multiple times per step to simulate a
         low-level controller.
         '''
-        return self.controller.get_torque(self.sim)
+        return self.controller.get_torque()
 
     def _get_obs(self):
         '''
@@ -244,10 +233,3 @@ class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         TODO: implement this for domain randomization.
         '''
         raise NotImplementedError
-
-
-# This class is a hack to get around a bad action space initialized with the SAC policy
-class KukaEnvSAC(KukaEnv):
-    def __init__(self, *args, **kwargs):
-        super(KukaEnvSAC, self).__init__(*args, **kwargs)
-        self.action_space = spaces.Box(-10*np.ones(7), 10*np.ones(7))

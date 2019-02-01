@@ -6,8 +6,7 @@ import numpy as np
 from stable_baselines import PPO2, SAC
 from stable_baselines.common.vec_env import DummyVecEnv
 
-import gym
-import gym_kuka_mujoco
+from gym_kuka_mujoco.envs import *
 
 from experiment_files import (get_experiment_dirs, get_model,
                               get_latest_checkpoint, get_params)
@@ -20,7 +19,8 @@ def load_params(params_path):
 
 
 def load_model(model_path, params):
-    orig_env = gym.make(params['env'])
+    env_cls = globals()[params['env']]
+    orig_env = env_cls(**params['env_options'])
     env = DummyVecEnv([lambda: orig_env])
 
     if params['alg'] == 'PPO2':
@@ -42,7 +42,7 @@ def replay_model(env, model, deterministic=True):
                                  env.action_space.high)
         obs, reward, done, info = env.step(clipped_action, render=True)
         if done:
-            env.reset()
+            obs = env.reset()
 
 
 if __name__ == '__main__':
