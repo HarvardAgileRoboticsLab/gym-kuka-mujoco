@@ -20,7 +20,8 @@ class ImpedanceController(BaseController):
                  sim,
                  pos_scale=0.1,
                  rot_scale=0.5,
-                 model_path='full_kuka_no_collision_no_gravity.xml'):
+                 model_path='full_kuka_no_collision_no_gravity.xml',
+                 site_name='peg_tip'):
         super(ImpedanceController, self).__init__(sim)
 
         # Create a model for control
@@ -43,6 +44,7 @@ class ImpedanceController(BaseController):
         self.scale[:3] *= pos_scale
         self.scale[3:6] *= rot_scale
 
+        self.site_name = site_name
         self.pos_set = np.zeros(3)
         self.quat_set = identity_quat.copy()
 
@@ -58,7 +60,7 @@ class ImpedanceController(BaseController):
         dx = action[0:3].astype(np.float64)
         dr = action[3:6].astype(np.float64)
 
-        pos, mat = forwardKinSite(self.sim, 'peg_tip')
+        pos, mat = forwardKinSite(self.sim, self.site_name)
         quat = mat2Quat(mat)
 
         self.pos_set = pos + dx
@@ -69,14 +71,14 @@ class ImpedanceController(BaseController):
         Update the impedance control setpoint and compute the torque.
         '''
         # Compute the pose difference.
-        pos, mat = forwardKinSite(self.sim, 'peg_tip')
+        pos, mat = forwardKinSite(self.sim, self.site_name)
         quat = mat2Quat(mat)
         dx = self.pos_set - pos
         dr = subQuat(self.quat_set, quat)
         dframe = np.concatenate((dx,dr))
 
         # Compute generalized forces from a virtual external force.
-        jpos, jrot = forwardKinJacobianSite(self.sim, 'peg_tip')
+        jpos, jrot = forwardKinJacobianSite(self.sim, self.site_name)
         J = np.vstack((jpos, jrot))
         external_force = J.T.dot(self.stiffness*dframe) # virtual force on the end effector
 
