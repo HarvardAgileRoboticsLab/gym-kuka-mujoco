@@ -39,7 +39,6 @@ class PegInsertionEnv(kuka_env.KukaEnv):
             kwargs['model_path'] = kwargs.get('model_path', 'full_peg_insertion_experiment_moving_hole_id={:03d}.xml'.format(hole_id))
         else:
             kwargs['model_path'] = kwargs.get('model_path', 'full_peg_insertion_experiment_no_hole.xml')       
-        kwargs['controller_model_path'] = kwargs.get('controller_model_path', 'full_peg_insertion_experiment_no_collision.xml')
         super(PegInsertionEnv, self).__init__(*args, **kwargs)
         
 
