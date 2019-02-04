@@ -4,6 +4,8 @@ import numpy as np
 from gym import spaces
 import mujoco_py
 
+# import pdb; pdb.set_trace()
+from gym_kuka_mujoco.envs.assets import kuka_asset_dir
 from gym_kuka_mujoco.utils.quaternion import identity_quat, subQuat, quatIntegrate, mat2Quat
 from gym_kuka_mujoco.utils.kinematics import forwardKinSite, forwardKinJacobianSite
 from .base_controller import BaseController
@@ -22,8 +24,7 @@ class ImpedanceController(BaseController):
         super(ImpedanceController, self).__init__(sim)
 
         # Create a model for control
-        model_path = os.path.join(
-            os.path.dirname(os.path.realpath(__file__)), '..','envs', 'assets', model_path)
+        model_path = os.path.join(kuka_asset_dir(), model_path)
         self.model = mujoco_py.load_model_from_path(model_path)
 
         # Construct the action space.

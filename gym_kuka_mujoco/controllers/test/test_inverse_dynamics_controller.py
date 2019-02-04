@@ -11,13 +11,28 @@ def test_inverse_dynamics_controller():
     sim = create_sim()
     controller = InverseDynamicsController(sim, **options)
     
-    sim.data.qpos[:] = np.ones(7)
+    sim.data.qpos[:] = np.zeros(7)
     sim.data.qvel[:] = np.ones(7)
     controller.set_action(np.zeros(7))
 
-    controller.get_torque()
+    base_torque = controller.get_torque()
 
+    # Test that coriolis terms are being calculated.
+    assert not np.any(np.isclose(base_torque, np.zeros(7)))
 
+    # Test that the torque is linear in the error
+    controller.set_action(np.ones(7))
+    torque_1 = controller.get_torque()
+    controller.set_action(2*np.ones(7))
+    torque_2 = controller.get_torque()
+    
+    assert not np.allclose(torque_1, base_torque)
+    assert np.allclose(2*(torque_1-base_torque), torque_2-base_torque)
+
+    # Test that the torque is state dependent
+    sim.data.qpos[:] = np.array([.1, .2, .3, .4, .5, .6, .7])
+    controller.set_action(np.zeros(7))
+    assert not np.allclose(controller.get_torque(), base_torque)
 
 def test_relative_inverse_dynamics_controller():
     pass

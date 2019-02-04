@@ -3,6 +3,7 @@ import numpy as np
 from gym import spaces
 import mujoco_py
 
+from gym_kuka_mujoco.envs.assets import kuka_asset_dir
 from .base_controller import BaseController
 from . import register_controller
 
@@ -19,8 +20,7 @@ class InverseDynamicsController(BaseController):
         super(InverseDynamicsController, self).__init__(sim)
         
         # Create a model for control
-        model_path = os.path.join(
-            os.path.dirname(os.path.realpath(__file__)), '..','envs', 'assets', model_path)
+        model_path = os.path.join(kuka_asset_dir(), model_path)
         self.model = mujoco_py.load_model_from_path(model_path)
 
         # Construct the action space.
@@ -56,7 +56,7 @@ class InverseDynamicsController(BaseController):
         # Compute desired acceleration using inner loop PD law
         self.sim.data.qacc[:] = self.kp_id * qpos_err + self.kd_id * qvel_err
         mujoco_py.functions.mj_inverse(self.model, self.sim.data)
-        id_torque = self.sim.data.qfrc_inverse[:]
+        id_torque = self.sim.data.qfrc_inverse[:].copy()
 
         # Sum the torques
         return id_torque

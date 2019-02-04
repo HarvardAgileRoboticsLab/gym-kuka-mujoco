@@ -4,6 +4,7 @@ from gym import utils, spaces
 from gym.envs.mujoco import mujoco_env
 from mujoco_py.builder import MujocoException
 
+from .assets import kuka_asset_dir
 from gym_kuka_mujoco.controllers import controller_registry
 
 class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
@@ -29,8 +30,7 @@ class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
 
         utils.EzPickle.__init__(self)
 
-        full_path = os.path.join(
-            os.path.dirname(os.path.realpath(__file__)), 'assets', model_path)
+        full_path = os.path.join(kuka_asset_dir(), model_path)
         
         self.time_limit = time_limit
 
