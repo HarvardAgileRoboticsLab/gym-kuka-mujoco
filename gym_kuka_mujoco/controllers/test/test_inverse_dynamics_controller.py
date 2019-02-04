@@ -1,7 +1,7 @@
 import numpy as np
 from common import create_sim
 from gym_kuka_mujoco.envs import KukaEnv
-from gym_kuka_mujoco.controllers import InverseDynamicsController
+from gym_kuka_mujoco.controllers import InverseDynamicsController, RelativeInverseDynamicsController
 
 def test_inverse_dynamics_controller():
     options = dict()
@@ -35,7 +35,24 @@ def test_inverse_dynamics_controller():
     assert not np.allclose(controller.get_torque(), base_torque)
 
 def test_relative_inverse_dynamics_controller():
-    pass
+    sim = create_sim()
+    controller = RelativeInverseDynamicsController(sim)
+
+    sim.data.qpos[:] = np.zeros(7)
+    sim.data.qvel[:] = np.zeros(7)
+
+    # Test that the torques are non-zero.
+    setpoint = np.array([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7])
+    controller.set_action(setpoint)
+    torque = controller.get_torque()
+
+    assert not np.any(np.isclose(np.zeros(7), torque))
+
+    # Test that the torques are zero when the state is at the setpoint.
+    sim.data.qpos[:] = setpoint
+    torque = controller.get_torque()
+    assert np.allclose(np.zeros(7), torque)
+
 
 if __name__ == "__main__":
     test_inverse_dynamics_controller()
