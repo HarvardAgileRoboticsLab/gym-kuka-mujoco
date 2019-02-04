@@ -49,16 +49,16 @@ class InverseDynamicsController(BaseController):
         '''
         Update the PD setpoint and compute the torque.
         '''
-        # Compute position and velocity errors
+        # Compute position and velocity errors.
         qpos_err = self.qpos_set - self.sim.data.qpos
         qvel_err = self.qvel_set - self.sim.data.qvel
 
-        # Compute desired acceleration using inner loop PD law
+        # Compute desired acceleration using inner loop PD law.
         self.sim.data.qacc[:] = self.kp_id * qpos_err + self.kd_id * qvel_err
         mujoco_py.functions.mj_inverse(self.model, self.sim.data)
         id_torque = self.sim.data.qfrc_inverse[:].copy()
 
-        # Sum the torques
+        # Sum the torques.
         return id_torque
 
 class RelativeInverseDynamicsController(InverseDynamicsController):
