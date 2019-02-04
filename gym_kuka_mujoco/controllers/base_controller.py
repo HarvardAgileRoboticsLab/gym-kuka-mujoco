@@ -4,8 +4,8 @@ class BaseController(abc.ABC):
     '''
     An abstract base class for low level controllers.
     '''
-    def __init__(self, env):
-        self.env = env
+    def __init__(self, sim):
+        self.sim = sim
         self.action_space = None
 
     @abc.abstractmethod

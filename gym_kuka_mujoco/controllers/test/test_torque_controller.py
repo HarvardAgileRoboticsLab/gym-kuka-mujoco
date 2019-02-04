@@ -1,18 +1,17 @@
 import numpy as np
-import mujoco_py
+
 from gym_kuka_mujoco.envs import KukaEnv
-from gym_kuka_mujoco.controllers import DirectTorqueController
+from gym_kuka_mujoco.controllers import DirectTorqueController, SACTorqueController
 
-def create_env(controller_options):
-    env = KukaEnv('DirectTorqueController', controller_options)
-    return env
+from common import create_sim
 
-def test_torque_controller():
+
+def test_direct_torque_controller():
+    sim = create_sim()
     options = dict()
     options["action_scaling"] = 1.
-    env = create_env(options)
 
-    controller = env.controller
+    controller = DirectTorqueController(sim, **options)
 
     # Test the action space.
     # import pdb; pdb.set_trace()
@@ -34,13 +33,26 @@ def test_torque_controller():
     # Test that the action scaling works.
     options_2 = dict()
     options_2["action_scaling"] = 2.
-    env_2 = create_env(options_2)
-    controller_2 = env_2.controller
+    sim_2 = create_sim()
+    controller_2 = DirectTorqueController(sim_2, **options_2)
 
     controller_2.set_action(action_1)
     torque_ratio = controller_2.get_torque()/torque_1
     scaling_ratio = options_2["action_scaling"]/options["action_scaling"]
     assert np.allclose(torque_ratio, scaling_ratio)
 
+def test_sac_torque_controller():
+    options = dict()
+    options["limit_scale"] = 10.
+
+    sim = create_sim()
+    direct_controller = DirectTorqueController(sim) 
+    sac_controller = SACTorqueController(sim, **options) 
+
+    assert np.allclose(direct_controller.action_space.low, sac_controller.action_space.low*options["limit_scale"])
+    assert np.allclose(direct_controller.action_space.high, sac_controller.action_space.high*options["limit_scale"])
+
+
 if __name__ == '__main__':
-    test_torque_controller()
+    test_direct_torque_controller()
+    test_sac_torque_controller()
