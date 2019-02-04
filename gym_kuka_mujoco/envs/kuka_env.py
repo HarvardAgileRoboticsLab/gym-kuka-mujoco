@@ -4,13 +4,10 @@ from gym import utils, spaces
 from gym.envs.mujoco import mujoco_env
 from mujoco_py.builder import MujocoException
 
-from gym_kuka_mujoco.controllers import DirectTorqueController, SACTorqueController, InverseDynamicsController, RelativeInverseDynamicsController, ImpedanceController
+from .assets import kuka_asset_dir
+from gym_kuka_mujoco.controllers import controller_registry
 
 class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
-    random_model = False
-    random_target = False
-
-    info_keywords = ('distance',)
     
     def __init__(self,
                  controller,
@@ -18,22 +15,29 @@ class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
                  model_path='full_kuka_no_collision_no_gravity.xml',
                  frame_skip=20,
                  time_limit=3.,
-                 **kwargs):
+                 random_model = False,
+                 random_target = False,
+                 quadratic_pos_cost = True,
+                 quadratic_vel_cost = False):
         '''
         Constructs the file, sets the time limit and calls the constructor of
         the super class.
         '''
+        self.random_model = random_model
+        self.random_target = random_target
+        self.quadratic_pos_cost = quadratic_pos_cost
+        self.quadratic_vel_cost = quadratic_vel_cost
 
         utils.EzPickle.__init__(self)
 
-        full_path = os.path.join(
-            os.path.dirname(os.path.realpath(__file__)), 'assets', model_path)
+        full_path = os.path.join(kuka_asset_dir(), model_path)
         
         self.time_limit = time_limit
 
         # Parameters for the cost function
         self.state_des = np.zeros(14)
-        self.Q = np.diag([1,1,1,1,1,1,1,0,0,0,0,0,0,0])
+        self.Q_pos = np.diag([1.,1.,1.,1.,1.,1.,1.,0.,0.,0.,0.,0.,0.,0.])
+        self.Q_vel = np.diag([0.,0.,0.,0.,0.,0.,0.,1.,1.,1.,1.,1.,1.,1.])
 
         # Call the super class
         self.initialized = False
@@ -41,31 +45,11 @@ class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         self.initialized = True
 
         # Create the desired controller.
-        # TODO: grab this from a "controller registry".
-        # TODO: add controller_options and pass to the controller, for e.g. fixed stiffness/damping or learned stiffness/damping
-        if controller=='DirectTorqueController':
-            self.controller = DirectTorqueController(env=self,  **controller_options)
-        elif controller=='SACTorqueController':
-            self.controller = SACTorqueController(env=self,  **controller_options)
-        elif controller=='InverseDynamicsController':
-            self.controller = InverseDynamicsController(env=self, **controller_options)
-        elif controller=='RelativeInverseDynamicsController':
-            self.controller = RelativeInverseDynamicsController(env=self, **controller_options)
-        elif controller=='ImpedanceController':
-            self.controller = ImpedanceController(env=self, **controller_options)
-        else:
-            raise NotImplementedError
-
+        controller_cls = controller_registry[controller]
+        self.controller = controller_cls(sim=self.sim, **controller_options)
+        
         # Take the action space from the controller.
         self.action_space = self.controller.action_space
-
-    def subtree_mass(self):
-        '''
-        Compute the subtree mass of the Kuka Arm using the actual link names.
-        '''
-        body_names = ['kuka_link_{}'.format(i + 1) for i in range(7)]
-        body_ids = [self.model.body_name2id(n) for n in body_names]
-        return self.model.body_subtreemass[body_ids]
 
     def viewer_setup(self):
         '''
@@ -108,7 +92,7 @@ class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
                 total_reward += reward*dt
                 for k, v in reward_info.items():
                     if 'reward' in k:
-                        total_reward_info[k] = total_reward_info.get(k,0) + v*self.sim.model.opt.timestep
+                        total_reward_info[k] = total_reward_info.get(k,0) + v*dt
                 if render:
                     self.render()
 
@@ -169,10 +153,20 @@ class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         '''
         Compute single step reward.
         '''
-        err = self.state_des - state
         # quadratic cost on the state error
-        reward = -err.dot(self.Q).dot(err)
-        return reward, {}
+        reward_info = dict()
+        reward = 0.
+
+        err = self.state_des - state
+        if self.quadratic_pos_cost:
+            reward_info['quadratic_pos_cost'] = -err.dot(self.Q_pos).dot(err)
+            reward += reward_info['quadratic_pos_cost']
+
+        if self.quadratic_vel_cost:
+            reward_info['quadratic_vel_cost'] = -err.dot(self.Q_vel).dot(err)
+            reward += reward_info['quadratic_vel_cost']
+
+        return reward, reward_info
 
     def _get_done(self):
         '''

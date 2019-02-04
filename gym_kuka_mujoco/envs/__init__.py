@@ -1,2 +1,2 @@
-from gym_kuka_mujoco.envs.kuka_env import KukaEnv
-from gym_kuka_mujoco.envs.peg_insertion_env import PegInsertionEnv
+from .kuka_env import KukaEnv
+from .peg_insertion_env import PegInsertionEnv

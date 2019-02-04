@@ -10,6 +10,7 @@
     <default class="visual">
       <geom contype="0" conaffinity="0"/>
     </default>
+    <site rgba="1 0 0 .5"/>
   </default>  
   <asset>
     <include file="kuka/kuka_assets.xml"/>

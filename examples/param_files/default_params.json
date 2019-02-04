@@ -98,7 +98,8 @@
             "model_path": "full_peg_insertion_experiment_no_hole.xml",
             "controller": "ImpedanceController",
             "controller_options": {
-                "model_path": "full_peg_insertion_experiment_no_collision.xml"
+                "model_path": "full_peg_insertion_experiment_no_collision.xml",
+                "site_name": "peg_tip"
             },
             "frame_skip":50,
             "time_limit": 10.0
