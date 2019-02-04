@@ -21,7 +21,7 @@ class ImpedanceController(BaseController):
                  pos_scale=0.1,
                  rot_scale=0.5,
                  model_path='full_kuka_no_collision_no_gravity.xml',
-                 site_name='peg_tip'):
+                 site_name='ee_site'):
         super(ImpedanceController, self).__init__(sim)
 
         # Create a model for control

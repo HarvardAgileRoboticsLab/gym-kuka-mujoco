@@ -39,6 +39,7 @@
                   <inertial euler="0 0 0" pos="0 0 0.02" mass="1.2" diaginertia="0.001 0.001 0.001"/>
                   <geom class="collision" type="mesh" mesh="kuka_link_7_mesh"/>
                   <geom class="visual" type="mesh" mesh="kuka_link_7_mesh" material="kuka_grey"/>
+                  <site name="ee_site" pos="0 0 0.05" euler="0 0 0" size="0.005, 0.005, 0.005"/>
                 </body>
               </body>
             </body>
