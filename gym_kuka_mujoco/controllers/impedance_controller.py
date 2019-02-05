@@ -20,6 +20,8 @@ class ImpedanceController(BaseController):
                  sim,
                  pos_scale=1.0,
                  rot_scale=0.5,
+                 pos_limit=10.0,
+                 rot_limit=10.0,
                  model_path='full_kuka_no_collision_no_gravity.xml',
                  site_name='ee_site'):
         super(ImpedanceController, self).__init__(sim)
@@ -29,10 +31,10 @@ class ImpedanceController(BaseController):
         self.model = mujoco_py.load_model_from_path(model_path)
 
         # Construct the action space.
-        high_pos = 10.*np.ones(3)/pos_scale
+        high_pos = pos_limit*np.ones(3)
         low_pos = -high_pos
 
-        high_rot = 10.*np.ones(3)/rot_scale
+        high_rot = rot_limit*np.ones(3)
         low_rot = -high_rot
 
         high = np.concatenate((high_pos, high_rot))

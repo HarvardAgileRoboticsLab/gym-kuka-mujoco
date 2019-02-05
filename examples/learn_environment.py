@@ -45,7 +45,6 @@ def SAC_callback(_locals, _globals, log_dir):
 
     # Save on the first update and every 10 updates after that.
     if new_update and ((SAC_callback.n_updates == 1) or (SAC_callback.n_updates % 1000 == 0)):
-        print('new_update: {}'.format(SAC_callback.n_updates))
         checkpoint_save_path = os.path.join(log_dir, 'model_checkpoint_{}.pkl'.format(SAC_callback.n_updates))
         _locals['self'].save(checkpoint_save_path)
 SAC_callback.n_updates = 0
