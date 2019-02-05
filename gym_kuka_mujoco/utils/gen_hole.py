@@ -52,6 +52,12 @@ def gen_hole(inner_radius, outer_radius, height, num_facets, fraction=1.0, conne
                 'size':(width/2, depth/2, height/2),
                 'class':'collision'
             })
+    geoms.append({
+        'type':'cylinder',
+        'pos': (0, 0, -height/2),
+        'size': (outer_radius, height/2),
+        'class': 'collision'
+    })
     return geoms
 
 def write_xml(filename, element):

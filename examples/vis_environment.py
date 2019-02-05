@@ -44,4 +44,4 @@ if __name__ == '__main__':
     else:
         raise NotImplementedError
     
-    replay_model(env, model)
+    replay_model(env, model, deterministic=False)

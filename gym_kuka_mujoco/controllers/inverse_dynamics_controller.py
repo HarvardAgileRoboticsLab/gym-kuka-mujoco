@@ -15,6 +15,7 @@ class InverseDynamicsController(BaseController):
     def __init__(self,
                  sim,
                  model_path='full_kuka_no_collision_no_gravity.xml',
+                 action_scale=1.,
                  kp_id=100.,
                  kd_id='auto'):
         super(InverseDynamicsController, self).__init__(sim)
@@ -29,6 +30,7 @@ class InverseDynamicsController(BaseController):
         self.action_space = spaces.Box(low, high, dtype=np.float32)
         
         # Controller parameters.
+        self.action_scale = action_scale
         self.kp_id = kp_id
         if kd_id == 'auto':
             self.kd_id = 2 * np.sqrt(self.kp_id)
@@ -43,7 +45,7 @@ class InverseDynamicsController(BaseController):
         '''
         Set the setpoint.
         '''
-        self.qpos_set = action[:7]
+        self.qpos_set = self.action_scale * action[:7]
 
     def get_torque(self):
         '''

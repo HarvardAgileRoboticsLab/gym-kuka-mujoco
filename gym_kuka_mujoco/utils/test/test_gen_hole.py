@@ -27,6 +27,8 @@ def test_make_box():
 def test_make_hole():
     # Define a hole
     hole_geoms = gen_hole(.01, .03, .01, 16, radians=False)
+    for geom in hole_geoms:
+        del geom['class']
     hole_xml = assemble_mujoco_xml(hole_geoms, attach_worldbody=True)
     model_path = 'tmp/hole.xml'
     write_xml(model_path, hole_xml)

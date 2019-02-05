@@ -12,7 +12,7 @@ class PegInsertionEnv(kuka_env.KukaEnv):
     def __init__(self,
                  *args,
                  hole_id=99,
-                 fine_scaling=0.1,
+                 obs_scaling=0.1,
                  sample_good_states=False,
                  use_ft_sensor=False,
                  use_rel_pos_err=False,
@@ -24,7 +24,7 @@ class PegInsertionEnv(kuka_env.KukaEnv):
                  **kwargs):
         
         # Store arguments.
-        self.fine_scaling = fine_scaling
+        self.obs_scaling = obs_scaling
         self.sample_good_states = sample_good_states
         self.use_ft_sensor = use_ft_sensor
         self.use_rel_pos_err = use_rel_pos_err
@@ -117,10 +117,6 @@ class PegInsertionEnv(kuka_env.KukaEnv):
         info['success'] = float(dist < 1e-2)
         return info
 
-    def _update_action(self, action):
-        action = action * self.fine_scaling
-        super(PegInsertionEnv, self)._update_action(action)
-
     def _get_state_obs(self):
         '''
         Compute the observation at the current state.
@@ -142,7 +138,7 @@ class PegInsertionEnv(kuka_env.KukaEnv):
             pos, rot = forwardKinSite(self.sim, ['peg_tip','hole_base'])
             pos_err = pos[0] - pos[1]
 
-            obs = obs / self.fine_scaling
+            obs = obs / self.obs_scaling
 
         if self.use_ft_sensor:
             obs = np.concatenate([obs, ft_obs])
