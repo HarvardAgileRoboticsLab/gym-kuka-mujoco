@@ -12,6 +12,7 @@ class PegInsertionEnv(kuka_env.KukaEnv):
     def __init__(self,
                  *args,
                  hole_id=99,
+                 gravity=True,
                  obs_scaling=0.1,
                  sample_good_states=False,
                  use_ft_sensor=False,
@@ -35,10 +36,11 @@ class PegInsertionEnv(kuka_env.KukaEnv):
         self.sparse_cost = sparse_cost
         
         # Resolve the models path based on the hole_id.
+        gravity_string = '' if gravity else '_no_gravity'
         if hole_id >= 0:
-            kwargs['model_path'] = kwargs.get('model_path', 'full_peg_insertion_experiment_moving_hole_id={:03d}.xml'.format(hole_id))
+            kwargs['model_path'] = kwargs.get('model_path', 'full_peg_insertion_experiment{}_moving_hole_id={:03d}.xml'.format(gravity_string, hole_id))
         else:
-            kwargs['model_path'] = kwargs.get('model_path', 'full_peg_insertion_experiment_no_hole.xml')       
+            kwargs['model_path'] = kwargs.get('model_path', 'full_peg_insertion_experiment_no_hole{}.xml').format(gravity_string)       
         super(PegInsertionEnv, self).__init__(*args, **kwargs)
         
 

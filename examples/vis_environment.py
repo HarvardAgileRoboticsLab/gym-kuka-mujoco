@@ -18,6 +18,9 @@ if __name__ == '__main__':
     parser.add_argument('--param_file',
                         type=str,
                         help='the parameter file to use')
+    parser.add_argument('--deterministic',
+                        action='store_true',
+                        help='the randomness of the policy to visualize')
     args = parser.parse_args()
 
     # Load the learning parameters from a file.
@@ -33,7 +36,6 @@ if __name__ == '__main__':
 
     # Visualize.
     env_cls = globals()[params['env']]
-    import pdb; pdb.set_trace()
     env = env_cls(**params['env_options'])
     vec_env = DummyVecEnv([lambda: env])
 
@@ -44,4 +46,4 @@ if __name__ == '__main__':
     else:
         raise NotImplementedError
     
-    replay_model(env, model, deterministic=False)
+    replay_model(env, model, deterministic=args.deterministic)

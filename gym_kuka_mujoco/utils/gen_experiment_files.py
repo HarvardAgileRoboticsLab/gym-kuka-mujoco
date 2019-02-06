@@ -18,14 +18,17 @@ def gen_experiment_files(hole_files):
     with open(template_filename) as template_file:
         template_data = template_file.read()
     
+    gravity_options = [('enable', ''), ('disable', '_no_gravity')]
+
     # Convert the template into each file.
     s=Template(template_data)
     for hole_file in hole_files:
-        experiment_data = s.substitute(hole_filename=hole_file)
-        hole_id = re.search("id=([0-9]*)",hole_file).group(1)
-        experiment_filename = os.path.join(experiment_dir, "full_peg_insertion_experiment_moving_hole_id={}.xml".format(hole_id)) 
-        with open(experiment_filename, 'w') as experiment_file:
-            experiment_file.write(experiment_data)
+        for enable, gravity_file_str in gravity_options:
+            experiment_data = s.substitute(hole_filename=hole_file, gravity_enable=enable)
+            hole_id = re.search("id=([0-9]*)",hole_file).group(1)
+            experiment_filename = os.path.join(experiment_dir, "full_peg_insertion_experiment{gravity_file_str}_moving_hole_id={hole_id}.xml".format(gravity_file_str=gravity_file_str, hole_id=hole_id)) 
+            with open(experiment_filename, 'w') as experiment_file:
+                experiment_file.write(experiment_data)
 
 if __name__=='__main__':
     files = get_hole_files()
