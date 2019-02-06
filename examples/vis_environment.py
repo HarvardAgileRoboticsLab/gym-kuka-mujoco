@@ -36,7 +36,6 @@ if __name__ == '__main__':
 
     # Visualize.
     env_cls = globals()[params['env']]
-    import pdb; pdb.set_trace()
     env = env_cls(**params['env_options'])
     vec_env = DummyVecEnv([lambda: env])
 
