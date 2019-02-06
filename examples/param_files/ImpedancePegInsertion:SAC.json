@@ -1,6 +1,6 @@
 {
     "actor_options": {
-        "target_entropy": 0.5
+        "target_entropy": 2.0
     },
     "alg": "SAC",
     "env": "PegInsertionEnv",
