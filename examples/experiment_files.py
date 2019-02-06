@@ -20,7 +20,11 @@ def new_experiment_dir(params):
     day, time = datetime.now().isoformat().split('T')
 
     # Create a unique path based on a description of the experiment.
-    description = ['alg={}'.format(params['alg']), 'env={}'.format(params['env'])]
+    description = [
+        'alg={}'.format(params['alg']),
+        'env={}'.format(params['env']),
+        'controller={}'.format(params['env_options']['controller'])
+    ]
     for k,v in sorted(params['learning_options'].items()):
         description.append('{}={}'.format(k,v))
 

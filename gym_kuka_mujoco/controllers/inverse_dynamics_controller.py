@@ -16,6 +16,7 @@ class InverseDynamicsController(BaseController):
                  sim,
                  model_path='full_kuka_no_collision_no_gravity.xml',
                  action_scale=1.,
+                 action_limit=1.,
                  kp_id=100.,
                  kd_id='auto'):
         super(InverseDynamicsController, self).__init__(sim)
@@ -25,8 +26,8 @@ class InverseDynamicsController(BaseController):
         self.model = mujoco_py.load_model_from_path(model_path)
 
         # Construct the action space.
-        low = self.model.jnt_range[:, 0]
-        high = self.model.jnt_range[:, 1]
+        low = self.model.jnt_range[:, 0]*action_limit
+        high = self.model.jnt_range[:, 1]*action_limit
         self.action_space = spaces.Box(low, high, dtype=np.float32)
         
         # Controller parameters.
