@@ -32,12 +32,12 @@ class SACTorqueController(DirectTorqueController):
     '''
     A simple controller that takes raw torque actions.
     '''
-    def __init__(self, sim, limit_scale=30., **kwargs):
+    def __init__(self, sim, action_limit=1., **kwargs):
         super(SACTorqueController, self).__init__(sim, **kwargs)
 
         # Reduce the torque limits.
-        limited_low = self.action_space.low/limit_scale
-        limited_high = self.action_space.high/limit_scale
+        limited_low = self.action_space.low*action_limit
+        limited_high = self.action_space.high*action_limit
         self.action_space = gym.spaces.Box(limited_low, limited_high, dtype=np.float32)
 
 register_controller(DirectTorqueController, 'DirectTorqueController')
