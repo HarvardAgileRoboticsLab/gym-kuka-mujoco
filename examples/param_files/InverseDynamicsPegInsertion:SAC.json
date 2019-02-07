@@ -4,14 +4,10 @@
     "alg": "SAC",
     "env": "PegInsertionEnv",
     "env_options": {
-        "controller": "ImpedanceController",
+        "controller": "RelativeInverseDynamicsController",
         "controller_options": {
             "model_path": "full_peg_insertion_experiment_no_collision.xml",
-            "pos_scale": 1.0,
-            "rot_scale": 0.5,
-            "pos_limit":5.0,
-            "rot_limit":2.5,
-            "site_name": "peg_tip"
+            "action_limit": 0.08
         },
         "frame_skip": 50,
         "time_limit": 2.0,

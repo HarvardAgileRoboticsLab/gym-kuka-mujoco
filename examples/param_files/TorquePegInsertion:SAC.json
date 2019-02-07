@@ -4,20 +4,16 @@
     "alg": "SAC",
     "env": "PegInsertionEnv",
     "env_options": {
-        "controller": "ImpedanceController",
+        "controller": "SACTorqueController",
         "controller_options": {
-            "model_path": "full_peg_insertion_experiment_no_collision.xml",
-            "pos_scale": 1.0,
-            "rot_scale": 0.5,
-            "pos_limit":5.0,
-            "rot_limit":2.5,
-            "site_name": "peg_tip"
+            "action_limit": 0.03
         },
         "frame_skip": 50,
         "time_limit": 2.0,
         "logarithmic_cost": true,
         "quadratic_cost": true,
-        "hole_id": 50
+        "hole_id": 50,
+        "gravity": false
     },
     "info_keywords": [
         "tip_distance",
