@@ -15,14 +15,14 @@ def replay_model(env, model, deterministic=True, num_sims=2):
         action, _states = model.predict(obs, deterministic=deterministic)
         clipped_action = np.clip(action, env.action_space.low,
                                  env.action_space.high)
-        obs, reward, done, info = env.step(clipped_action, render=True)
+        obs, reward, done, info = env.step(clipped_action, render=False)
         distances.append(info['tip_distance'])
         if done:
             obs = env.reset()
             sims += 1
         if sims >= num_sims:
             break
-    return distances
+    return sum(distances) / float(len(distances))
 
 
 if __name__ == '__main__':
@@ -55,14 +55,14 @@ if __name__ == '__main__':
 
     # Visualize.
     env_cls = globals()[params['env']]
-    print(params)
     env = env_cls(**params['env_options'])
     vec_env = DummyVecEnv([lambda: env])
 
-    iters = 20
+    iters = 100
     distances = []
 
     for i in range(iters):
+        print('Iteration: {}'.format(i))
         if params['alg'] == 'PPO2':
             model = PPO2(params['policy_type'], vec_env, **params['actor_options'])
         elif params['alg'] == 'SAC':
@@ -70,8 +70,7 @@ if __name__ == '__main__':
         else:
             raise NotImplementedError
         
-        distances.extend(replay_model(env, model, deterministic=args.deterministic))
+        distances.append(replay_model(env, model, deterministic=args.deterministic))
         print(sum(distances) / float(len(distances)))
 
-    print(distances)
     print(sum(distances) / float(len(distances)))
