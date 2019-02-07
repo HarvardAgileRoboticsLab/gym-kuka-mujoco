@@ -8,7 +8,7 @@ from stable_baselines.common.vec_env import DummyVecEnv
 
 from gym_kuka_mujoco.envs import *
 
-from experiment_files import (get_experiment_dirs, get_model,
+from experiment_files import (get_latest_experiment_dir, get_model,
                               get_latest_checkpoint, get_params)
 
 
@@ -56,7 +56,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # Load the model if it's availeble, otherwise that latest checkpoint.
-    experiment_dir = get_experiment_dirs(args.directory)[0]
+    experiment_dir = get_latest_experiment_dir(args.directory)
     params_path = get_params(experiment_dir)
     params = load_params(params_path)
 

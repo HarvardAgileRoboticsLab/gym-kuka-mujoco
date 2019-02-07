@@ -67,7 +67,7 @@ def make_env(env_cls, rank, save_path, seed=0, **env_options):
     set_global_seeds(seed)
     return _init
 
-def run_learn(params):
+def run_learn(params, model=None, run_count=0):
     '''
     Runs the learning experiment defined by the params dictionary.
 
@@ -75,18 +75,22 @@ def run_learn(params):
     '''
     # Unpack options
     learning_options = params['learning_options']
-    actor_options = params['actor_options']
-    save_path = new_experiment_dir(params)
-    os.makedirs(save_path, exist_ok=True)
+    actor_options = params.get('actor_options', None)
+    if model is None:
+        save_path = new_experiment_dir(params)
+    else:
+        save_path = model.tensorboard_log
+    run_save_path = os.path.join(save_path, 'run_{}'.format(run_count))
+    os.makedirs(run_save_path, exist_ok=True)
 
     # Save the parameters that will generate the model
-    params_save_path = os.path.join(save_path,'params.json')
+    params_save_path = os.path.join(run_save_path,'params.json')
     with open(params_save_path, 'w') as f:
         commentjson.dump(params, f, sort_keys = True, indent = 4, ensure_ascii = False)
 
     # Generate vectorized environment.
     env_cls = globals()[params['env']]
-    envs = [make_env(env_cls, i, save_path, **params['env_options']) for i in range(params['n_env'])]
+    envs = [make_env(env_cls, i, run_save_path, **params['env_options']) for i in range(params['n_env'])]
     # envs = [make_env(params['env'], i, save_path) for i in range(params['n_env'])]
 
     if params.get('vectorized', True):
@@ -96,20 +100,28 @@ def run_learn(params):
     env = TBVecEnvWrapper(env, save_path, info_keywords = params.get('info_keywords', tuple()))
 
     # Create the actor and learn
-    if params['alg'] == 'PPO2':
+    if model is not None:
+        model.set_env(env)  
+    elif params['alg'] == 'PPO2':
         model = PPO2(params['policy_type'], env, tensorboard_log = save_path, **actor_options)
-        learn_callback = lambda l, g: PPO_callback(l, g, save_path)
     elif params['alg'] == 'SAC':
         model = SAC(params['policy_type'], env, tensorboard_log = save_path, **actor_options)
-        learn_callback = lambda l, g: SAC_callback(l, g, save_path)
     else:
         raise NotImplementedError
     
-    print("Learning and recording to:\n{}".format(save_path))
+    # Create the callback
+    if isinstance(model, PPO2):
+        learn_callback = lambda l, g: PPO_callback(l, g, run_save_path)
+    elif isinstance(model, SAC):
+        learn_callback = lambda l, g: SAC_callback(l, g, run_save_path)
+    else:
+        raise NotImplementedError
+
+    print("Learning and recording to:\n{}".format(run_save_path))
     model.learn(callback = learn_callback, **learning_options)
 
     # Save the model
-    model_save_path = os.path.join(save_path, 'model')
+    model_save_path = os.path.join(run_save_path, 'model')
     model.save(model_save_path)
 
     return model
@@ -133,6 +145,10 @@ if __name__ == '__main__':
     parser.add_argument('--debug',
                         action='store_true',
                         help='enables useful debug settings')
+    parser.add_argument('--num_restarts',
+                        type=int,
+                        default=1,
+                        help='The number of trials to run.')
     args = parser.parse_args()
 
     # Change the warning behavior for debugging.
@@ -154,7 +170,8 @@ if __name__ == '__main__':
         params['vectorized'] = False
 
     # Learn.
-    model = run_learn(params)
+    for i in range(args.num_restarts):
+        model = run_learn(params, run_count=i)
     
     # Visualize.
     env_cls = globals()[params['env']]
