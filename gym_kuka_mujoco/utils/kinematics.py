@@ -88,7 +88,7 @@ def forwardKinJacobianSite(sim, site_id):
     return jacp, jacr
 
 
-def inverseKin(sim, q_init, q_nom, body_pos, world_pos, world_quat, body_id, reg=1e-4, upper=None, lower=None):
+def inverseKin(sim, q_init, q_nom, body_pos, world_pos, world_quat, body_id, reg=1e-4, upper=None, lower=None, cost_tol=1e-6, raise_on_fail=False):
     '''
     Use SciPy's nonlinear least-squares method to compute the inverse kinematics
     '''
@@ -122,5 +122,11 @@ def inverseKin(sim, q_init, q_nom, body_pos, world_pos, world_quat, body_id, reg
 
     if not result.success:
         print("Inverse kinematics failed with status: {}".format(result.status))
+        if raise_on_fail:
+            raise RuntimeError
 
+    if result.cost > cost_tol:
+        print("Inverse kinematics failed to find a sufficiently low cost")
+        if raise_on_fail:
+            raise RuntimeError("Infeasible")
     return result.x

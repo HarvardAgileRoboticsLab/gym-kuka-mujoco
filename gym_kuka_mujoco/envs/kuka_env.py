@@ -15,6 +15,7 @@ class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
                  model_path='full_kuka_no_collision_no_gravity.xml',
                  frame_skip=20,
                  time_limit=3.,
+                 timestep=0.002,
                  random_model = False,
                  random_target = False,
                  quadratic_pos_cost = True,
@@ -42,6 +43,7 @@ class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         # Call the super class
         self.initialized = False
         mujoco_env.MujocoEnv.__init__(self, full_path, frame_skip)
+        self.model.opt.timestep = timestep
         self.initialized = True
 
         # Create the desired controller.

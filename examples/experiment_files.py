@@ -46,11 +46,35 @@ def get_experiment_dirs(rel_path=''):
 
     paths = []
     for dirpath, dirnames, filenames in os.walk(root):
-        if 'params.json' in filenames:
-            dirnames.clear()
-            paths.append(dirpath)
+        if 'params.json' not in filenames:
+            continue
+
+        dirnames.clear()
+        paths.append(dirpath)
 
     return paths
+
+def get_latest_experiment_dir(rel_path=''):
+    '''
+    Searches for all of the experiment directories relative to the root
+    directory, or another relative path underneath the root.
+    '''
+    root = os.path.join(get_experiment_root(), rel_path)
+
+    creation_time = None
+    path = ''
+    for dirpath, dirnames, filenames in os.walk(root):
+        if 'params.json' not in filenames:
+            continue
+        
+        if creation_time is None:
+            path = dirpath
+            creation_time = os.path.getctime(path)
+        elif os.path.getctime(dirpath) > creation_time:
+            path = dirpath
+            creation_time = os.path.getctime(path)
+
+    return path
 
 def get_params(experiment_dir):
     return os.path.join(experiment_dir, 'params.json')

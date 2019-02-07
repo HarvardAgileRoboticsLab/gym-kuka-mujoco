@@ -1,0 +1,85 @@
+[{
+    "actor_options": {
+        "ent_coef": 0.01,
+        "gamma": 1.0,
+        "learning_rate": 0.001,
+        "n_steps": 1028,
+        "verbose": 0,
+        "cliprange":0.2
+    },
+    "alg": "PPO2",
+    "env": "KukaEnv",
+    "env_options": {
+        "controller": "DirectTorqueController",
+        "controller_options": {
+            "action_scaling": 10.0
+        },
+        "frame_skip": 20,
+        "time_limit": 3.0
+    },
+    "info_keywords": [
+        "distance"
+    ],
+    "learning_options": {
+        "total_timesteps": 20000
+    },
+    "n_env": 1,
+    "policy_type": "MlpPolicy",
+    "vectorized": false
+},
+{
+    "actor_options": {
+        "ent_coef": 0.01,
+        "gamma": 1.0,
+        "learning_rate": 0.001,
+        "n_steps": 1028,
+        "verbose": 0,
+        "cliprange":0.2
+    },
+    "alg": "PPO2",
+    "env": "KukaEnv",
+    "env_options": {
+        "controller": "DirectTorqueController",
+        "controller_options": {
+            "action_scaling": 10.0
+        },
+        "frame_skip": 20,
+        "time_limit": 3.0
+    },
+    "info_keywords": [
+        "distance"
+    ],
+    "learning_options": {
+        "total_timesteps": 20000
+    },
+    "n_env": 1,
+    "vectorized": false
+},
+{
+    "actor_options": {
+        "ent_coef": 0.01,
+        "gamma": 1.0,
+        "learning_rate": 0.001,
+        "n_steps": 1028,
+        "verbose": 0,
+        "cliprange":0.2
+    },
+    "alg": "PPO2",
+    "env": "KukaEnv",
+    "env_options": {
+        "controller": "DirectTorqueController",
+        "controller_options": {
+            "action_scaling": 10.0
+        },
+        "frame_skip": 20,
+        "time_limit": 3.0
+    },
+    "info_keywords": [
+        "distance"
+    ],
+    "learning_options": {
+        "total_timesteps": 20000
+    },
+    "n_env": 1,
+    "vectorized": false
+}]
