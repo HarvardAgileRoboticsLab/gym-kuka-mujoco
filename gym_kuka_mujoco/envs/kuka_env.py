@@ -43,7 +43,6 @@ class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         # Call the super class
         self.initialized = False
         mujoco_env.MujocoEnv.__init__(self, full_path, frame_skip)
-        import pdb; pdb.set_trace()
         self.model.opt.timestep = timestep
         self.initialized = True
 

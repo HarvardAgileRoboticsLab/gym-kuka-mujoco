@@ -25,8 +25,9 @@
             "rot_scale": 0.5,
             "site_name": "peg_tip"
         },
-        "frame_skip": 50,
+        "frame_skip": 10,
         "time_limit": 2.0,
+        "timestep": 0.01,
         "logarithmic_cost": true,
         "quadratic_cost": true,
         "hole_id": 50,
