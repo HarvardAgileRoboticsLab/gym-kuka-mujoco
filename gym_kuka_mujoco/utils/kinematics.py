@@ -5,7 +5,7 @@ from gym_kuka_mujoco.utils.quaternion import identity_quat, mat2Quat, subQuat
 
 identity_quat = np.array([1., 0., 0., 0.])
 
-def forwardKin(sim, pos, quat, body_id):
+def forwardKin(sim, pos, quat, body_id, recompute=True):
     '''
     Compute the forward kinematics for the position and orientation of a frame
     in a particular body.
@@ -14,20 +14,22 @@ def forwardKin(sim, pos, quat, body_id):
     xpos = np.zeros(3, dtype=np.float64)
     xrot = np.identity(3, dtype=np.float64).flatten()
 
-    # Compute Kinematics and 
-    mujoco_py.functions.mj_kinematics(sim.model, sim.data)
+    # Compute Kinematics and
+    if recompute: 
+        mujoco_py.functions.mj_kinematics(sim.model, sim.data)
     mujoco_py.functions.mj_local2Global(sim.data, xpos, xrot, pos, quat, body_id)
 
     # Reshape the rotation matrix and return.
     xrot = xrot.reshape(3,3)
     return xpos, xrot
 
-def forwardKinSite(sim, site_name):
+def forwardKinSite(sim, site_name, recompute=True):
     '''
     Compute the forward kinematics for the position and orientation a labelled site.
     '''
     # Compute Kinematics and return data.
-    mujoco_py.functions.mj_kinematics(sim.model, sim.data)
+    if recompute:
+        mujoco_py.functions.mj_kinematics(sim.model, sim.data)
 
     if type(site_name) is list:
         xpos = [sim.data.get_site_xpos(n) for n in site_name]
@@ -38,7 +40,7 @@ def forwardKinSite(sim, site_name):
 
     return xpos, xrot
 
-def forwardKinJacobian(sim, pos, body_id):
+def forwardKinJacobian(sim, pos, body_id, recompute=True):
     '''
     Compute the forward kinematics for the position and orientation of a frame
     in a particular body.
@@ -52,8 +54,9 @@ def forwardKinJacobian(sim, pos, body_id):
     xpos = np.zeros(3, dtype=np.float64)
     xrot = np.identity(3, dtype=np.float64).flatten()
 
-    # Compute Kinematics and 
-    sim.forward()
+    # Compute Kinematics and
+    if recompute: 
+        sim.forward()
     mujoco_py.functions.mj_local2Global(sim.data, xpos, xrot, pos, identity_quat, body_id)
     mujoco_py.functions.mj_jac(sim.model, sim.data, jacp, jacr, xpos, body_id)
 
@@ -63,7 +66,7 @@ def forwardKinJacobian(sim, pos, body_id):
     
     return jacp, jacr
 
-def forwardKinJacobianSite(sim, site_id):
+def forwardKinJacobianSite(sim, site_id, recompute=True):
     '''
     Compute the forward kinematics for the position and orientation of the
     frame attached to a particular site.
@@ -77,8 +80,9 @@ def forwardKinJacobianSite(sim, site_id):
     jacp = np.zeros(jac_shape, dtype=np.float64).flatten()
     jacr = np.zeros(jac_shape, dtype=np.float64).flatten()
 
-    # Compute Kinematics and 
-    sim.forward()
+    # Compute Kinematics and
+    if recompute: 
+        sim.forward()
     mujoco_py.functions.mj_jacSite(sim.model, sim.data, jacp, jacr, site_id)
 
     # Reshape the jacobian matrices and return.

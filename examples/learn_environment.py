@@ -145,6 +145,9 @@ if __name__ == '__main__':
     parser.add_argument('--debug',
                         action='store_true',
                         help='enables useful debug settings')
+    parser.add_argument('--profile',
+                        action='store_true',
+                        help='runs in a profiler')
     parser.add_argument('--num_restarts',
                         type=int,
                         default=1,
@@ -166,13 +169,18 @@ if __name__ == '__main__':
             params = commentjson.load(f)
     
     # Override some arguments in debug mode
-    if args.debug:
+    if args.debug or args.profile:
         params['vectorized'] = False
 
     # Learn.
-    for i in range(args.num_restarts):
-        model = run_learn(params, run_count=i)
-    
+    if args.profile:
+        import cProfile
+        for i in range(args.num_restarts):
+            cProfile.run('run_learn(params, run_count=i)')
+    else:
+        for i in range(args.num_restarts):
+            model = run_learn(params, run_count=i)
+
     # Visualize.
     env_cls = globals()[params['env']]
     env = env_cls(**params['env_options'])

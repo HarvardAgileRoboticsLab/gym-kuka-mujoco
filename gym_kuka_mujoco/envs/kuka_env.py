@@ -203,6 +203,7 @@ class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
                     self._reset_model_params()
                 if self.random_target:
                     self._reset_target()
+                self.sim.forward()
             except MujocoException as e:
                 print(e)
                 continue

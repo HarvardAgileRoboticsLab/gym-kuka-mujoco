@@ -62,7 +62,7 @@ class ImpedanceController(BaseController):
         dx = action[0:3].astype(np.float64)
         dr = action[3:6].astype(np.float64)
 
-        pos, mat = forwardKinSite(self.sim, self.site_name)
+        pos, mat = forwardKinSite(self.sim, self.site_name, recompute=False)
         quat = mat2Quat(mat)
 
         self.pos_set = pos + dx
@@ -73,14 +73,14 @@ class ImpedanceController(BaseController):
         Update the impedance control setpoint and compute the torque.
         '''
         # Compute the pose difference.
-        pos, mat = forwardKinSite(self.sim, self.site_name)
+        pos, mat = forwardKinSite(self.sim, self.site_name, recompute=False)
         quat = mat2Quat(mat)
         dx = self.pos_set - pos
         dr = subQuat(self.quat_set, quat)
         dframe = np.concatenate((dx,dr))
 
         # Compute generalized forces from a virtual external force.
-        jpos, jrot = forwardKinJacobianSite(self.sim, self.site_name)
+        jpos, jrot = forwardKinJacobianSite(self.sim, self.site_name, recompute=False)
         J = np.vstack((jpos, jrot))
         external_force = J.T.dot(self.stiffness*dframe) # virtual force on the end effector
 
