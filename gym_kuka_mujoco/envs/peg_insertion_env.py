@@ -1,3 +1,4 @@
+import os
 import random
 import numpy as np
 
@@ -6,6 +7,7 @@ from gym_kuka_mujoco.utils.kinematics import forwardKin, forwardKinSite, forward
 from gym_kuka_mujoco.utils.insertion import hole_insertion_samples
 from gym_kuka_mujoco.utils.projection import rotate_cost_by_matrix
 from gym_kuka_mujoco.utils.quaternion import mat2Quat, subQuat
+from gym_kuka_mujoco.envs.assets import kuka_asset_dir
 
 class PegInsertionEnv(kuka_env.KukaEnv):
     
@@ -14,6 +16,7 @@ class PegInsertionEnv(kuka_env.KukaEnv):
                  hole_id=99,
                  gravity=True,
                  obs_scaling=0.1,
+                 randomize_hole=False,
                  sample_good_states=False,
                  use_ft_sensor=False,
                  use_rel_pos_err=False,
@@ -50,7 +53,19 @@ class PegInsertionEnv(kuka_env.KukaEnv):
             self.Q_pose_reg = np.eye(7)
 
         # Compute good states using inverse kinematics.
-        self.good_states = hole_insertion_samples(self.sim, range=[0.,0.06])
+        self.randomize_hole = randomize_hole
+        if self.randomize_hole:
+            self.reachable_holes = np.load(os.path.join(kuka_asset_dir(),'random_reachable_holes.npy'))
+            # import pdb; pdb.set_trace()
+            hole_data = self.np_random.choice(self.reachable_holes)
+            self._reset_hole(hole_data)
+        else:
+            self.good_states = hole_insertion_samples(self.sim, range=[0.,0.06])
+
+    def _reset_hole(self, hole_data):
+        self.good_states = hole_data['good_poses']
+        self.sim.data.set_mocap_pos('hole', hole_data['hole_pos'])
+        self.sim.data.set_mocap_quat('hole', hole_data['hole_quat'])
 
     def _get_reward(self, state, action):
         '''
@@ -157,6 +172,10 @@ class PegInsertionEnv(kuka_env.KukaEnv):
         '''
         Reset the robot state and return the observation.
         '''
+        if self.randomize_hole:
+            hole_data = self.np_random.choice(self.reachable_holes)
+            self._reset_hole(hole_data)
+
         if self.sample_good_states and self.np_random.uniform() < 0.5:
             qpos = self.np_random.choice(self.good_states)
         else:
