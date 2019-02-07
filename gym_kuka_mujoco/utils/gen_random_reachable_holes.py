@@ -30,18 +30,18 @@ for i in range(4000):
     sim.data.set_mocap_quat('hole', hole_quat)
     
     try:
-        qpos_sol = hole_insertion_samples_unrestricted(sim, nsamples=5, insertion_range=(0, 0.05), raise_on_fail=True)
-    except:
+        qpos_sol = hole_insertion_samples_unrestricted(sim, nsamples=5, insertion_range=(0, 0.06), raise_on_fail=True)
+    except RuntimeError:
         continue
 
     success = True
     for qpos in qpos_sol:
         sim_state = sim.get_state()
         sim_state.qpos[:7] = qpos.copy()
+        sim_state.qvel[:] = np.zeros_like(sim_state.qvel[:])
         sim.set_state(sim_state)
 
-        sim.step()
-        
+        sim.forward()
         if sim.data.ncon > 0:
             print('There is a collision in the pose, discarding')
             success = False

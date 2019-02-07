@@ -61,5 +61,6 @@ def hole_insertion_samples_unrestricted(sim, nsamples=10, insertion_range=(0, 0.
     for w_pos, w_quat in zip(world_pos_desired, world_quat_desired):
         q_opt = inverseKin(sim, q_init, q_nom, tip_body_pos, w_pos, w_quat, peg_body_id, upper=upper, lower=lower, raise_on_fail=raise_on_fail)
         q_sol.append(q_opt)
+        q_init = q_opt.copy() # warm start the next solution
 
     return q_sol
