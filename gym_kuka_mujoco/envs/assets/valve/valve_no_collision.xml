@@ -1,0 +1,10 @@
+<mujoco>
+  <body name="valve" euler="0 0 0" pos="0 0 0">
+    <joint name="valve_position" axis="0 0 1.0" limited="false" frictionloss=".1"/>
+
+    <geom class="visual" type="cylinder" euler="0 0 0" pos="0 0 0.02" size="0.0075 0.02" mass=".05"/>
+    <geom class="visual" type="capsule" euler="1.57079632679 0 0" pos="0 0 0.04" size="0.0075 0.04" mass=".10"/>
+    <geom class="visual" type="capsule" euler="1.57079632679 1.57079632679 0" pos="0 0 0.04" size="0.0075 0.04" mass=".10"/>
+    <site name="valve_center" pos="0 0 0.04" euler="0 0 0" size="0.005, 0.005, 0.005"/>
+  </body>
+</mujoco>

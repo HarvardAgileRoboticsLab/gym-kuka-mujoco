@@ -198,11 +198,12 @@ class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         '''
         while(True):
             try:
-                self._reset_state()
                 if self.random_model:
                     self._reset_model_params()
                 if self.random_target:
                     self._reset_target()
+                self._reset_state() # Always reset the state after the target is reset.
+                self.sim.forward()
             except MujocoException as e:
                 print(e)
                 continue

@@ -16,7 +16,6 @@ class PegInsertionEnv(kuka_env.KukaEnv):
                  hole_id=99,
                  gravity=True,
                  obs_scaling=0.1,
-                 randomize_hole=False,
                  sample_good_states=False,
                  use_ft_sensor=False,
                  use_rel_pos_err=False,
@@ -25,6 +24,7 @@ class PegInsertionEnv(kuka_env.KukaEnv):
                  linear_cost=False,
                  logarithmic_cost=False,
                  sparse_cost=False,
+                 random_hole_file='random_reachable_holes_small_randomness.npy',
                  **kwargs):
         
         # Store arguments.
@@ -53,26 +53,18 @@ class PegInsertionEnv(kuka_env.KukaEnv):
             self.Q_pose_reg = np.eye(7)
 
         # Compute good states using inverse kinematics.
-        self.randomize_hole = randomize_hole
-        if self.randomize_hole:
-            self.reachable_holes = np.load(os.path.join(kuka_asset_dir(),'random_reachable_holes.npy'))
-            # import pdb; pdb.set_trace()
-            hole_data = self.np_random.choice(self.reachable_holes)
-            self._reset_hole(hole_data)
+        if self.random_target:
+            self.reachable_holes = np.load(os.path.join(kuka_asset_dir(), random_hole_file))
+            self._reset_target()
         else:
             self.good_states = hole_insertion_samples(self.sim, range=[0.,0.06])
-
-    def _reset_hole(self, hole_data):
-        self.good_states = hole_data['good_poses']
-        self.sim.data.set_mocap_pos('hole', hole_data['hole_pos'])
-        self.sim.data.set_mocap_quat('hole', hole_data['hole_quat'])
 
     def _get_reward(self, state, action):
         '''
         Compute single step reward.
         '''
         # compute position and rotation error
-        pos, rot = forwardKinSite(self.sim, ['peg_tip','hole_base'])
+        pos, rot = forwardKinSite(self.sim, ['peg_tip','hole_base'], recompute=False)
         pos_err = pos[0] - pos[1]
         dist = np.sqrt(pos_err.dot(pos_err))
         peg_quat = mat2Quat(rot[0])
@@ -82,7 +74,7 @@ class PegInsertionEnv(kuka_env.KukaEnv):
         pose_err = self.sim.data.qpos - self.good_states[0]
         
         peg_tip_id = self.model.site_name2id('peg_tip')
-        jacp, jacv = forwardKinJacobianSite(self.sim, peg_tip_id)
+        jacp, jacv = forwardKinJacobianSite(self.sim, peg_tip_id, recompute=False)
         peg_tip_vel = jacp.dot(self.data.qvel[:])
         # print("reward_dist: {}".format(dist))
         
@@ -127,7 +119,7 @@ class PegInsertionEnv(kuka_env.KukaEnv):
 
     def _get_info(self):
         info = dict()
-        pos, rot = forwardKinSite(self.sim, ['peg_tip','hole_base'])
+        pos, rot = forwardKinSite(self.sim, ['peg_tip','hole_base'], recompute=False)
         pos_err = pos[0] - pos[1]
         dist = np.sqrt(pos_err.dot(pos_err))
         info['tip_distance'] = dist
@@ -151,30 +143,33 @@ class PegInsertionEnv(kuka_env.KukaEnv):
             # Compute F/T sensor data
             ft_obs = self.sim.data.sensordata
             
-            # Compute relative position error
-            pos, rot = forwardKinSite(self.sim, ['peg_tip','hole_base'])
-            pos_err = pos[0] - pos[1]
 
             obs = obs / self.obs_scaling
 
         if self.use_ft_sensor:
             obs = np.concatenate([obs, ft_obs])
 
-        if self.use_rel_pos_err:
-            obs = np.concatenate([obs, pos_err])
-
         return obs
 
     def _get_target_obs(self):
-        raise NotImplementedError
+        # Compute relative position error
+        pos, rot = forwardKinSite(self.sim, ['peg_tip','hole_base'])
+
+        if self.use_rel_pos_err:
+            pos_obs = pos[0] - pos[1]
+            quat_peg_tip = mat2Quat(rot[0])
+            quat_hole_base = mat2Quat(rot[1])
+            rot_obs = subQuat(quat_peg_tip, quat_hole_base)
+        else:
+            pos_obs = pos[1].copy()
+            rot_obs = mat2Quat(rot[1])
+        
+        return np.concatenate([pos_obs, rot_obs])
 
     def _reset_state(self):
         '''
         Reset the robot state and return the observation.
         '''
-        if self.randomize_hole:
-            hole_data = self.np_random.choice(self.reachable_holes)
-            self._reset_hole(hole_data)
 
         if self.sample_good_states and self.np_random.uniform() < 0.5:
             qpos = self.np_random.choice(self.good_states)
@@ -183,3 +178,12 @@ class PegInsertionEnv(kuka_env.KukaEnv):
         
         qvel = np.zeros(7)
         self.set_state(qpos, qvel)
+
+    def _reset_target(self):
+        '''
+        Resets the hole position
+        '''
+        hole_data = self.np_random.choice(self.reachable_holes)
+        self.good_states = hole_data['good_poses']
+        self.sim.data.set_mocap_pos('hole', hole_data['hole_pos'])
+        self.sim.data.set_mocap_quat('hole', hole_data['hole_quat'])

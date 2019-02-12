@@ -1,0 +1,12 @@
+<mujoco>
+  <body name="nail_base" euler="0 0 0" pos="0 0 0">
+    <body name="nail" euler="0 0 0" pos="0 0 .1">
+      <joint type="slide" name="nail_position" pos="0 0 0" axis="0 0 1.0" limited="true" range="-0.1 0" frictionloss="10.0"/>
+      <geom class="collision" type="cylinder" euler="0 0 0" pos="0 0 0.05" size="0.0075 0.05" mass=".05"/>
+      <geom class="collision" type="cylinder" euler="0 0 0" pos="0 0 0.105" size="0.015 0.005" mass=".05"/>
+      <site name="nail_top" pos="0 0 0.105" euler="0 0 0" size="0.005 0.005 0.005"/>
+    </body>
+
+    <geom class="collision" type="box" euler="0 0 0" pos="0 0 0" size="0.1 0.1 0.1"/>
+  </body>
+</mujoco>

@@ -24,8 +24,9 @@
         "logarithmic_cost": true,
         "quadratic_cost": true,
         "hole_id": 50,
-        "randomize_hole": true,
-        "use_rel_pos_err": true
+        "use_rel_pos_err": true,
+        "random_target": true,
+        "random_hole_file": "random_reachable_holes_small_randomness.npy"
     },
     "info_keywords": [
         "tip_distance",

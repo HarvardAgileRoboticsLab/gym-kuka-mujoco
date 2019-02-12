@@ -1,0 +1,34 @@
+<?xml version="1.0" ?>
+
+<mujoco>
+  <compiler angle="radian" coordinate="local"/>
+<!-- 
+  <option>
+    <flag gravity="enable"/>
+  </option>
+ -->
+  <default>  
+    <default class="visual">
+      <geom contype="0" conaffinity="0"/>
+    </default>
+    <default class="collision">
+      <geom contype="1" conaffinity="1"/>
+    </default>
+    <site rgba="1 0 0 .5"/>
+  </default> 
+<!-- 
+  <asset>
+    <texture type="skybox" builtin="gradient" rgb1="1 1 1" rgb2=".6 .8 1" width="256" height="256"/>
+  </asset> -->
+
+  <worldbody>
+    <!-- <light pos="0 0 1000" castshadow="false"/> -->
+    <!-- <geom class="collision" type="plane" size="10 10 1" rgba=".8 .8 .8 1"/> -->
+    <!-- <body name="experiment_table" pos="0 0 1"> -->
+      <!-- <geom type="box" size=".5 .5 .5" pos="0 0 -.5"/> -->
+    <!-- </body> -->
+    <!-- <body pos="0 0 1"> -->
+    <include file="valve_collision.xml"/>
+    <!-- </body> -->
+  </worldbody>
+</mujoco>
