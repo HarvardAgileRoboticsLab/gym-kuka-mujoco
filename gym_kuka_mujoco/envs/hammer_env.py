@@ -16,6 +16,8 @@ class HammerEnv(kuka_env.KukaEnv):
                  obs_scaling=0.1,
                  use_ft_sensor=False,
                  use_rel_pos_err=False,
+                 pos_reward=True,
+                 vel_reward=False,
                  **kwargs):
         
         # Store arguments.
@@ -35,7 +37,8 @@ class HammerEnv(kuka_env.KukaEnv):
         self.nail_idx = self.model.joint_name2id('nail_position')
         self.init_qpos = np.zeros(8)
         self.init_qpos[self.kuka_idx] = np.array([0, -.5, 0, -2, 0, 0, 0])
-
+        self.pos_reward = pos_reward
+        self.vel_reward = vel_reward
 
     def _get_reward(self, state, action):
         '''
@@ -44,8 +47,12 @@ class HammerEnv(kuka_env.KukaEnv):
         reward_info = dict()
         reward = 0.
 
-        reward_info['nail_reward'] = -self.data.qpos[self.nail_idx]
-        reward += reward_info['nail_reward']
+        if self.pos_reward:
+            reward_info['nail_pos_reward'] = -self.data.qpos[self.nail_idx]
+            reward += reward_info['nail_pos_reward']
+        if self.vel_reward:
+            reward_info['nail_vel_reward'] = -self.data.qvel[self.nail_idx]
+            reward += reward_info['nail_vel_reward']
 
         return reward, reward_info
 
