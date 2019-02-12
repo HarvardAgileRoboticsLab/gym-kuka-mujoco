@@ -23,7 +23,8 @@ class ImpedanceController(BaseController):
                  pos_limit=10.0,
                  rot_limit=10.0,
                  model_path='full_kuka_no_collision_no_gravity.xml',
-                 site_name='ee_site'):
+                 site_name='ee_site',
+                 controlled_joints=None):
         super(ImpedanceController, self).__init__(sim)
 
         # Create a model for control
@@ -52,6 +53,10 @@ class ImpedanceController(BaseController):
 
         self.stiffness = np.array([1., 1., 1., .1, .1, .1])
         self.damping = 0.
+
+        self.controlled_joints = controlled_joints
+        if self.controlled_joints is not None:
+            self.controlled_joints = [self.model.joint_name2id(joint) for joint in self.controlled_joints]
 
     def set_action(self, action):
         '''
@@ -90,6 +95,12 @@ class ImpedanceController(BaseController):
         mujoco_py.functions.mj_inverse(self.model, self.sim.data)
         id_torque = self.sim.data.qfrc_inverse[:]
         
-        return id_torque + external_force
+        generalized_force = id_torque + external_force
+        if self.controlled_joints is None:
+            torque = generalized_force
+        else:
+            torque = generalized_force[self.controlled_joints]
+        
+        return torque
 
 register_controller(ImpedanceController, "ImpedanceController")

@@ -1,0 +1,12 @@
+<mujoco>
+  <body name="peg" euler="0 0 0" pos="0 0 0.05">
+    <inertial pos="0 0 0" mass="1"/>
+    <geom class="visual" type="cylinder" pos="0 0 0.01862" size="0.031 0.01862"/>
+    <geom class="visual" type="box" pos="0 0 0.042" size="0.038125 0.02541 0.00476"/>
+    <geom class="visual" type="cylinder" pos="0 0 0.07789" size="0.006725 0.035"/>
+    <geom class="visual" type="cylinder" euler="0 1.5707963267948966 0" pos="0 0 0.14" size="0.03 0.03"/>
+
+    <site name="hammer_tip" pos="-0.03 0 0.14" euler="0 0 0" size="0.005, 0.005, 0.005"/>
+    <site name="peg_ft_site" pos="0 0 0" euler="0 0 0" size="0.005, 0.005, 0.005"/>
+  </body>
+</mujoco>

@@ -37,11 +37,32 @@ def test_nail_model_friction():
 
 def test_full_hammer_model():
     model_path = os.path.join(kuka_asset_dir(), 'full_hammer_experiment_no_gravity.xml')
-    qpos = np.array([0, -.5, 0, -2, 0, .5, 0, 0])
+    model = mujoco_py.load_model_from_path(model_path)
+
+    joint_idx = [model.joint_name2id('kuka_joint_{}'.format(i)) for i in range(1,8)]
+    nail_idx = model.joint_name2id('nail_position')
+    
+    qpos = np.zeros(8)
     qvel = np.zeros(8)
+    qpos[joint_idx] = np.array([0, -.5, 0, -2, 0, 0, 0])
+    qvel[joint_idx] = np.array([0, 0, 0, 0, 0, 20, 0])
+    sim_mujoco(model_path, qpos, qvel)
+
+def test_full_hammer_model_no_collision():
+    model_path = os.path.join(kuka_asset_dir(), 'full_hammer_experiment_no_collision_no_gravity.xml')
+    model = mujoco_py.load_model_from_path(model_path)
+
+    joint_idx = [model.joint_name2id('kuka_joint_{}'.format(i)) for i in range(1,8)]
+    nail_idx = model.joint_name2id('nail_position')
+    
+    qpos = np.zeros(8)
+    qvel = np.zeros(8)
+    qpos[joint_idx] = np.array([0, -.5, 0, -2, 0, 0, 0])
+    qvel[joint_idx] = np.array([0, 0, 0, 0, 0, 20, 0])
     sim_mujoco(model_path, qpos, qvel)
 
 if __name__ == "__main__":
     # test_nail_model()
     # test_nail_model_friction()
     test_full_hammer_model()
+    # test_full_hammer_model_no_collision()

@@ -33,12 +33,11 @@
     <body name="kuka_table" pos="0 0 1">
       <geom class="collision" type="box" size=".5 .5 .5" pos="0 0 -.5" />
       <body name="kuka_base" pos=".2 0 0">
-        <include file="kuka/kuka_mesh_collision_hammer_ee.xml"/>
+        <include file="kuka/kuka_no_collision_hammer_ee.xml"/>
       </body>
     </body>
     <body name="experiment_table" pos=".65 0 1.4">
-      <!-- <geom class="collision" type="box" size=".5 .5 .5" pos=".3 0 -.5" /> -->
-      <include file="hammer/nail_collision.xml"/>
+      <include file="hammer/nail_no_collision.xml"/>
     </body>
   </worldbody>
 

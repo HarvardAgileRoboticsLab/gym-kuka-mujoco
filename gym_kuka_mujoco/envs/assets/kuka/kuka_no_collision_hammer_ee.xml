@@ -1,0 +1,44 @@
+<?xml version="1.0" ?>
+
+<mujoco>
+  <body name="kuka_link_0">
+    <geom class="visual" type="mesh" mesh="kuka_link_0_mesh" material="kuka_grey"/>
+    <body name="kuka_link_1" pos="0 0 0.1575">
+      <joint name="kuka_joint_1" axis="0 0 1"/>
+      <inertial euler="0 0 0" pos="0 -0.03 0.12" mass="5.76" diaginertia="0.033 0.0333 0.0123"/>
+      <geom class="visual" type="mesh" mesh="kuka_link_1_mesh" material="kuka_grey"/>
+      <body name="kuka_link_2" euler="1.570796326794897 3.141592653589793 0" pos="0 0 0.2025">
+        <joint name="kuka_joint_2" axis="0 0 1"/>
+        <inertial euler="0 0 0" pos="0.0003 0.059 0.042" mass="6.35" diaginertia="0.0305 0.0304 0.011"/>
+        <geom class="visual" type="mesh" mesh="kuka_link_2_mesh" material="kuka_orange"/>
+        <body name="kuka_link_3" euler="1.570796326794897 3.141592653589793 0" pos="0 0.2045 0">
+          <joint name="kuka_joint_3" axis="0 0 1"/>
+          <inertial euler="0 0 0" pos="0 0.03 0.13" mass="3.5" diaginertia="0.025 0.0238 0.0076"/>
+          <geom class="visual" type="mesh" mesh="kuka_link_3_mesh" material="kuka_grey"/>
+          <body name="kuka_link_4" euler="1.570796326794897 0 0" pos="0 0 0.2155">
+            <joint name="kuka_joint_4" axis="0 0 1"/>
+            <inertial euler="0 0 0" pos="0 0.067 0.034" mass="3.5" diaginertia="0.017 0.0164 0.006"/>
+            <geom class="visual" type="mesh" mesh="kuka_link_4_mesh" material="kuka_orange"/>
+            <body name="kuka_link_5" euler="-1.570796326794897 0 3.141592653589793" pos="0 0.1845 0">
+              <joint name="kuka_joint_5" axis="0 0 1"/>
+              <inertial euler="0 0 0" pos="0.0001 0.021 0.076" mass="3.5" diaginertia="0.01 0.0087 0.00449"/>
+              <geom class="visual" type="mesh" mesh="kuka_link_5_mesh" material="kuka_grey"/>
+              <body name="kuka_link_6" euler="1.570796326794897 0 0" pos="0 0 0.2155">
+                <joint name="kuka_joint_6" axis="0 0 1"/>
+                <inertial euler="0 0 0" pos="0 0.0006 0.0004" mass="1.8" diaginertia="0.0049 0.0047 0.0036"/>
+                <geom class="visual" type="mesh" mesh="kuka_link_6_mesh" material="kuka_orange"/>
+                <body name="kuka_link_7" euler="-1.570796326794897 0 0" pos="0 0.081 0">
+                  <joint name="kuka_joint_7" axis="0 0 1"/>
+                  <inertial euler="0 0 0" pos="0 0 0.02" mass="1.2" diaginertia="0.001 0.001 0.001"/>
+                  <geom class="visual" type="mesh" mesh="kuka_link_7_mesh" material="kuka_grey"/>
+                  <site name="ee_site" pos="0 0 0.05" euler="0 0 0" size="0.005, 0.005, 0.005"/>
+                  <include file="hammer/hammer_no_collision.xml"/>
+                </body>
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+    </body>
+  </body>
+</mujoco>
