@@ -3,17 +3,9 @@
         "ent_coef": 0.01,
         "gamma": 1.0,
         "learning_rate": 0.001,
-        "n_steps": 2048,
+        "n_steps": 256,
         "verbose": 0,
-        "cliprange":0.2,
-        "policy_kwargs": {
-                "net_arch": [
-                    {
-                        "pi": [128, 128],
-                        "vf": [128, 128]
-                    }
-                ]
-            }
+        "cliprange":0.2
     },
     "alg": "PPO2",
     "env": "PegInsertionEnv",
@@ -32,7 +24,9 @@
         "quadratic_cost": true,
         "hole_id": 50,
         "random_target": true,
-        "use_rel_pos_err": true
+        "use_rel_pos_err": true,
+        "random_target": true,
+        "random_hole_file": "random_reachable_holes_small_randomness.npy"
     },
     "info_keywords": [
         "tip_distance",

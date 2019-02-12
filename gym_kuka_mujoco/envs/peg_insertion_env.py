@@ -157,10 +157,14 @@ class PegInsertionEnv(kuka_env.KukaEnv):
 
         if self.use_rel_pos_err:
             pos_obs = pos[0] - pos[1]
+            quat_peg_tip = mat2Quat(rot[0])
+            quat_hole_base = mat2Quat(rot[1])
+            rot_obs = subQuat(quat_peg_tip, quat_hole_base)
         else:
             pos_obs = pos[1].copy()
+            rot_obs = mat2Quat(rot[1])
         
-        return pos_obs
+        return np.concatenate([pos_obs, rot_obs])
 
     def _reset_state(self):
         '''
