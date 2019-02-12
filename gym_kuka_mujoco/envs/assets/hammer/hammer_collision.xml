@@ -1,0 +1,11 @@
+<mujoco>
+  <body name="nail_base" euler="0 0 0" pos="0 0 0">
+    <body name="nail" euler="0 0 0" pos="0 0 0">
+      <joint type="prismatic" name="valve_position" axis="0 0 1.0" limited="false" frictionloss=".1"/>
+      <geom class="collision" type="cylinder" euler="0 0 0" pos="0 0 0.02" size="0.0075 0.02" mass=".05"/>
+      <site name="nail_top" pos="0 0 0" euler="0 0 0" size="0.005 0.005 0.005"/>
+    </body>
+
+    <geom class="collision" type="box" euler="0 0 0" pos="0 0 0" size="0.1 0.1 0.1"/>
+  </body>
+</mujoco>

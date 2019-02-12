@@ -24,6 +24,7 @@ class PegInsertionEnv(kuka_env.KukaEnv):
                  linear_cost=False,
                  logarithmic_cost=False,
                  sparse_cost=False,
+                 random_hole_file='random_reachable_holes_small_randomness.npy',
                  **kwargs):
         
         # Store arguments.
@@ -53,7 +54,7 @@ class PegInsertionEnv(kuka_env.KukaEnv):
 
         # Compute good states using inverse kinematics.
         if self.random_target:
-            self.reachable_holes = np.load(os.path.join(kuka_asset_dir(),'random_reachable_holes.npy'))
+            self.reachable_holes = np.load(os.path.join(kuka_asset_dir(), random_hole_file))
             self._reset_target()
         else:
             self.good_states = hole_insertion_samples(self.sim, range=[0.,0.06])
@@ -142,22 +143,24 @@ class PegInsertionEnv(kuka_env.KukaEnv):
             # Compute F/T sensor data
             ft_obs = self.sim.data.sensordata
             
-            # Compute relative position error
-            pos, rot = forwardKinSite(self.sim, ['peg_tip','hole_base'])
-            pos_err = pos[0] - pos[1]
 
             obs = obs / self.obs_scaling
 
         if self.use_ft_sensor:
             obs = np.concatenate([obs, ft_obs])
 
-        if self.use_rel_pos_err:
-            obs = np.concatenate([obs, pos_err])
-
         return obs
 
     def _get_target_obs(self):
-        raise NotImplementedError
+        # Compute relative position error
+        pos, rot = forwardKinSite(self.sim, ['peg_tip','hole_base'])
+
+        if self.use_rel_pos_err:
+            pos_obs = pos[0] - pos[1]
+        else:
+            pos_obs = pos[1].copy()
+        
+        return pos_obs
 
     def _reset_state(self):
         '''
