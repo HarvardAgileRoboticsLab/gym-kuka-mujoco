@@ -24,6 +24,7 @@ class ImpedanceControllerV2(BaseController):
                  rot_limit=10.0,
                  model_path='full_kuka_no_collision_no_gravity.xml',
                  site_name='ee_site',
+                 stiffness=0.02,
                  controlled_joints=None):
         super(ImpedanceControllerV2, self).__init__(sim)
 
@@ -51,7 +52,7 @@ class ImpedanceControllerV2(BaseController):
         self.pos_set = np.zeros(3)
         self.quat_set = identity_quat.copy()
 
-        self.stiffness = np.array([1., 1., 1., .1, .1, .1])
+        self.stiffness = np.ones(6)*stiffness
         self.damping = 0.
 
         self.controlled_joints = controlled_joints
@@ -96,7 +97,6 @@ class ImpedanceControllerV2(BaseController):
         self.sim.data.qacc[:] = acc_des
         mujoco_py.functions.mj_inverse(self.model, self.sim.data)
         id_torque = self.sim.data.qfrc_inverse[:].copy()
-        print(impedance_acc_des)
         
         generalized_force = id_torque
         if self.controlled_joints is None:
