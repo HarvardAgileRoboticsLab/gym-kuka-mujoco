@@ -35,13 +35,14 @@ def compute_average_stiffness_forbenius_norm(controller, sim):
     qpos_min = sim.model.jnt_range[:,0]
     qpos_max = sim.model.jnt_range[:,1]
     stiffnesses = []
-    for i in range(100):
+    for i in range(10000):
         action = controller.action_space.sample()
         qpos = np.random.uniform(qpos_min, qpos_max)
+        qpos = .5*np.ones_like(qpos_min)
         stiffnesses.append(compute_stiffness(controller, sim, qpos, action))
 
     norms = [np.linalg.norm(s) for s in stiffnesses]
-    return np.mean(norms)
+    return np.median(norms)
     # return np.mean(stiffnesses, axis=0)
 
 if __name__ == "__main__":

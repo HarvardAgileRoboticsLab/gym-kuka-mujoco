@@ -23,6 +23,7 @@ class ImpedanceController(BaseController):
                  pos_limit=10.0,
                  rot_limit=10.0,
                  model_path='full_kuka_no_collision_no_gravity.xml',
+                 stiffness=10.0,
                  site_name='ee_site',
                  controlled_joints=None):
         super(ImpedanceController, self).__init__(sim)
@@ -51,7 +52,7 @@ class ImpedanceController(BaseController):
         self.pos_set = np.zeros(3)
         self.quat_set = identity_quat.copy()
 
-        self.stiffness = np.array([1., 1., 1., .1, .1, .1])
+        self.stiffness = np.ones(6)*stiffness
         self.damping = 0.
 
         self.controlled_joints = controlled_joints

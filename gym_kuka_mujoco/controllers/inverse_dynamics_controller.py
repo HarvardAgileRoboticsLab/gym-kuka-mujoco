@@ -17,7 +17,7 @@ class InverseDynamicsController(BaseController):
                  model_path='full_kuka_no_collision_no_gravity.xml',
                  action_scale=1.,
                  action_limit=1.,
-                 kp_id=100.,
+                 kp_id=10.,
                  kd_id='auto',
                  controlled_joints=None):
         super(InverseDynamicsController, self).__init__(sim)

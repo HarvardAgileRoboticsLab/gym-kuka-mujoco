@@ -24,7 +24,7 @@ class ImpedanceControllerV2(BaseController):
                  rot_limit=10.0,
                  model_path='full_kuka_no_collision_no_gravity.xml',
                  site_name='ee_site',
-                 stiffness=0.02,
+                 stiffness=1.0,
                  controlled_joints=None):
         super(ImpedanceControllerV2, self).__init__(sim)
 
