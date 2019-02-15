@@ -88,13 +88,15 @@ class ImpedanceControllerV2(BaseController):
         jpos, jrot = forwardKinJacobianSite(self.sim, self.site_name, recompute=False)
         J = np.vstack((jpos, jrot))
         impedance_acc_des = J.T.dot(np.linalg.solve(J.dot(J.T), self.stiffness*dframe))
+
         # external_force = J.T.dot(self.stiffness*dframe) # virtual force on the end effector
 
         # Cancel other dynamics and add virtual damping using inverse dynamics.
         acc_des = -self.damping*self.sim.data.qvel + impedance_acc_des
         self.sim.data.qacc[:] = acc_des
         mujoco_py.functions.mj_inverse(self.model, self.sim.data)
-        id_torque = self.sim.data.qfrc_inverse[:]
+        id_torque = self.sim.data.qfrc_inverse[:].copy()
+        print(impedance_acc_des)
         
         generalized_force = id_torque
         if self.controlled_joints is None:
