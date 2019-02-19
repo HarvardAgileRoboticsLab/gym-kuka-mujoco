@@ -51,6 +51,8 @@ class TBWrapper(Wrapper):
                     tf.Summary.Value(tag="eval/" + key + "/min", simple_value=minimum),
                     tf.Summary.Value(tag="eval/" + key + "/max", simple_value=maximum),
                     tf.Summary.Value(tag="eval/" + key + "/sum", simple_value=total),
+                    tf.Summary.Value(tag="eval/" + key + "/initial", simple_value=value[0]),
+                    tf.Summary.Value(tag="eval/" + key + "/final", simple_value=value[-1]),
                 ])
             summary = tf.Summary(value=summary_values)
             self.writer.add_summary(summary, self.total_steps)
@@ -125,6 +127,8 @@ class TBVecEnvWrapper(VecEnvWrapper):
                         tf.Summary.Value(tag="eval/" + key + "/min", simple_value=minimum),
                         tf.Summary.Value(tag="eval/" + key + "/max", simple_value=maximum),
                         tf.Summary.Value(tag="eval/" + key + "/sum", simple_value=total),
+                        tf.Summary.Value(tag="eval/" + key + "/initial", simple_value=value[0]),
+                        tf.Summary.Value(tag="eval/" + key + "/final", simple_value=value[-1]),
                     ])
                 summary = tf.Summary(value=summary_values)
                 self.writer.add_summary(summary, self.total_steps + i)

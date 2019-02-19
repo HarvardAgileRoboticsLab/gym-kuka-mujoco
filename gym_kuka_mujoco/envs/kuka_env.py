@@ -53,6 +53,8 @@ class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         # Take the action space from the controller.
         self.action_space = self.controller.action_space
 
+        self.last_action = None
+
     def viewer_setup(self):
         '''
         Overwrites the MujocoEnv method to make the camera point at the base.
@@ -75,6 +77,7 @@ class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
 
         # Set the action to be used for the simulation.
         self._update_action(action)
+        self.last_action = action
 
         # Get the reward from the state and action.
         state = np.concatenate((self.sim.data.qpos[:], self.sim.data.qvel[:]))
