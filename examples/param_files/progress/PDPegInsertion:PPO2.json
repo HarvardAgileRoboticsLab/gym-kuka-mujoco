@@ -1,0 +1,34 @@
+{
+    "actor_options": {
+        "ent_coef": 0.01,
+        "gamma": 1.0,
+        "learning_rate": 0.001,
+        "n_steps": 256,
+        "verbose": 0,
+        "cliprange":0.2
+    },
+    "alg": "PPO2",
+    "env": "PegInsertionEnv",
+    "env_options": {
+        "controller": "RelativePDController",
+        "controller_options": {
+            "set_velocity": false,
+            "action_scale": 0.1
+        },
+        "gravity": false,
+        "frame_skip": 50,
+        "time_limit": 2.0,
+        "logarithmic_cost": true,
+        "quadratic_cost": true,
+        "hole_id": 50
+    },
+    "info_keywords": [
+        "tip_distance",
+        "success"
+    ],
+    "learning_options": {
+        "total_timesteps": 2000000
+    },
+    "n_env": 8,
+    "policy_type": "MlpPolicy"
+}
