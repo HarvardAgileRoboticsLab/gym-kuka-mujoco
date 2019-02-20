@@ -1,0 +1,28 @@
+{
+    "actor_options": {
+    },
+    "alg": "PPO",
+    "env": "KukaEnv",
+    "env_options": {
+        "controller": "PDController",
+        "controller_options": {
+            "action_scale": 1.0,
+            "action_limit": 1.0
+        },
+        "frame_skip": 50,
+        "time_limit": 2.0,
+        "logarithmic_cost": true,
+        "quadratic_cost": true,
+        "hole_id": 50
+    },
+    "info_keywords": [
+        "tip_distance",
+        "success"
+    ],
+    "learning_options": {
+        "total_timesteps": 2000000
+    },
+    "n_env": 1,
+    "vectorized": false,
+    "policy_type": "MlpPolicy"
+}
