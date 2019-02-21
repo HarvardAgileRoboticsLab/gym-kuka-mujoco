@@ -1,0 +1,13 @@
+<mujoco>
+  <body name="pushing_table" euler="0 0 0" pos=".8 0 1.29">
+    <geom class="visual" type="box" euler="0 0 0" pos="0 0 0" size=".5 .5 0.01"/>
+    <geom class="visual" type="box" euler="0 0 0" pos=".49 0 0.02" size=".01 .5 0.01"/>
+    <geom class="visual" type="box" euler="0 0 0" pos="-.49 0 0.02" size=".01 .5 0.01"/>
+    <geom class="visual" type="box" euler="0 0 0" pos="0 .49 0.02" size=".5 .01 0.01"/>
+    <geom class="visual" type="box" euler="0 0 0" pos="0 -.49 0.02" size=".5 .01 0.01"/>
+  </body>
+  <body name="block" euler="0 0 0" pos="1 0 1.5">
+      <joint type="free" name="block_position"/>
+      <geom class="visual" type="box" euler="0 0 0" pos="0 0 0" size="0.1 0.025 0.01" mass=".05" rgba="0.4 0.3 0.3 1.0"/>
+    </body>
+</mujoco>
