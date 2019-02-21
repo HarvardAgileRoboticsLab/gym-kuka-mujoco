@@ -1,7 +1,7 @@
 import numpy as np
 import gym
 
-from gym_kuka_mujoco.utils.mujoco_utils import kuka_subtree_mass
+from gym_kuka_mujoco.utils.mujoco_utils import kuka_subtree_mass, get_qpos_indices, get_qvel_indices, get_actuator_indices
 from .base_controller import BaseController
 from . import register_controller
 
@@ -26,10 +26,7 @@ class PDController(BaseController):
 
         # Get the controlled joints
         if controlled_joints:
-            self.controlled_joints = [
-                sim.model.joint_name2id(joint_name)
-                for joint_name in controlled_joints
-            ]
+            self.controlled_joints = get_qpos_indices(controlled_joints)
         else:
             self.controlled_joints = range(sim.model.nq)
 

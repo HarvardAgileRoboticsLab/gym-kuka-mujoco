@@ -104,6 +104,7 @@ class ImpedanceControllerV2(BaseController):
         else:
             torque = generalized_force[self.controlled_joints]
         
+        import pdb; pdb.set_trace()
         return torque
 
 register_controller(ImpedanceControllerV2, "ImpedanceControllerV2")
