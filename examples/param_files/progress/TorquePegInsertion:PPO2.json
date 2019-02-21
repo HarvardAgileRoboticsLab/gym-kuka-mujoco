@@ -19,7 +19,9 @@
         "logarithmic_cost": true,
         "quadratic_cost": true,
         "hole_id": 50,
-        "gravity": false
+        "gravity": false,
+        "random_target": true,
+        "use_rel_pos_err": true
     },
     "info_keywords": [
         "tip_distance",
