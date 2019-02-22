@@ -23,7 +23,8 @@
         "rot_reward": true,
         "peg_tip_height_reward": true,
         "peg_tip_orientation_reward": true,
-        "contact_reward": false
+        "contact_reward": false,
+        "random_init_pos_file": "random_pushing_poses.npy"
     },
     "info_keywords": [
         "block_pos_dist",
