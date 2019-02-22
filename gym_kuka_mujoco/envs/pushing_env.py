@@ -52,7 +52,7 @@ class PushingEnv(kuka_env.KukaEnv):
         # self.init_qpos[self.kuka_pos_idx] = np.array([0, 0, 0, -2, 0, .9, 0])
         self.init_qpos[self.block_pos_idx] = np.array([.7, 0, 1.2, 1, 0, 0, 0])
 
-        self.block_target_position = np.array([.7, 0, 1.2, 1, 0, 0, 0])
+        self.block_target_position = np.array([.7, .1, 1.2, 1, 0, 0, 0])
 
     def _get_reward(self, state, action):
         '''
