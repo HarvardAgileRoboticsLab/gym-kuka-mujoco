@@ -56,7 +56,8 @@ class PushingEnv(kuka_env.KukaEnv):
         # Set the initial conditions
         if random_init_pos_file is None:
             self.init_qpos_kuka = [
-                np.array([-0.07025654, 0.6290658, -0.00323965, -1.64794655, 0.0025054, 0.86458435, -0.07450195]), # positioned to the -y and +x of the block
+                np.array([ 2.42308236, -1.01571971, 1.13996587, 1.56773622, 2.17062176, 1.20969055, 0.61193454]), # positioned to the -y and +x of the skinny block
+                # np.array([-0.07025654, 0.6290658, -0.00323965, -1.64794655, 0.0025054, 0.86458435, -0.07450195]), # positioned to the -y and +x of the block
                 # np.array([ 0.74946844, 0.98614739, 1.88508577, 1.80629075, 1.02973813, -1.18159247, 2.28928049]), # positioned to the -y of the block
                 # np.array([ 0.84985144, 0.97250624, 1.83905997, 1.80017142, 1.01155183, -1.2224522, 2.37542027]), # positioned above the block (bent elbow)
                 # np.array([-7.25614932e-06,  5.04007949e-01,  9.31413754e-06, -1.80017133e+00, -6.05474878e-06,  8.37413374e-01,  4.95278012e-06]), # positioned above the block (straight elbow)
@@ -69,7 +70,8 @@ class PushingEnv(kuka_env.KukaEnv):
         self.table_height = self.init_qpos_block[2]
 
         # self.block_target_position = np.array([.7, .1, 1.2, 0.70710678118, 0, 0, 0.70710678118])
-        self.block_target_position = np.array([.7, .1, 1.2, 0., 0., 0., 1.])
+        # self.block_target_position = np.array([.7, .1, 1.2, 0., 0., 0., 1.])
+        self.block_target_position = np.array([0.7, 0.1, 1.2, 0.92387953251, 0, 0, 0.38268343236])
         self.tip_geom_id = self.model.geom_name2id('peg_tip_geom')
         self.block_geom_id = self.model.geom_name2id('block_geom')
 
@@ -86,7 +88,7 @@ class PushingEnv(kuka_env.KukaEnv):
             reward += reward_info['block_pos_reward']
         if self.rot_reward:
             rot_err = subQuat(self.data.qpos[self.block_pos_idx][3:], self.block_target_position[3:])
-            reward_info['block_rot_reward'] = -np.linalg.norm(rot_err)
+            reward_info['block_rot_reward'] = -np.linalg.norm(rot_err)/20.0
             reward += reward_info['block_rot_reward']
         if self.pos_vel_reward:
             raise NotImplementedError

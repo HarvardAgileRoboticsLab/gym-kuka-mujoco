@@ -35,7 +35,7 @@ def gen_random_pushing_poses(sim, qpos_idx, N=10):
         world_pos = brick_pos + delta
         
         angle = np.random.uniform(-np.pi, np.pi)
-        world_quat = np.array([0., np.sin(angle), np.cos(angle), 0])
+        world_quat = np.array([0., np.sin(angle/2), np.cos(angle/2), 0])
 
         try:
             q_opt = inverseKin(sim, q_init, q_nom, body_pos, world_pos, world_quat, peg_body_id, qpos_idx=qpos_idx, raise_on_fail=True)

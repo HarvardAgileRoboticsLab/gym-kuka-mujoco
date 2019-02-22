@@ -47,6 +47,7 @@ def test_full_pushing_model_no_gravity():
     qpos = np.zeros(14)
     qvel = np.zeros(13)
     qpos[7:14] = np.array([.7, 0, 1.2, 1, 0, 0, 0])
+    # qpos[7:14] = np.array([0.7, 0.1, 1.2, 0.92387953251, 0, 0, 0.38268343236])
     qpos[joint_idx] = np.array([0, 0, 0, -2, 0, .9, 0])
     sim_mujoco(model_path, qpos, qvel)
 

@@ -22,8 +22,8 @@
         "pos_reward": true,
         "rot_reward": false,
         "peg_tip_height_reward": true,
-        "peg_tip_orientation_reward": true,
-        "random_init_pos_file": "random_pushing_poses.npy"
+        "peg_tip_orientation_reward": true
+        // "random_init_pos_file": "random_pushing_poses.npy"
     },
     "info_keywords": [
         "block_pos_dist",
