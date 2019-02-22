@@ -23,7 +23,7 @@ q_init = np.random.random(7)
 peg_tip_idx = model.site_name2id('peg_tip')
 body_pos = model.site_pos[peg_tip_idx]
 # world_pos = np.array([0.7, 0., 1.22]) # above the block
-world_pos = np.array([0.7, -0.04, 1.20]) # to the -y of the block
+world_pos = np.array([0.75, -0.04, 1.20]) # to the -y of the block
 world_quat = np.array([0, 1., 0, 0])
 qpos_idx = range(7)
 q_opt = inverseKin(sim, q_init, q_nom, body_pos, world_pos, world_quat, body_id, qpos_idx=qpos_idx)

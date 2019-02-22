@@ -22,6 +22,7 @@ class PushingEnv(kuka_env.KukaEnv):
                  pos_vel_reward=False,
                  rot_vel_reward=False,
                  peg_tip_height_reward=True,
+                 peg_tip_orientation_reward=True,
                  use_ft_sensor=False,
                  **kwargs):
         
@@ -34,6 +35,7 @@ class PushingEnv(kuka_env.KukaEnv):
         self.pos_vel_reward = pos_vel_reward
         self.rot_vel_reward = rot_vel_reward
         self.peg_tip_height_reward = peg_tip_height_reward
+        self.peg_tip_orientation_reward = peg_tip_orientation_reward
         
         # Resolve the models path based on the hole_id.
         kwargs['model_path'] = kwargs.get('model_path', 'full_pushing_experiment.xml')
@@ -49,7 +51,8 @@ class PushingEnv(kuka_env.KukaEnv):
         self.block_vel_idx = get_qvel_indices(self.model, ['block_position'])
 
         self.init_qpos = np.zeros(self.model.nq)
-        self.init_qpos[self.kuka_pos_idx] = np.array([ 0.74946844, 0.98614739, 1.88508577, 1.80629075, 1.02973813, -1.18159247, 2.28928049]) # positioned to the -y of the block
+        self.init_qpos[self.kuka_pos_idx] = np.array([-0.07025654, 0.6290658, -0.00323965, -1.64794655, 0.0025054, 0.86458435, -0.07450195]) # positioned to the -y and +x of the block
+        # self.init_qpos[self.kuka_pos_idx] = np.array([ 0.74946844, 0.98614739, 1.88508577, 1.80629075, 1.02973813, -1.18159247, 2.28928049]) # positioned to the -y of the block
         # self.init_qpos[self.kuka_pos_idx] = np.array([ 0.84985144, 0.97250624, 1.83905997, 1.80017142, 1.01155183, -1.2224522, 2.37542027]) # positioned above the block (bent elbow)
         # self.init_qpos[self.kuka_pos_idx] = np.array([-7.25614932e-06,  5.04007949e-01,  9.31413754e-06, -1.80017133e+00, -6.05474878e-06,  8.37413374e-01,  4.95278012e-06]) # positioned above the block (straight elbow)
         self.init_qpos[self.block_pos_idx] = np.array([.7, 0, 1.2, 1, 0, 0, 0])
@@ -85,13 +88,19 @@ class PushingEnv(kuka_env.KukaEnv):
             rot_vel = self.data.qvel[self.block_vel_idx[3:]]
             reward_info['block_rot_vel_reward'] = -np.linalg.norm(rot_vel)
             reward += reward_info['block_rot_vel_reward']
-        if self.peg_tip_height_reward:
+        if self.peg_tip_height_reward or self.peg_tip_orientation_reward:
             tip_pos, tip_rot = forwardKinSite(self.sim, ['peg_tip'])
             tip_pos = tip_pos[0]
             tip_rot = tip_rot[0]
+        if self.peg_tip_height_reward:
             tip_height_err = tip_pos[2] - self.table_height
             reward_info['peg_tip_height_reward'] = -tip_height_err**2
             reward += reward_info['peg_tip_height_reward']
+        if self.peg_tip_orientation_reward:
+            tip_quat = mat2Quat(tip_rot)
+            tip_rot_err = subQuat(tip_quat, np.array([0., 1., 0., 0.]))
+            reward_info['peg_tip_orientation_reward'] = -(np.linalg.norm(tip_rot_err)/10)**2
+            reward += reward_info['peg_tip_orientation_reward']
 
         return reward, reward_info
 

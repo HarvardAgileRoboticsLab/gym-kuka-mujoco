@@ -21,7 +21,8 @@
         "use_rel_pos_err": true,
         "pos_reward": false,
         "rot_reward": true,
-        "peg_tip_height_reward": false
+        "peg_tip_height_reward": false,
+        "peg_tip_orientation_reward": false
     },
     "info_keywords": [
         "block_pos_dist",
