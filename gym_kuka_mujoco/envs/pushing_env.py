@@ -23,7 +23,9 @@ class PushingEnv(kuka_env.KukaEnv):
                  rot_vel_reward=False,
                  peg_tip_height_reward=True,
                  peg_tip_orientation_reward=True,
+                 contact_reward=False,
                  use_ft_sensor=False,
+                 random_init_pos_file=None,
                  **kwargs):
         
         # Store arguments.
@@ -36,7 +38,8 @@ class PushingEnv(kuka_env.KukaEnv):
         self.rot_vel_reward = rot_vel_reward
         self.peg_tip_height_reward = peg_tip_height_reward
         self.peg_tip_orientation_reward = peg_tip_orientation_reward
-        
+        self.contact_reward = contact_reward
+
         # Resolve the models path based on the hole_id.
         kwargs['model_path'] = kwargs.get('model_path', 'full_pushing_experiment.xml')
         super(PushingEnv, self).__init__(*args, **kwargs)
@@ -50,16 +53,25 @@ class PushingEnv(kuka_env.KukaEnv):
         self.block_pos_idx = get_qpos_indices(self.model, ['block_position'])
         self.block_vel_idx = get_qvel_indices(self.model, ['block_position'])
 
-        self.init_qpos = np.zeros(self.model.nq)
-        self.init_qpos[self.kuka_pos_idx] = np.array([-0.07025654, 0.6290658, -0.00323965, -1.64794655, 0.0025054, 0.86458435, -0.07450195]) # positioned to the -y and +x of the block
-        # self.init_qpos[self.kuka_pos_idx] = np.array([ 0.74946844, 0.98614739, 1.88508577, 1.80629075, 1.02973813, -1.18159247, 2.28928049]) # positioned to the -y of the block
-        # self.init_qpos[self.kuka_pos_idx] = np.array([ 0.84985144, 0.97250624, 1.83905997, 1.80017142, 1.01155183, -1.2224522, 2.37542027]) # positioned above the block (bent elbow)
-        # self.init_qpos[self.kuka_pos_idx] = np.array([-7.25614932e-06,  5.04007949e-01,  9.31413754e-06, -1.80017133e+00, -6.05474878e-06,  8.37413374e-01,  4.95278012e-06]) # positioned above the block (straight elbow)
-        self.init_qpos[self.block_pos_idx] = np.array([.7, 0, 1.2, 1, 0, 0, 0])
-        self.table_height = self.init_qpos[self.block_pos_idx][2]
+        # Set the initial conditions
+        if random_init_pos_file is None:
+            self.init_qpos_kuka = [
+                np.array([-0.07025654, 0.6290658, -0.00323965, -1.64794655, 0.0025054, 0.86458435, -0.07450195]), # positioned to the -y and +x of the block
+                # np.array([ 0.74946844, 0.98614739, 1.88508577, 1.80629075, 1.02973813, -1.18159247, 2.28928049]), # positioned to the -y of the block
+                # np.array([ 0.84985144, 0.97250624, 1.83905997, 1.80017142, 1.01155183, -1.2224522, 2.37542027]), # positioned above the block (bent elbow)
+                # np.array([-7.25614932e-06,  5.04007949e-01,  9.31413754e-06, -1.80017133e+00, -6.05474878e-06,  8.37413374e-01,  4.95278012e-06]), # positioned above the block (straight elbow)
+            ]
+        else:
+            random_init_pos_file = os.path.join(kuka_asset_dir(), random_init_pos_file)
+            self.init_qpos_kuka = np.load(random_init_pos_file)
+
+        self.init_qpos_block = np.array([.7, 0, 1.2, 1, 0, 0, 0])
+        self.table_height = self.init_qpos_block[2]
 
         # self.block_target_position = np.array([.7, .1, 1.2, 0.70710678118, 0, 0, 0.70710678118])
         self.block_target_position = np.array([.7, .1, 1.2, 0., 0., 0., 1.])
+        self.tip_geom_id = self.model.geom_name2id('peg_tip_geom')
+        self.block_geom_id = self.model.geom_name2id('block_geom')
 
     def _get_reward(self, state, action):
         '''
@@ -101,7 +113,16 @@ class PushingEnv(kuka_env.KukaEnv):
             tip_rot_err = subQuat(tip_quat, np.array([0., 1., 0., 0.]))
             reward_info['peg_tip_orientation_reward'] = -(np.linalg.norm(tip_rot_err)/10)**2
             reward += reward_info['peg_tip_orientation_reward']
-
+        if self.contact_reward:
+            contacts = self.sim.data.contact[:self.sim.data.ncon]
+            contact = 0.
+            for c in contacts:
+                geoms = c.geom1, c.geom2
+                if (self.tip_geom_id in geoms) and (self.block_geom_id in geoms):
+                    contact = 1.
+                    break
+            reward_info['contact_reward'] = contact*.1
+            reward += reward_info['contact_reward']
         return reward, reward_info
 
     def _get_info(self):
@@ -109,7 +130,6 @@ class PushingEnv(kuka_env.KukaEnv):
         
         pos_err = self.data.qpos[self.block_pos_idx][:3] - self.block_target_position[:3]
         info['block_pos_dist'] = np.linalg.norm(pos_err)
-
         rot_err = subQuat(self.data.qpos[self.block_pos_idx][3:], self.block_target_position[3:])
         info['block_rot_dist'] = np.linalg.norm(rot_err)
         
@@ -157,7 +177,11 @@ class PushingEnv(kuka_env.KukaEnv):
         '''
         Reset the robot state and return the observation.
         '''
-        qpos = self.init_qpos.copy()
+        # Randomly choose the kuka initial position
+        qpos = np.zeros(self.model.nq)
+        qpos[self.kuka_pos_idx] = self.init_qpos_kuka[self.np_random.choice(len(self.init_qpos_kuka))].copy()
+        # qpos[self.kuka_pos_idx] = self.init_qpos_kuka
+        qpos[self.block_pos_idx] = self.init_qpos_block.copy()
         qvel = np.zeros(self.model.nv)
         self.set_state(qpos, qvel)
 

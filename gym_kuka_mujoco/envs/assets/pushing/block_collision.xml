@@ -8,6 +8,6 @@
   </body>
   <body name="block" euler="0 0 0" pos=".7 0 1.2">
       <joint type="free" name="block_position"/>
-      <geom class="collision" type="box" euler="0 0 0" pos="0 0 0" size="0.1 0.025 0.01" mass=".5" rgba="0.4 0.3 0.3 1.0"/>
+      <geom name="block_geom" class="collision" type="box" euler="0 0 0" pos="0 0 0" size="0.1 0.025 0.01" mass=".5" rgba="0.4 0.3 0.3 1.0"/>
     </body>
 </mujoco>
