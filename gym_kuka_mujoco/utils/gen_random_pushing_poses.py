@@ -20,17 +20,17 @@ def gen_random_pushing_poses(sim, qpos_idx, N=10):
     brick_pos = sim.data.qpos[7:10].copy()
 
     poses = []
-    for i in range(N):
+    while (len(poses) < N):
         if N > 10:
-            print("Generating pose {}".format(i))
-        delta = np.random.normal(scale=0.02, size=3)
-        delta *= np.array([2., 1., 0.])    
+            print("Generating pose {}".format(len(poses)+1))
+        delta = np.random.normal(size=3)
+        delta *= np.array([.075, 0.01, 0.])    
         # world_pos = np.array([0.7, 0., 1.22]) # above the block
         # world_pos = np.array([0.75, -0.04, 1.20]) # to the -y of the block
         if delta[1] > 0:
-            delta[1] += 0.035
+            delta[1] += 0.02
         else:
-            delta[1] -= 0.035
+            delta[1] -= 0.02
 
         world_pos = brick_pos + delta
         
@@ -59,6 +59,7 @@ if __name__ == "__main__":
 
     # Compute the solution
     qpos_idx = range(7)
+    # poses = gen_random_pushing_poses(sim, qpos_idx, N=1000)
     poses = gen_random_pushing_poses(sim, qpos_idx, N=1000)
     # Visualize the solution
     print("Found {} poses".format(len(poses)))
