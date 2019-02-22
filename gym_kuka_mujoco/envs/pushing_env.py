@@ -56,7 +56,8 @@ class PushingEnv(kuka_env.KukaEnv):
         # Set the initial conditions
         if random_init_pos_file is None:
             self.init_qpos_kuka = [
-                np.array([ 2.42308236, -1.01571971, 1.13996587, 1.56773622, 2.17062176, 1.20969055, 0.61193454]), # positioned to the -y and +x of the skinny block
+                np.array([-3.08291276e-02,  8.00410366e-01, -6.76915982e-04, -1.33038224e+00, 5.73359368e-04, 1.01080023e+00, -3.16050986e-02]), # positioned to the -y and +x of the skinny long block
+                # np.array([ 2.42308236, -1.01571971, 1.13996587, 1.56773622, 2.17062176, 1.20969055, 0.61193454]), # positioned to the -y and +x of the skinny block
                 # np.array([-0.07025654, 0.6290658, -0.00323965, -1.64794655, 0.0025054, 0.86458435, -0.07450195]), # positioned to the -y and +x of the block
                 # np.array([ 0.74946844, 0.98614739, 1.88508577, 1.80629075, 1.02973813, -1.18159247, 2.28928049]), # positioned to the -y of the block
                 # np.array([ 0.84985144, 0.97250624, 1.83905997, 1.80017142, 1.01155183, -1.2224522, 2.37542027]), # positioned above the block (bent elbow)
