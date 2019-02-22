@@ -12,7 +12,8 @@
         "time_limit": 2.0,
         "logarithmic_cost": true,
         "quadratic_cost": true,
-        "hole_id": 50
+        "hole_id": 50,
+        "gravity": false
     },
     "info_keywords": [
         "tip_distance",

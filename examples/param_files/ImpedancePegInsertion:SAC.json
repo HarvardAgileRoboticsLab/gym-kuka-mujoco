@@ -9,8 +9,8 @@
             "model_path": "full_peg_insertion_experiment_no_collision.xml",
             "pos_scale": 1.0,
             "rot_scale": 0.5,
-            "pos_limit":5.0,
-            "rot_limit":2.5,
+            "pos_limit": 0.7,
+            "rot_limit": 0.005,
             "site_name": "peg_tip"
         },
         "frame_skip": 50,
