@@ -88,7 +88,7 @@ class ImpedanceControllerV2(BaseController):
         # Compute generalized forces from a virtual external force.
         jpos, jrot = forwardKinJacobianSite(self.sim, self.site_name, recompute=False)
         J = np.vstack((jpos, jrot))
-        impedance_acc_des = J.T.dot(np.linalg.solve(J.dot(J.T), self.stiffness*dframe))
+        impedance_acc_des = J.T.dot(np.linalg.solve(J.dot(J.T) + 1e-6*np.eye(6), self.stiffness*dframe))
 
         # external_force = J.T.dot(self.stiffness*dframe) # virtual force on the end effector
 

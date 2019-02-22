@@ -1,0 +1,37 @@
+{
+    "actor_options": {
+        "ent_coef": 0.01,
+        "gamma": 1.0,
+        "learning_rate": 0.001,
+        "n_steps": 256,
+        "verbose": 0,
+        "cliprange":0.2
+    },
+    "alg": "PPO2",
+    "env": "PegInsertionEnv",
+    "env_options": {
+        "controller": "ImpedanceController",
+        "controller_options": {
+            "model_path": "full_peg_insertion_experiment_no_collision.xml",
+            "pos_scale": 1.0,
+            "rot_scale": 0.5,
+            "site_name": "peg_tip"
+        },
+        "frame_skip": 50,
+        "time_limit": 2.0,
+        "logarithmic_cost": true,
+        "quadratic_cost": true,
+        "hole_id": 50,
+        "random_target": true,
+        "use_rel_pos_err": true
+    },
+    "info_keywords": [
+        "tip_distance",
+        "success"
+    ],
+    "learning_options": {
+        "total_timesteps": 2000000
+    },
+    "n_env": 8,
+    "policy_type": "MlpPolicy"
+}

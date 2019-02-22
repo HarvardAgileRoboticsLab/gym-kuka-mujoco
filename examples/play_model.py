@@ -34,15 +34,30 @@ def load_model(model_path, params):
     replay_model(orig_env, model)
 
 
-def replay_model(env, model, deterministic=True):
+def replay_model(env, model, deterministic=True, num_episodes=None, record=False, render=True):
+    # Don't record data forever.
+    assert (not record) or (num_episodes is not None), \
+        "there must be a finite number of episodes to record the data"
+    
+    # Initialize counts and data.
+    num_episodes = num_episodes if num_episodes else np.inf
+    episode_count = 0
+    infos = []
+
+    # Simulate forward.
     obs = env.reset()
-    while True:
+    while episode_count < num_episodes:
         action, _states = model.predict(obs, deterministic=deterministic)
         clipped_action = np.clip(action, env.action_space.low,
                                  env.action_space.high)
-        obs, reward, done, info = env.step(clipped_action, render=True)
+        obs, reward, done, info = env.step(clipped_action, render=render)
+        if record:
+            infos.append(info)
         if done:
             obs = env.reset()
+            episode_count += 1
+
+    return infos
 
 
 if __name__ == '__main__':

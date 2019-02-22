@@ -124,6 +124,9 @@ class PegInsertionEnv(kuka_env.KukaEnv):
         dist = np.sqrt(pos_err.dot(pos_err))
         info['tip_distance'] = dist
         info['success'] = float(dist < 1e-2)
+        info['qpos'] = self.data.qpos.copy()
+        info['qvel'] = self.data.qvel.copy()
+        info['action'] = self.last_action
         return info
 
     def _get_state_obs(self):
@@ -187,3 +190,6 @@ class PegInsertionEnv(kuka_env.KukaEnv):
         self.good_states = hole_data['good_poses']
         self.sim.data.set_mocap_pos('hole', hole_data['hole_pos'])
         self.sim.data.set_mocap_quat('hole', hole_data['hole_quat'])
+
+# [-0.00336991,  0.76797655, -0.01091426, -1.11394698,  0.0388207 ,  1.3678605 , -0.0077345 ]
+# [-1.03213825e-08,  6.68086145e-01,  1.85550710e-08, -1.12884164e+00,  -1.17948636e-08,  1.34466485e+00,  6.88901499e-09]
