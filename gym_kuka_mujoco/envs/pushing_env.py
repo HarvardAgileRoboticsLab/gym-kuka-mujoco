@@ -34,7 +34,7 @@ class PushingEnv(kuka_env.KukaEnv):
         self.rot_vel_reward = rot_vel_reward
         
         # Resolve the models path based on the hole_id.
-        kwargs['model_path'] = kwargs.get('model_path', 'full_pushing_experiment_no_gravity.xml')
+        kwargs['model_path'] = kwargs.get('model_path', 'full_pushing_experiment.xml')
         super(PushingEnv, self).__init__(*args, **kwargs)
         
         # Compute good states using inverse kinematics.
