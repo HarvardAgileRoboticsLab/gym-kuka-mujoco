@@ -49,9 +49,9 @@ class PushingEnv(kuka_env.KukaEnv):
         self.block_vel_idx = get_qvel_indices(self.model, ['block_position'])
 
         self.init_qpos = np.zeros(self.model.nq)
-        self.init_qpos[self.kuka_pos_idx] = np.array([ 0.84985144,  0.97250624,  1.83905997,  1.80017142,  1.01155183, -1.2224522, 2.37542027])
-        # self.init_qpos[self.kuka_pos_idx] = np.array([-7.25614932e-06,  5.04007949e-01,  9.31413754e-06, -1.80017133e+00, -6.05474878e-06,  8.37413374e-01,  4.95278012e-06])
-        # self.init_qpos[self.kuka_pos_idx] = np.array([0, 0, 0, -2, 0, .9, 0])
+        self.init_qpos[self.kuka_pos_idx] = np.array([ 0.74946844, 0.98614739, 1.88508577, 1.80629075, 1.02973813, -1.18159247, 2.28928049]) # positioned to the -y of the block
+        # self.init_qpos[self.kuka_pos_idx] = np.array([ 0.84985144, 0.97250624, 1.83905997, 1.80017142, 1.01155183, -1.2224522, 2.37542027]) # positioned above the block (bent elbow)
+        # self.init_qpos[self.kuka_pos_idx] = np.array([-7.25614932e-06,  5.04007949e-01,  9.31413754e-06, -1.80017133e+00, -6.05474878e-06,  8.37413374e-01,  4.95278012e-06]) # positioned above the block (straight elbow)
         self.init_qpos[self.block_pos_idx] = np.array([.7, 0, 1.2, 1, 0, 0, 0])
         self.table_height = self.init_qpos[self.block_pos_idx][2]
 
