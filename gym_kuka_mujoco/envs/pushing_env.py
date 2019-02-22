@@ -52,7 +52,8 @@ class PushingEnv(kuka_env.KukaEnv):
         # self.init_qpos[self.kuka_pos_idx] = np.array([0, 0, 0, -2, 0, .9, 0])
         self.init_qpos[self.block_pos_idx] = np.array([.7, 0, 1.2, 1, 0, 0, 0])
 
-        self.block_target_position = np.array([.7, .1, 1.2, 1, 0, 0, 0])
+        # self.block_target_position = np.array([.7, .1, 1.2, 0.70710678118, 0, 0, 0.70710678118])
+        self.block_target_position = np.array([.7, .1, 1.2, 0., 0., 0., 1.])
 
     def _get_reward(self, state, action):
         '''
@@ -63,19 +64,19 @@ class PushingEnv(kuka_env.KukaEnv):
 
         if self.pos_reward:
             pos_err = self.data.qpos[self.block_pos_idx][:3] - self.block_target_position[:3]
-            reward_info['block_pos_reward'] = np.linalg.norm(pos_err)
+            reward_info['block_pos_reward'] = -np.linalg.norm(pos_err)
             reward += reward_info['block_pos_reward']
         if self.rot_reward:
             rot_err = subQuat(self.data.qpos[self.block_pos_idx][3:], self.block_target_position[3:])
-            reward_info['block_rot_reward'] = np.linalg.norm(rot_err)
+            reward_info['block_rot_reward'] = -np.linalg.norm(rot_err)
             reward += reward_info['block_rot_reward']
         if self.pos_vel_reward:
             pos_vel = self.data.qvel[self.block_vel_idx[:3]]
-            reward_info['block_pos_vel_reward'] = np.linalg.norm(pos_vel)
+            reward_info['block_pos_vel_reward'] = -np.linalg.norm(pos_vel)
             reward += reward_info['block_pos_vel_reward']
         if self.rot_vel_reward:
             rot_vel = self.data.qvel[self.block_vel_idx[3:]]
-            reward_info['block_rot_vel_reward'] = np.linalg.norm(rot_vel)
+            reward_info['block_rot_vel_reward'] = -np.linalg.norm(rot_vel)
             reward += reward_info['block_rot_vel_reward']
 
         return reward, reward_info
