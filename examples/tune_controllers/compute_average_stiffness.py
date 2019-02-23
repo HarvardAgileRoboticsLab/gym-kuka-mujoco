@@ -42,6 +42,20 @@ def compute_average_stiffness_forbenius_norm(controller, sim):
     norms = [np.linalg.norm(s) for s in stiffnesses]
     return np.median(norms)
 
+def compute_average_stiffness_forbenius_norm_null_action(controller, sim):
+    qpos_min = sim.model.jnt_range[:,0]
+    qpos_max = sim.model.jnt_range[:,1]
+    stiffnesses = []
+    action_dim = len(controller.action_space.low)
+    for i in range(10000):
+        action = np.zeros(action_dim)
+        qpos = np.random.uniform(qpos_min, qpos_max)
+        qpos = .5*np.ones_like(qpos_min)
+        stiffnesses.append(compute_stiffness(controller, sim, qpos, action))
+
+    norms = [np.linalg.norm(s) for s in stiffnesses]
+    return np.median(norms)
+
 if __name__ == "__main__":
     model_filename = 'full_kuka_mesh_collision.xml'
     model_path = os.path.join(kuka_asset_dir(), model_filename)
@@ -81,68 +95,17 @@ if __name__ == "__main__":
         ),
     }
 
+    # for name, data in controllers.items():
+    #     controller_cls, options = data
+    #     controller = controller_cls(sim, **options)
+    #     stiffness = compute_average_stiffness_forbenius_norm(controller, sim)    
+    #     print("Mean stiffness norm for the {}".format(name))
+    #     print(stiffness) 
+
     for name, data in controllers.items():
-        controller_cls, options = data
-        controller = controller_cls(sim, **options)
-        stiffness = compute_average_stiffness_forbenius_norm(controller, sim)    
-        print("Mean stiffness norm for the {}".format(name))
-        print(stiffness)   
-
-   #  # Direct Torque Controller
-   #  options = dict()
-   #  options["action_scaling"] = 1.
-   #  controller = DirectTorqueController(sim, **options)
-   #  stiffness = compute_average_stiffness_forbenius_norm(controller, sim)
-
-
-   #  # Inverse Dynamics Controller
-   #  options = dict()
-   #  controller = InverseDynamicsController(sim, **options)
-   #  stiffness = compute_average_stiffness_forbenius_norm(controller, sim)
-    
-   #  print("Mean stiffness norm for the InverseDynamicsController")
-   #  print(stiffness)   
-
-   # # PD Controller
-   #  options = dict()
-   #  controller = PDController(sim, **options)
-   #  stiffness = compute_average_stiffness_forbenius_norm(controller, sim)
-    
-   #  print("Mean stiffness norm for the PDController")
-   #  print(stiffness)
-
-   # # Relative PD Controller
-   #  options = dict()
-   #  controller = RelativePDController(sim, **options)
-   #  stiffness = compute_average_stiffness_forbenius_norm(controller, sim)
-    
-   #  print("Mean stiffness norm for the RelativePDController")
-   #  print(stiffness)   
-
-
-   #  # Relative Inverse Dynamics Controller
-   #  options = dict()
-   #  controller = RelativeInverseDynamicsController(sim, **options)
-   #  stiffness = compute_average_stiffness_forbenius_norm(controller, sim)
-    
-   #  print("Mean stiffness norm for the RelativeInverseDynamicsController")
-   #  print(stiffness) 
-
-   #  # Impedance Controller
-   #  options = dict()
-   #  controller = ImpedanceController(sim, **options)
-   #  stiffness = compute_average_stiffness_forbenius_norm(controller, sim)
-    
-   #  print("Mean stiffness norm for the ImpedanceController")
-   #  print(stiffness)   
-
-   #  # Impedance Controller v2
-   #  options = dict()
-   #  controller = ImpedanceControllerV2(sim, **options)
-   #  stiffness = compute_average_stiffness_forbenius_norm(controller, sim)
-    
-   #  print("Mean stiffness norm for the ImpedanceControllerV2")
-   #  print(stiffness)   
-    # c
-    # import pdb; pdb.set_trace()
-        # controller = RelativeInverseDynamicsController(sim)
+        if "Relative" in name or "Impedance" in name:
+            controller_cls, options = data
+            controller = controller_cls(sim, **options)
+            stiffness = compute_average_stiffness_forbenius_norm(controller, sim)    
+            print("Mean stiffness norm for the {}".format(name))
+            print(stiffness)

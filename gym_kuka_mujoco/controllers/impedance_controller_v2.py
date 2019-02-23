@@ -4,7 +4,6 @@ import numpy as np
 from gym import spaces
 import mujoco_py
 
-# import pdb; pdb.set_trace()
 from gym_kuka_mujoco.envs.assets import kuka_asset_dir
 from gym_kuka_mujoco.utils.quaternion import identity_quat, subQuat, quatIntegrate, mat2Quat
 from gym_kuka_mujoco.utils.kinematics import forwardKinSite, forwardKinJacobianSite
@@ -104,7 +103,6 @@ class ImpedanceControllerV2(BaseController):
         else:
             torque = generalized_force[self.controlled_joints]
         
-        import pdb; pdb.set_trace()
         return torque
 
 register_controller(ImpedanceControllerV2, "ImpedanceControllerV2")
