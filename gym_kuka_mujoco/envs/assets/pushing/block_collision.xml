@@ -1,14 +1,14 @@
 <mujoco>
-  <body name="pushing_table" euler="0 0 0" pos=".7 0 1.18">
-    <geom class="collision" condim="1" type="box" euler="0 0 0" pos="0 0 0" size=".4 .4 0.01"/>
-    <geom class="collision" type="box" euler="0 0 0" pos=".39 0 0.02" size=".01 .4 0.01"/>
+  <body name="pushing_table" euler="0 0 0" pos=".7 0 1.16">
+    <geom class="collision" type="box" euler="0 0 0" pos="0 0 0" size=".4 .4 0.01"/>
+    <!-- <geom class="collision" type="box" euler="0 0 0" pos=".39 0 0.02" size=".01 .4 0.01"/>
     <geom class="collision" type="box" euler="0 0 0" pos="-.39 0 0.02" size=".01 .4 0.01"/>
     <geom class="collision" type="box" euler="0 0 0" pos="0 .39 0.02" size=".38 .01 0.01"/>
-    <geom class="collision" type="box" euler="0 0 0" pos="0 -.39 0.02" size=".38 .01 0.01"/>
+    <geom class="collision" type="box" euler="0 0 0" pos="0 -.39 0.02" size=".38 .01 0.01"/> -->
   </body>
   <body name="block" euler="0 0 0" pos=".7 0 1.2">
-      <joint type="free" name="block_position"/>
-      <geom name="block_geom" class="collision" condim="3" friction=".6 0 0" type="box" euler="0 0 0" pos="0 0 0" size="0.15 0.01 0.01" mass="1" rgba="0.4 0.3 0.3 1.0"/>
+      <freejoint name="block_position"/>
+      <geom name="block_geom" class="collision" condim="3" solimp="1 .9 0.001" friction=".6 0 0" type="box" euler="0 0 0" pos="0 0 0" size="0.15 0.01 0.03" mass="1" rgba="0.4 0.3 0.3 1.0"/>
       <!-- <inertial pos="0 0 0" euler="0 0 0" mass=".5" diaginertia="0.000033333 0.001683333 0.001683333"/> -->
       <!-- <inertial pos="0 0 0" euler="0 0 0" mass="50" diaginertia="10 10 10"/> -->
     </body>
