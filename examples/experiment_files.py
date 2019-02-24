@@ -10,11 +10,32 @@ def get_experiment_root():
     '''
     return os.path.join(os.environ['OPENAI_LOGDIR'], 'stable')
 
-def new_experiment_dir(params):
+def get_final_experiment_root():
+    '''
+    Returns the root directory for the final experiments,
+    i.e. experiment_root/final
+    '''
+    return os.path.join(get_experiment_root(), 'final')
+
+def make_unique(path):
+    i=0
+    while os.path.exists(path + '_{}'.format(i)):
+        i += 1
+    return path + '_{}'.format(i)
+
+def new_experiment_dir(params, final=False):
     '''
     Generates the path to save the model and the experiment data from a
     dictionary of parameters.
     '''
+
+    if final:
+        short_description = '_'.join([
+            params['env_options']['controller'],
+            params['env'],
+            params['alg']])
+        save_path = os.path.join(get_final_experiment_root(), short_description)
+        return make_unique(save_path)
 
     # Create a unique path based on the date and time of the experiment.
     day, time = datetime.now().isoformat().split('T')
