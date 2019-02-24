@@ -85,7 +85,7 @@ def make_env(env_cls,
     return _init
 
 
-def run_learn(params, model=None, run_count=0):
+def run_learn(params, model=None, run_count=0, final=False):
     '''
     Runs the learning experiment defined by the params dictionary.
 
@@ -95,7 +95,7 @@ def run_learn(params, model=None, run_count=0):
     learning_options = params['learning_options']
     actor_options = params.get('actor_options', None)
     if model is None:
-        save_path = new_experiment_dir(params)
+        save_path = new_experiment_dir(params, final=final)
     else:
         save_path = model.tensorboard_log
     run_save_path = os.path.join(save_path, 'run_{}'.format(run_count))
@@ -185,6 +185,8 @@ if __name__ == '__main__':
     parser.add_argument(
         '--profile', action='store_true', help='runs in a profiler')
     parser.add_argument(
+        '--final', action='store_true', help='puts the data in the final directory for easy tracking/plotting')
+    parser.add_argument(
         '--num_restarts',
         type=int,
         default=1,
@@ -217,7 +219,7 @@ if __name__ == '__main__':
             cProfile.run('run_learn(params, run_count=i)')
     else:
         for i in range(args.num_restarts):
-            model = run_learn(params, run_count=i)
+            model = run_learn(params, run_count=i, final=args.final)
 
     # Visualize.
     env_cls = globals()[params['env']]

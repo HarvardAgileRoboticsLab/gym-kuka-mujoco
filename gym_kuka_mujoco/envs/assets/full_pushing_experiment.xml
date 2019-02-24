@@ -4,7 +4,7 @@
   <compiler angle="radian" coordinate="local" meshdir="meshes/"/>
 
   <option>
-    <flag gravity="disable"/>
+    <flag gravity="enable"/>
   </option>
 
   <default> 
@@ -32,19 +32,14 @@
         <include file="kuka/kuka_mesh_collision_peg_ee.xml"/>
       </body>
     </body>
-    <body pos=".85 0 1.3" mocap="true">
-      <include file="hole/no_hole.xml"/>
-    </body>
-    <body name="target_frame" pos=".8 0 1.3" mocap="true">
-      <geom class="visual" type="sphere" size="0.005" rgba=".1 .1 .1 1"/>
-    </body>
+    <include file="pushing/block_collision.xml"/>
   </worldbody>
 
   <actuator>
     <include file="kuka/kuka_actuators.xml"/>
   </actuator>
 
-  <sensor>
+<!--   <sensor>
     <include file="peg/peg_sensors.xml" />
   </sensor>
-</mujoco>
+ --></mujoco>

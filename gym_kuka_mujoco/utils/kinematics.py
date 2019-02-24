@@ -92,13 +92,16 @@ def forwardKinJacobianSite(sim, site_id, recompute=True):
     return jacp, jacr
 
 
-def inverseKin(sim, q_init, q_nom, body_pos, world_pos, world_quat, body_id, reg=1e-4, upper=None, lower=None, cost_tol=1e-6, raise_on_fail=False):
+def inverseKin(sim, q_init, q_nom, body_pos, world_pos, world_quat, body_id, reg=1e-4, upper=None, lower=None, cost_tol=1e-6, raise_on_fail=False, qpos_idx=None):
     '''
     Use SciPy's nonlinear least-squares method to compute the inverse kinematics
     '''
 
+    if qpos_idx is None:
+        qpos_idx = range(len(q_init))
+
     def residuals(q):
-        sim.data.qpos[:] = q
+        sim.data.qpos[qpos_idx] = q
         xpos, xrot = forwardKin(sim, body_pos, identity_quat, body_id)
         quat = mat2Quat(xrot)
         q_diff = subQuat(quat, world_quat)
@@ -106,20 +109,20 @@ def inverseKin(sim, q_init, q_nom, body_pos, world_pos, world_quat, body_id, reg
         return res
 
     def jacobian(q):
-        sim.data.qpos[:] = q
+        sim.data.qpos[qpos_idx] = q
         jacp, jacr = forwardKinJacobian(sim, body_pos, body_id)
         residual_jacobian = np.vstack((jacp, jacr, reg*np.identity(q.size)))
         return residual_jacobian
 
     if lower is None:
-        lower = sim.model.jnt_range[:,0]
+        lower = sim.model.jnt_range[qpos_idx,0]
     else:
-        lower = np.maximum(lower, sim.model.jnt_range[:,0])
+        lower = np.maximum(lower, sim.model.jnt_range[qpos_idx,0])
 
     if upper is None:
-        upper = sim.model.jnt_range[:,1]
+        upper = sim.model.jnt_range[qpos_idx,1]
     else:
-        upper = np.minimum(upper, sim.model.jnt_range[:,1])
+        upper = np.minimum(upper, sim.model.jnt_range[qpos_idx,1])
 
     result = scipy.optimize.least_squares(residuals, q_init, bounds=(lower, upper))
     # result = scipy.optimize.least_squares(residuals, q_init, jac=jacobian, bounds=(lower, upper))

@@ -6,6 +6,7 @@ import mujoco_py
 from gym_kuka_mujoco.envs.assets import kuka_asset_dir
 from .base_controller import BaseController
 from . import register_controller
+from gym_kuka_mujoco.utils.mujoco_utils import get_qpos_indices, get_qvel_indices, get_actuator_indices, get_joint_indices 
 
 class InverseDynamicsController(BaseController):
     '''
@@ -19,29 +20,50 @@ class InverseDynamicsController(BaseController):
                  action_limit=1.,
                  kp_id=10.,
                  kd_id='auto',
-                 controlled_joints=None):
+                 controlled_joints=None,
+                 set_velocity=False,
+                 keep_finite=False):
         super(InverseDynamicsController, self).__init__(sim)
         
         # Create a model for control
         model_path = os.path.join(kuka_asset_dir(), model_path)
         self.model = mujoco_py.load_model_from_path(model_path)
+        assert self.model.nq == sim.model.nq, "the number of states in the controlled model and the simulated model must be the same"
 
-        # Hammer-specific problems
-        self.controlled_joints = controlled_joints
-        if self.controlled_joints is not None:
-            self.controlled_joints = [self.model.joint_name2id(joint) for joint in self.controlled_joints]
+        self.set_velocity = set_velocity
+
+        # Get the position, velocity, and actuator indices for the model.
+        if controlled_joints is not None:
+            self.sim_qpos_idx = get_qpos_indices(sim.model, controlled_joints)
+            self.sim_qvel_idx = get_qvel_indices(sim.model, controlled_joints)
+            self.sim_actuators_idx = get_actuator_indices(sim.model, controlled_joints)
+            self.sim_joint_idx = get_joint_indices(sim.model, controlled_joints)
+
+            self.self_qpos_idx = get_qpos_indices(self.model, controlled_joints)
+            self.self_qvel_idx = get_qvel_indices(self.model, controlled_joints)
+            self.self_actuators_idx = get_actuator_indices(self.model, controlled_joints)
+        else:
+            assert self.model.nv == self.model.nu, "if the number of degrees of freedom is different than the number of actuators you must specify the controlled_joints"
+            self.sim_qpos_idx = range(self.model.nq)
+            self.sim_qvel_idx = range(self.model.nv)
+            self.sim_actuators_idx = range(self.model.nu)
+            self.sim_joint_idx = range(self.model.nu)
+
+            self.self_qpos_idx = range(self.model.nq)
+            self.self_qvel_idx = range(self.model.nv)
+            self.self_actuators_idx = range(self.model.nu)
  
-        # Construct the action space.
-        # import pdb
-        low = -3*np.ones(self.model.nu)* action_limit
-        high = 3*np.ones(self.model.nu)* action_limit
-        # if not self.controlled_joints:
-        #     low = self.model.jnt_range[:, 0]*action_limit
-        #     high = self.model.jnt_range[:, 1]*action_limit
-        # else:
-        #     low = self.model.jnt_range[self.controlled_joints, 0]*action_limit
-        #     high = self.model.jnt_range[self.controlled_joints, 1]*action_limit
-        # pdb.set_trace()
+        low = self.sim.model.jnt_range[self.sim_joint_idx, 0]
+        high = self.sim.model.jnt_range[self.sim_joint_idx, 1]
+        
+        if keep_finite:
+            # Don't allow infinite bounds (necessary for SAC)
+            low[not np.isfinite(low)] = -3.
+            high[not np.isfinite(high)] = 3.
+
+        low = low*action_limit
+        high = high*action_limit
+
         self.action_space = spaces.Box(low, high, dtype=np.float32)
         
         # Controller parameters.
@@ -53,49 +75,50 @@ class InverseDynamicsController(BaseController):
             self.kd_id = kd_id
 
         # Initialize setpoint.
-        self.qpos_set = np.zeros(self.model.nq)
-        self.qvel_set = np.zeros(self.model.nq)
+        self.sim_qpos_set = sim.data.qpos[self.sim_qpos_idx].copy()
+        self.sim_qvel_set = np.zeros(len(self.sim_qvel_idx))
 
 
     def set_action(self, action):
         '''
         Set the setpoint.
         '''
-        if not self.controlled_joints:
-            self.qpos_set = self.action_scale * action[:7]
-        else:
-            self.qpos_set[self.controlled_joints] = self.action_scale * action[:7]
+        nq = len(self.sim_qpos_idx)
+        nv = len(self.sim_qvel_idx)
+
+        self.sim_qpos_set = self.action_scale * action[nq]
+        if self.set_velocity:
+            self.sim_qvel_set = self.action_scale * action[nq:nv]
 
     def get_torque(self):
         '''
         Update the PD setpoint and compute the torque.
         '''
         # Compute position and velocity errors.
-        qpos_err = self.qpos_set - self.sim.data.qpos
-        qvel_err = self.qvel_set - self.sim.data.qvel
+        qpos_err = self.sim_qpos_set - self.sim.data.qpos[self.sim_qpos_idx]
+        qvel_err = self.sim_qvel_set - self.sim.data.qvel[self.sim_qvel_idx]
 
         # Compute desired acceleration using inner loop PD law.
-        if not self.controlled_joints:
-            self.sim.data.qacc[:] = self.kp_id * qpos_err + self.kd_id * qvel_err
-        else:
-            self.sim.data.qacc[self.controlled_joints] = self.kp_id * qpos_err[self.controlled_joints] + self.kd_id * qvel_err[self.controlled_joints]
-        mujoco_py.functions.mj_inverse(self.model, self.sim.data)
+        qacc_des = np.zeros(self.sim.model.nv)
+        qacc_des[self.sim_qvel_idx] = self.kp_id * qpos_err + self.kd_id * qvel_err
         
-        if not self.controlled_joints:
-            id_torque = self.sim.data.qfrc_inverse[:].copy()
-        else:
-            id_torque = self.sim.data.qfrc_inverse[self.controlled_joints].copy()
+        # Compute the inverse dynamics.
+        self.sim.data.qacc[:] = qacc_des.copy()
+        mujoco_py.functions.mj_inverse(self.model, self.sim.data)
+        id_torque = self.sim.data.qfrc_inverse[self.sim_actuators_idx].copy()
 
         # Sum the torques.
         return id_torque
 
 class RelativeInverseDynamicsController(InverseDynamicsController):
     def set_action(self, action):
+        nq = len(self.sim_qpos_idx)
+        nv = len(self.sim_qvel_idx)
+
         # Set the setpoint difference from the current position.
-        if not self.controlled_joints:
-            self.qpos_set = self.sim.data.qpos + action[:7]
-        else:
-            self.qpos_set[self.controlled_joints] = self.sim.data.qpos[self.controlled_joints] + action[:7]
+        self.sim_qpos_set = self.sim.data.qpos[self.sim_qpos_idx] + self.action_scale * action[:nq]
+        if self.set_velocity:
+            self.sim_qvel_set = self.action_scale * action[nq:nv]
 
 register_controller(InverseDynamicsController, 'InverseDynamicsController')
 register_controller(RelativeInverseDynamicsController, 'RelativeInverseDynamicsController')
