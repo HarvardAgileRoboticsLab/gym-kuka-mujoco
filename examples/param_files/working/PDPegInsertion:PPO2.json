@@ -29,7 +29,7 @@
         "success"
     ],
     "learning_options": {
-        "total_timesteps": 2000000
+        "total_timesteps": 1000000
     },
     "n_env": 8,
     "policy_type": "MlpPolicy"
