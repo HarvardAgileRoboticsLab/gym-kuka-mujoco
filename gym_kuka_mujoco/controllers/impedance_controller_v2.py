@@ -9,6 +9,8 @@ from gym_kuka_mujoco.utils.quaternion import identity_quat, subQuat, quatIntegra
 from gym_kuka_mujoco.utils.kinematics import forwardKinSite, forwardKinJacobianSite
 from .base_controller import BaseController
 from . import register_controller
+from gym_kuka_mujoco.utils.mujoco_utils import get_qpos_indices, get_qvel_indices, get_actuator_indices, get_joint_indices 
+
 
 class ImpedanceControllerV2(BaseController):
     '''
@@ -54,9 +56,26 @@ class ImpedanceControllerV2(BaseController):
         self.stiffness = np.ones(6)*stiffness
         self.damping = 0.
 
-        self.controlled_joints = controlled_joints
-        if self.controlled_joints is not None:
-            self.controlled_joints = [self.model.joint_name2id(joint) for joint in self.controlled_joints]
+        # Get the position, velocity, and actuator indices for the model.
+        if controlled_joints is not None:
+            self.sim_qpos_idx = get_qpos_indices(sim.model, controlled_joints)
+            self.sim_qvel_idx = get_qvel_indices(sim.model, controlled_joints)
+            self.sim_actuators_idx = get_actuator_indices(sim.model, controlled_joints)
+            self.sim_joint_idx = get_joint_indices(sim.model, controlled_joints)
+
+            self.self_qpos_idx = get_qpos_indices(self.model, controlled_joints)
+            self.self_qvel_idx = get_qvel_indices(self.model, controlled_joints)
+            self.self_actuators_idx = get_actuator_indices(self.model, controlled_joints)
+        else:
+            assert self.model.nv == self.model.nu, "if the number of degrees of freedom is different than the number of actuators you must specify the controlled_joints"
+            self.sim_qpos_idx = range(self.model.nq)
+            self.sim_qvel_idx = range(self.model.nv)
+            self.sim_actuators_idx = range(self.model.nu)
+            self.sim_joint_idx = range(self.model.nu)
+
+            self.self_qpos_idx = range(self.model.nq)
+            self.self_qvel_idx = range(self.model.nv)
+            self.self_actuators_idx = range(self.model.nu)
 
     def set_action(self, action):
         '''
@@ -86,23 +105,18 @@ class ImpedanceControllerV2(BaseController):
 
         # Compute generalized forces from a virtual external force.
         jpos, jrot = forwardKinJacobianSite(self.sim, self.site_name, recompute=False)
-        J = np.vstack((jpos, jrot))
+        J = np.vstack((jpos[:,self.sim_qvel_idx], jrot[:,self.sim_qvel_idx]))
         impedance_acc_des = J.T.dot(np.linalg.solve(J.dot(J.T) + 1e-6*np.eye(6), self.stiffness*dframe))
 
         # external_force = J.T.dot(self.stiffness*dframe) # virtual force on the end effector
 
         # Cancel other dynamics and add virtual damping using inverse dynamics.
-        acc_des = -self.damping*self.sim.data.qvel + impedance_acc_des
+        acc_des = np.zeros(self.sim.model.nv)
+        acc_des[self.sim_qvel_idx] = -self.damping*self.sim.data.qvel[self.sim_qvel_idx] + impedance_acc_des
         self.sim.data.qacc[:] = acc_des
         mujoco_py.functions.mj_inverse(self.model, self.sim.data)
-        id_torque = self.sim.data.qfrc_inverse[:].copy()
+        id_torque = self.sim.data.qfrc_inverse[self.sim_actuators_idx].copy()
         
-        generalized_force = id_torque
-        if self.controlled_joints is None:
-            torque = generalized_force
-        else:
-            torque = generalized_force[self.controlled_joints]
-        
-        return torque
+        return id_torque
 
 register_controller(ImpedanceControllerV2, "ImpedanceControllerV2")
