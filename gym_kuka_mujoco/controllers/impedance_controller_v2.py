@@ -21,12 +21,13 @@ class ImpedanceControllerV2(BaseController):
                  sim,
                  pos_scale=1.0,
                  rot_scale=0.3,
-                 pos_limit=10.0,
-                 rot_limit=10.0,
+                 pos_limit=1.0,
+                 rot_limit=1.0,
                  model_path='full_kuka_no_collision_no_gravity.xml',
                  site_name='ee_site',
                  stiffness=None,
                  damping='auto',
+                 null_space_damping=1.,
                  controlled_joints=None):
         super(ImpedanceControllerV2, self).__init__(sim)
 
@@ -63,6 +64,8 @@ class ImpedanceControllerV2(BaseController):
             self.damping = 2*np.sqrt(self.stiffness)
         else:
             self.damping = np.ones(6)*damping
+
+        self.null_space_damping = null_space_damping
 
         # Get the position, velocity, and actuator indices for the model.
         if controlled_joints is not None:
@@ -116,8 +119,11 @@ class ImpedanceControllerV2(BaseController):
         cartesian_acc_des = self.stiffness*dframe - self.damping*J.dot(self.sim.data.qvel[self.sim_qvel_idx])
         impedance_acc_des = J.T.dot(np.linalg.solve(J.dot(J.T) + 1e-6*np.eye(6), cartesian_acc_des))
 
-
-        # external_force = J.T.dot(self.stiffness*dframe) # virtual force on the end effector
+        # Add damping in the null space of the the Jacobian
+        projection_matrix = J.T.dot(np.linalg.solve(J.dot(J.T), J))
+        projection_matrix = np.eye(projection_matrix.shape[0]) - projection_matrix
+        null_space_vel = projection_matrix.dot(self.sim.data.qvel[self.sim_qvel_idx])
+        impedance_acc_des += -self.null_space_damping*null_space_vel # null space damping
 
         # Cancel other dynamics and add virtual damping using inverse dynamics.
         acc_des = np.zeros(self.sim.model.nv)
