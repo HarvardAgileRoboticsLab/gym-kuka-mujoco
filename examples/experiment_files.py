@@ -10,51 +10,54 @@ def get_experiment_root():
     '''
     return os.path.join(os.environ['OPENAI_LOGDIR'], 'stable')
 
-def get_final_experiment_root():
-    '''
-    Returns the root directory for the final experiments,
-    i.e. experiment_root/final
-    '''
-    return os.path.join(get_experiment_root(), 'final')
-
 def make_unique(path):
     i=0
     while os.path.exists(path + '_{}'.format(i)):
         i += 1
     return path + '_{}'.format(i)
 
-def new_experiment_dir(params, final=False):
+def new_experiment_dir(params, prefix=None, date=True, short_description=False):
     '''
     Generates the path to save the model and the experiment data from a
     dictionary of parameters.
     '''
+    path_list = [get_experiment_root()]
 
-    if final:
-        short_description = '_'.join([
+    if prefix is not None:
+        path_list.append(prefix)
+
+    if date:
+        # Create a unique path based on the date and time of the experiment.
+        day, time = datetime.now().isoformat().split('T')
+        path_list.append(day)
+        path_list.append(time)
+
+    # Add a description to the path
+    if short_description:
+        description = '_'.join([
             params['env_options']['controller'],
             params['env'],
             params['alg']])
-        save_path = os.path.join(get_final_experiment_root(), short_description)
-        return make_unique(save_path)
+    else:
+        description = [
+            'alg={}'.format(params['alg']),
+            'env={}'.format(params['env']),
+            'controller={}'.format(params['env_options']['controller'])
+        ]
+        for k,v in sorted(params['learning_options'].items()):
+            description.append('{}={}'.format(k,v))
 
-    # Create a unique path based on the date and time of the experiment.
-    day, time = datetime.now().isoformat().split('T')
+        for k,v in sorted(params['actor_options'].items()):
+            description.append('{}={}'.format(k,v))
+        description = ','.join(description)
+    path_list.append(description)
 
-    # Create a unique path based on a description of the experiment.
-    description = [
-        'alg={}'.format(params['alg']),
-        'env={}'.format(params['env']),
-        'controller={}'.format(params['env_options']['controller'])
-    ]
-    for k,v in sorted(params['learning_options'].items()):
-        description.append('{}={}'.format(k,v))
-
-    for k,v in sorted(params['actor_options'].items()):
-        description.append('{}={}'.format(k,v))
-    description = ','.join(description)
-    
     # Contruct the path and return.
-    save_path = os.path.join(get_experiment_root(), day, time, description)
+    save_path = os.path.join(*path_list)
+
+    if not date:
+        save_path = make_unique(save_path)
+        
     return save_path
 
 

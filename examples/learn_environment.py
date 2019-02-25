@@ -85,7 +85,7 @@ def make_env(env_cls,
     return _init
 
 
-def run_learn(params, model=None, run_count=0, final=False):
+def run_learn(params, save_path, model=None, run_count=0):
     '''
     Runs the learning experiment defined by the params dictionary.
 
@@ -94,10 +94,6 @@ def run_learn(params, model=None, run_count=0, final=False):
     # Unpack options
     learning_options = params['learning_options']
     actor_options = params.get('actor_options', None)
-    if model is None:
-        save_path = new_experiment_dir(params, final=final)
-    else:
-        save_path = model.tensorboard_log
     run_save_path = os.path.join(save_path, 'run_{}'.format(run_count))
     os.makedirs(run_save_path, exist_ok=True)
 
@@ -213,13 +209,18 @@ if __name__ == '__main__':
         params['vectorized'] = False
 
     # Learn.
+    if args.final:
+        save_path = new_experiment_dir(params, prefix='final', date=False, short_description=True)
+    else:
+        save_path = new_experiment_dir(params)
+
     if args.profile:
         import cProfile
         for i in range(args.num_restarts):
-            cProfile.run('run_learn(params, run_count=i)')
+            cProfile.run('run_learn(params, save_path, run_count=i)')
     else:
         for i in range(args.num_restarts):
-            model = run_learn(params, run_count=i, final=args.final)
+            model = run_learn(params, save_path, run_count=i)
 
     # Visualize.
     env_cls = globals()[params['env']]
