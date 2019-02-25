@@ -20,12 +20,12 @@ class ImpedanceControllerV2(BaseController):
     def __init__(self,
                  sim,
                  pos_scale=1.0,
-                 rot_scale=0.5,
+                 rot_scale=0.3,
                  pos_limit=10.0,
                  rot_limit=10.0,
                  model_path='full_kuka_no_collision_no_gravity.xml',
                  site_name='ee_site',
-                 stiffness=1.0,
+                 stiffness=None,
                  damping='auto',
                  controlled_joints=None):
         super(ImpedanceControllerV2, self).__init__(sim)
@@ -54,7 +54,11 @@ class ImpedanceControllerV2(BaseController):
         self.pos_set = np.zeros(3)
         self.quat_set = identity_quat.copy()
 
-        self.stiffness = np.ones(6)*stiffness
+        if stiffness is None:
+            self.stiffness = np.array([1.0, 1.0, 1.0, 0.3, 0.3, 0.3])
+        else:
+            self.stiffness = np.ones(6)*stiffness
+
         if damping=='auto':
             self.damping = 2*np.sqrt(self.stiffness)
         else:
