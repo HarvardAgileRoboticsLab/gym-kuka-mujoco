@@ -6,6 +6,8 @@ from gym_kuka_mujoco.envs import KukaEnv
 from gym_kuka_mujoco.utils.kinematics import forwardKinSite
 from gym_kuka_mujoco.utils.quaternion import mat2Quat, subQuat
 
+from tuned_control_params import controller_params
+
 
 def compute_distance_travelled(x_pos, x_rot):
     pos_dist = 0
@@ -24,7 +26,7 @@ def compute_distance_travelled(x_pos, x_rot):
 
 def compute_average_ee_travel(controller, controller_options):
     env_options = {
-        "model_path": "full_kuka_mesh_collision.xml",
+        "model_path": "full_kuka_mesh_collision_no_gravity.xml",
         "frame_skip": 50,
         "time_limit": 2.0
     }
@@ -61,29 +63,21 @@ def compute_average_ee_travel(controller, controller_options):
     return np.mean(pos_dist_list), np.mean(rot_dist_list), np.std(pos_dist_list), np.std(rot_dist_list)
 
 if __name__ == "__main__":
-    controller = "RelativeInverseDynamicsController"
-    controller_options = {
-        "model_path": "full_kuka_no_collision.xml"
-    }
-    
-    pos_mean, rot_mean, pos_std, rot_std = compute_average_ee_travel(controller, controller_options)
 
-    print("distance travelled mean: {}".format(pos_mean))
-    print("distance travelled std:  {}".format(pos_std))
-    print("rotation travelled mean: {}".format(rot_mean))
-    print("rotation travelled std:  {}".format(rot_std))
-    
-    controller = "ImpedanceControllerV2"
-    controller_options = {
-        "model_path": "full_kuka_no_collision.xml",
-        "pos_scale": 1.0,
-        "rot_scale": 0.3,
-        "stiffness": [1., 1., 1., 3., 3., 3.],
-    }
+    controller_list = [
+        "RelativeInverseDynamicsController",
+        "RelativePDController",
+        "ImpedanceControllerV2",
+        "DirectTorqueController"
+    ]
 
-    pos_mean, rot_mean, pos_std, rot_std = compute_average_ee_travel(controller, controller_options)
+    for controller, controller_options in controller_params.items():
+        if controller in controller_list:
+            print("Computing {}".format(controller))
 
-    print("distance travelled mean: {}".format(pos_mean))
-    print("distance travelled std:  {}".format(pos_std))
-    print("rotation travelled mean: {}".format(rot_mean))
-    print("rotation travelled std:  {}".format(rot_std))
+            pos_mean, rot_mean, pos_std, rot_std = compute_average_ee_travel(controller, controller_options)
+
+            print("distance travelled mean: {}".format(pos_mean))
+            print("distance travelled std:  {}".format(pos_std))
+            print("rotation travelled mean: {}".format(rot_mean))
+            print("rotation travelled std:  {}".format(rot_std))

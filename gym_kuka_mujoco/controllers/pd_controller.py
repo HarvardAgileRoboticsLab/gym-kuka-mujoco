@@ -37,10 +37,12 @@ class PDController(BaseController):
         # Scale the action space to the new scaling.
         self.set_velocity = set_velocity
         self.action_scale = action_scale
-        low_pos = sim.model.jnt_range[self.controlled_joints,
-                                      0] / action_scale
-        high_pos = sim.model.jnt_range[self.controlled_joints,
-                                       1] / action_scale
+        low_pos = sim.model.jnt_range[self.controlled_joints, 0] / action_scale
+        high_pos = sim.model.jnt_range[self.controlled_joints, 1] / action_scale
+
+        low_pos[self.sim.model.jnt_limited[self.controlled_joints] == 0] = -np.inf
+        high_pos[self.sim.model.jnt_limited[self.controlled_joints] == 0] = np.inf
+
         if self.set_velocity:
             low_vel = np.ones_like(low_pos) / action_scale
             high_vel = np.ones_like(low_pos) / action_scale
@@ -80,8 +82,11 @@ class PDController(BaseController):
         '''
         Computes the torques from the setpoints and the current state.
         '''
-        return self.kp * (self.qpos_setpoint - self.sim.data.qpos[self.controlled_joints]) + self.kd * (
+        return self.kp * (
+            self.qpos_setpoint - self.sim.data.qpos[self.controlled_joints]
+        ) + self.kd * (
             self.qvel_setpoint - self.sim.data.qvel[self.controlled_joints])
+
 
 class RelativePDController(PDController):
     def set_action(self, action):
@@ -89,9 +94,11 @@ class RelativePDController(PDController):
 
         nu = len(self.controlled_joints)
         # Set the setpoint difference from the current position.
-        self.qpos_setpoint = action[0:nu] + self.sim.data.qpos[self.controlled_joints]
+        self.qpos_setpoint = action[0:nu] + \
+            self.sim.data.qpos[self.controlled_joints]
         if self.set_velocity:
             self.qvel_setpoint = action[nu:2 * nu]
+
 
 register_controller(PDController, 'PDController')
 register_controller(RelativePDController, 'RelativePDController')

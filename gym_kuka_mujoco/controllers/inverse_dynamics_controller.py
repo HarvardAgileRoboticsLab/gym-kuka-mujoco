@@ -16,9 +16,9 @@ class InverseDynamicsController(BaseController):
     def __init__(self,
                  sim,
                  model_path='full_kuka_no_collision_no_gravity.xml',
-                 action_scale=1.,
-                 action_limit=1.,
-                 kp_id=10.,
+                 action_scale=1.0,
+                 action_limit=1.0,
+                 kp_id=1.0,
                  kd_id='auto',
                  controlled_joints=None,
                  set_velocity=False,
@@ -55,6 +55,9 @@ class InverseDynamicsController(BaseController):
  
         low = self.sim.model.jnt_range[self.sim_joint_idx, 0]
         high = self.sim.model.jnt_range[self.sim_joint_idx, 1]
+
+        low[self.sim.model.jnt_limited[self.sim_joint_idx] == 0] = -np.inf
+        high[self.sim.model.jnt_limited[self.sim_joint_idx] == 0] = np.inf
         
         if keep_finite:
             # Don't allow infinite bounds (necessary for SAC)

@@ -1,0 +1,21 @@
+{
+    "actor_options": {
+    },
+    "alg": "PPO2",
+    "env": "KukaEnv",
+    "env_options": {
+        "controller": "DirectTorqueController",
+        "controller_options": {
+            "action_scaling": 2.2
+        },
+        "model_path": "full_kuka_mesh_collision_no_gravity.xml",        "frame_skip": 50,
+        "frame_skip": 50,
+        "time_limit": 2.0
+    },
+    "learning_options": {
+        "total_timesteps": 1000000
+    },
+    "n_env": 1,
+    "vectorized": false,
+    "policy_type": "MlpPolicy"
+}

@@ -27,7 +27,7 @@ class ImpedanceControllerV2(BaseController):
                  site_name='ee_site',
                  stiffness=None,
                  damping='auto',
-                 null_space_damping=1.,
+                 null_space_damping=1.0,
                  controlled_joints=None):
         super(ImpedanceControllerV2, self).__init__(sim)
 
