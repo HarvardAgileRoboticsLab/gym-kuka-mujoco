@@ -13,7 +13,8 @@
         "controller": "RelativePDController",
         "controller_options": {
             "set_velocity": false,
-            "action_scale": 0.1
+            "kp": 0.27,
+            "action_scale": 0.4
         },
         "gravity": false,
         "frame_skip": 50,
@@ -22,7 +23,7 @@
         "quadratic_cost": true,
         "hole_id": 50,
         "random_target": true,
-        "use_rel_pos_err": true,
+        "use_rel_pos_err": true
     },
     "info_keywords": [
         "tip_distance",

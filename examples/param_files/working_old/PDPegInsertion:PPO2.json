@@ -3,25 +3,26 @@
         "ent_coef": 0.01,
         "gamma": 1.0,
         "learning_rate": 0.001,
-        "n_steps": 256,//1024
+        "n_steps": 256,
         "verbose": 0,
         "cliprange":0.2
     },
     "alg": "PPO2",
     "env": "PegInsertionEnv",
     "env_options": {
-        "controller": "DirectTorqueController",
+        "controller": "RelativePDController",
         "controller_options": {
-            "action_scaling": 2.2
+            "set_velocity": false,
+            "action_scale": 0.1
         },
-        "frame_skip": 50,//20
+        "gravity": false,
+        "frame_skip": 50,
         "time_limit": 2.0,
         "logarithmic_cost": true,
         "quadratic_cost": true,
         "hole_id": 50,
-        "gravity": false,
         "random_target": true,
-        "use_rel_pos_err": true
+        "use_rel_pos_err": true,
     },
     "info_keywords": [
         "tip_distance",
