@@ -1,8 +1,13 @@
+#!/usr/bin/env /usr/local/bin/python3
 import os
 import argparse
 import numpy as np
 import matplotlib.pyplot as plt
 from stable_baselines.results_plotter import load_results, ts2xy, X_TIMESTEPS, X_EPISODES, X_WALLTIME
+
+# Add the parent folder to the python path for imports.
+import sys, os
+sys.path.insert(0, os.path.abspath('..'))
 from experiment_files import get_latest_experiment_dir
 
 def plot_data(data, x_axis, y_axis, **kwargs):
@@ -31,7 +36,8 @@ if __name__ == '__main__':
     data = load_results(experiment_dir) 
     
     # time variables
-    plot_data(data, X_EPISODES, 'tip_distance', label="plot 1")
+    # plot_data(data, X_EPISODES, 'tip_distance', label="plot 1")
+    plt.plot([1,2],[2,1])
     plt.ylabel("Tip Distance")
     plt.xlabel("Episodes")
     plt.legend()
