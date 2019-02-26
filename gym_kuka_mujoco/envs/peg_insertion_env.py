@@ -185,7 +185,6 @@ class PegInsertionEnv(kuka_env.KukaEnv):
             self.set_state(qpos, qvel)
             self.sim.forward()
             while self.sim.data.ncon > 0:
-                print("rejecting pose and retrying")
                 qpos = self.good_states[-1] + self.np_random.uniform(-.1,.1,7)
                 self.set_state(qpos, qvel)
                 self.sim.forward()
