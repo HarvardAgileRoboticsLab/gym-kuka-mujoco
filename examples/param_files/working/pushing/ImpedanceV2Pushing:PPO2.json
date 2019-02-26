@@ -31,8 +31,8 @@
         }
     },
     "info_keywords": [
-        "tip_distance",
-        "success"
+        "block_pos_dist",
+        "block_rot_dist"
     ],
     "learning_options": {
         "total_timesteps": 1000000

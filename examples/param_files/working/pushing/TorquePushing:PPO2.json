@@ -22,12 +22,14 @@
         "contact_reward": false,
         "controller": "DirectTorqueController",
         "controller_options": {
+            "gravity_comp_model_path": "full_pushing_experiment_no_collision.xml",
+            "controlled_joints": ["kuka_joint_1", "kuka_joint_2", "kuka_joint_3", "kuka_joint_4", "kuka_joint_5", "kuka_joint_6", "kuka_joint_7"],
             "action_scaling": 2.2
         }
     },
     "info_keywords": [
-        "tip_distance",
-        "success"
+        "block_pos_dist",
+        "block_rot_dist"
     ],
     "learning_options": {
         "total_timesteps": 1000000
