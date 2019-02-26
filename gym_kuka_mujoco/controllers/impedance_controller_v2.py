@@ -5,7 +5,7 @@ from gym import spaces
 import mujoco_py
 
 from gym_kuka_mujoco.envs.assets import kuka_asset_dir
-from gym_kuka_mujoco.utils.quaternion import identity_quat, subQuat, quatIntegrate, mat2Quat
+from gym_kuka_mujoco.utils.quaternion import identity_quat, subQuat, quatAdd, mat2Quat
 from gym_kuka_mujoco.utils.kinematics import forwardKinSite, forwardKinJacobianSite
 from .base_controller import BaseController
 from . import register_controller
@@ -100,7 +100,7 @@ class ImpedanceControllerV2(BaseController):
         pos, mat = forwardKinSite(self.sim, self.site_name, recompute=False)
         quat = mat2Quat(mat)
         self.pos_set = pos + dx
-        self.quat_set = quatIntegrate(quat, dr)
+        self.quat_set = quatAdd(quat, dr)
 
     def get_torque(self):
         '''

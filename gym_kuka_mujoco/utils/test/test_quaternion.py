@@ -20,6 +20,21 @@ def test_quatInegrate():
     q2_ = quatIntegrate(identity_quat, v)
     assert np.allclose(q2, q2_), 'quatIntegrate test failed'
 
+    q1 = random_quat()
+    q2 = random_quat()
+    v = subQuat(q2, q1)
+    qv = quatIntegrate(identity_quat, v)
+    q2_ = mulQuat(qv, q1)
+    assert np.allclose(q2, q2_), 'quatIntegrate test failed'
+
+def test_quatAdd():
+    q1 = random_quat()
+    q2 = random_quat()
+    v = subQuat(q2, q1)
+    q2_ = quatAdd(q1, v)
+    assert np.allclose(q2, q2_)
+
+
 if __name__ == '__main__':
     test_random_quat()
     test_subQuat()
