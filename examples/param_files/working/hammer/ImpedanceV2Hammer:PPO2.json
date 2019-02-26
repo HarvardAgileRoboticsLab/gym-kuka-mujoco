@@ -28,8 +28,7 @@
         }
     },
     "info_keywords": [
-        "tip_distance",
-        "success"
+        "nail_depth"
     ],
     "learning_options": {
         "total_timesteps": 1000000
