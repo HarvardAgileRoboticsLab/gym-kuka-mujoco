@@ -16,7 +16,7 @@
         "logarithmic_cost": true,
         "quadratic_cost": true,
         "quadratic_rot_cost": true,
-        "hole_id": 50,
+        "hole_id": 25,
         "random_target": false,
         "use_rel_pos_err": true,
         "gravity": false,
