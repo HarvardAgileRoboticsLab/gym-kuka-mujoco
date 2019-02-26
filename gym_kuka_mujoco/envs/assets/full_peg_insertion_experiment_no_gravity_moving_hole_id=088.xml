@@ -13,7 +13,7 @@
       <geom contype="0" conaffinity="0"/>
     </default>
     <default class="collision">
-      <geom contype="1" conaffinity="1" friction=".6 0.005 0.0001"/>
+      <geom contype="1" conaffinity="1" friction=".2 0.005 0.0001"/>
     </default>
     <site rgba="1 0 0 .5"/>
   </default> 
