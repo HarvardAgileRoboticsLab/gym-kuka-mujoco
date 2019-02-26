@@ -11,8 +11,7 @@
     "env": "PegInsertionEnv",
     "env_options": {
         "frame_skip": 50,
-        // "time_limit": 2.0,
-        "time_limit": 10.0,
+        "time_limit": 2.0,
         "logarithmic_cost": true,
         "quadratic_cost": true,
         "hole_id": 50,
