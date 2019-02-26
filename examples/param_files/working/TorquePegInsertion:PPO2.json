@@ -14,6 +14,7 @@
         "time_limit": 2.0,
         "logarithmic_cost": true,
         "quadratic_cost": true,
+        "quadratic_rot_cost": true,
         "hole_id": 50,
         "random_target": true,
         "use_rel_pos_err": true,

@@ -20,6 +20,7 @@ class PegInsertionEnv(kuka_env.KukaEnv):
                  use_ft_sensor=False,
                  use_rel_pos_err=False,
                  quadratic_cost=True,
+                 quadratic_rot_cost=True,
                  regularize_pose=False,
                  linear_cost=False,
                  logarithmic_cost=False,
@@ -37,6 +38,7 @@ class PegInsertionEnv(kuka_env.KukaEnv):
         self.linear_cost = linear_cost
         self.logarithmic_cost = logarithmic_cost
         self.sparse_cost = sparse_cost
+        self.quadratic_rot_cost = quadratic_rot_cost
         
         # Resolve the models path based on the hole_id.
         gravity_string = '' if gravity else '_no_gravity'
@@ -48,7 +50,7 @@ class PegInsertionEnv(kuka_env.KukaEnv):
         
 
         self.Q_pos = np.diag([100,100,100])
-        self.Q_rot = np.diag([1,1,1])
+        self.Q_rot = np.diag([30,30,30])
         if self.regularize_pose:
             self.Q_pose_reg = np.eye(7)
 
@@ -88,7 +90,10 @@ class PegInsertionEnv(kuka_env.KukaEnv):
         reward = 0.
 
         # reward_info['quaternion_reward'] = -rot_err.dot(Q_rot).dot(rot_err)
-        
+        if self.quadratic_rot_cost:
+            reward_info['quadratic_orientation_reward'] = -rot_err.dot(Q_rot).dot(rot_err)
+            reward += reward_info['quadratic_orientation_reward']
+
         if self.quadratic_cost:
             reward_info['quadratic_position_reward'] = -pos_err.dot(Q_pos).dot(pos_err)
             reward += reward_info['quadratic_position_reward']
