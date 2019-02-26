@@ -10,7 +10,8 @@
     "alg": "PPO2",
     "env": "HammerEnv",
     "env_options": {
-        "frame_skip": 50,
+        "frame_skip": 10,
+        "timestep": 0.01,
         "time_limit": 3.0,
         "vel_reward": true,
         "pos_reward": true,

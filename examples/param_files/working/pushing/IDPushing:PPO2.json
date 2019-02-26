@@ -10,7 +10,8 @@
     "alg": "PPO2",
     "env": "PushingEnv",
     "env_options": {
-        "frame_skip": 50,
+        "frame_skip": 10,
+        "timestep": 0.01,
         "time_limit": 2.0,
         "random_target": false,
         "use_rel_pos_err": true,

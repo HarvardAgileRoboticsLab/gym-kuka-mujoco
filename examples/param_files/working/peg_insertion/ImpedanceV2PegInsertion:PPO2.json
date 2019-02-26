@@ -10,7 +10,8 @@
     "alg": "PPO2",
     "env": "PegInsertionEnv",
     "env_options": {
-        "frame_skip": 50,
+        "frame_skip": 10,
+        "timestep": 0.01,
         "time_limit": 2.0,
         "logarithmic_cost": true,
         "quadratic_cost": true,
