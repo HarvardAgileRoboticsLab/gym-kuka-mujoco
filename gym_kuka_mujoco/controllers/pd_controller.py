@@ -26,7 +26,7 @@ class PDController(BaseController):
 
         # Get the controlled joints
         if controlled_joints:
-            self.controlled_joints = get_qpos_indices(controlled_joints)
+            self.controlled_joints = get_qpos_indices(sim.model, controlled_joints)
         else:
             self.controlled_joints = range(sim.model.nq)
 

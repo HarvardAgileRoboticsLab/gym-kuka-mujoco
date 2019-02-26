@@ -19,7 +19,6 @@ class HammerEnv(kuka_env.KukaEnv):
                  pos_reward=True,
                  vel_reward=False,
                  **kwargs):
-        
         # Store arguments.
         self.obs_scaling = obs_scaling
         self.use_ft_sensor = use_ft_sensor
