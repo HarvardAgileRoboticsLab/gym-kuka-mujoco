@@ -18,6 +18,7 @@
         "random_target": true,
         "use_rel_pos_err": true,
         "gravity": false,
+        "random_hole_file": "random_reachable_holes.npy",
         "controller": "RelativePDController",
         "controller_options": {
             "set_velocity": false,
