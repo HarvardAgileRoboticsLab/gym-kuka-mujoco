@@ -6,7 +6,7 @@ from gym_kuka_mujoco.envs import kuka_env
 from gym_kuka_mujoco.utils.kinematics import forwardKin, forwardKinSite, forwardKinJacobianSite
 from gym_kuka_mujoco.utils.insertion import hole_insertion_samples
 from gym_kuka_mujoco.utils.projection import rotate_cost_by_matrix
-from gym_kuka_mujoco.utils.quaternion import mat2Quat, subQuat
+from gym_kuka_mujoco.utils.quaternion import mat2Quat, subQuat, quatAdd
 from gym_kuka_mujoco.envs.assets import kuka_asset_dir
 
 class PegInsertionEnv(kuka_env.KukaEnv):
@@ -154,15 +154,20 @@ class PegInsertionEnv(kuka_env.KukaEnv):
 
         return obs
 
+# def test_quatInegrate():
+#     q2 = random_quat()
+#     v = subQuat(q2, identity_quat)
+#     q2_ = quatIntegrate(identity_quat, v)
+#     assert np.allclose(q2, q2_), 'quatIntegrate test failed'
+
     def _get_target_obs(self):
         # Compute relative position error
         pos, rot = forwardKinSite(self.sim, ['peg_tip','hole_base'])
-
         if self.use_rel_pos_err:
-            pos_obs = pos[0] - pos[1]
+            pos_obs = pos[1] - pos[0]
             quat_peg_tip = mat2Quat(rot[0])
             quat_hole_base = mat2Quat(rot[1])
-            rot_obs = subQuat(quat_peg_tip, quat_hole_base)
+            rot_obs = subQuat(quat_hole_base, quat_peg_tip).copy()            
         else:
             pos_obs = pos[1].copy()
             rot_obs = mat2Quat(rot[1])

@@ -110,6 +110,6 @@ def vis_impedance_random_setpoint(collision=False):
 
 if __name__ == '__main__':
     # vis_impedance_fixed_setpoint()
-    # vis_impedance_fixed_setpoint(collision=True)
+    vis_impedance_fixed_setpoint(collision=True)
     # vis_impedance_random_setpoint()
-    vis_impedance_random_setpoint(collision=True)
+    # vis_impedance_random_setpoint(collision=True)
