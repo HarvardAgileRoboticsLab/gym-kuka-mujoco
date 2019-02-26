@@ -174,13 +174,21 @@ class PegInsertionEnv(kuka_env.KukaEnv):
         Reset the robot state and return the observation.
         '''
 
+        qvel = np.zeros(7)
+
         if self.sample_good_states and self.np_random.uniform() < 0.5:
             qpos = self.np_random.choice(self.good_states)
+            self.set_state(qpos, qvel)
+            self.sim.forward()
         else:
-            qpos = self.good_states[-1] + self.np_random.uniform(-.01,.01,7)
-        
-        qvel = np.zeros(7)
-        self.set_state(qpos, qvel)
+            qpos = self.good_states[-1] + self.np_random.uniform(-.1,.1,7)
+            self.set_state(qpos, qvel)
+            self.sim.forward()
+            while self.sim.data.ncon > 0:
+                print("rejecting pose and retrying")
+                qpos = self.good_states[-1] + self.np_random.uniform(-.1,.1,7)
+                self.set_state(qpos, qvel)
+                self.sim.forward()
 
     def _reset_target(self):
         '''
