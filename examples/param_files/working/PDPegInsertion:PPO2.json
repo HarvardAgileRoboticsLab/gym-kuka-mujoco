@@ -10,20 +10,20 @@
     "alg": "PPO2",
     "env": "PegInsertionEnv",
     "env_options": {
-        "controller": "RelativePDController",
-        "controller_options": {
-            "set_velocity": false,
-            "kp": 0.27,
-            "action_scale": 0.4
-        },
-        "gravity": false,
         "frame_skip": 50,
         "time_limit": 2.0,
         "logarithmic_cost": true,
         "quadratic_cost": true,
         "hole_id": 50,
         "random_target": true,
-        "use_rel_pos_err": true
+        "use_rel_pos_err": true,
+        "gravity": false,
+        "controller": "RelativePDController",
+        "controller_options": {
+            "set_velocity": false,
+            "kp": 0.27,
+            "action_scale": 0.4
+        }
     },
     "info_keywords": [
         "tip_distance",
