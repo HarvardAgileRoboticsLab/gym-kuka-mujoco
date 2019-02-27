@@ -26,6 +26,7 @@ class PegInsertionEnv(kuka_env.KukaEnv):
                  logarithmic_cost=False,
                  sparse_cost=False,
                  observe_joints=True,
+                 in_peg_frame=False,
                  random_hole_file='random_reachable_holes_small_randomness.npy',
                  **kwargs):
         
@@ -41,6 +42,7 @@ class PegInsertionEnv(kuka_env.KukaEnv):
         self.sparse_cost = sparse_cost
         self.quadratic_rot_cost = quadratic_rot_cost
         self.observe_joints = observe_joints
+        self.in_peg_frame = in_peg_frame
         
         # Resolve the models path based on the hole_id.
         gravity_string = '' if gravity else '_no_gravity'
@@ -183,6 +185,10 @@ class PegInsertionEnv(kuka_env.KukaEnv):
             pos_obs = pos[1].copy()
             rot_obs = mat2Quat(rot[1])
             hole_top_obs = pos[2]
+
+        if self.in_peg_frame:
+            pos_obs = rot[0].T.dot(pos_obs)
+            hole_top_obs = rot[0].T.dot(hole_top_obs)
         
         return np.concatenate([pos_obs, rot_obs, hole_top_obs])
 

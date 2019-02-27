@@ -75,3 +75,8 @@ def quatAdd(q1, v):
     qv = quatIntegrate(identity_quat, v)
     res = mulQuat(qv, q1)
     return res
+
+def rotVecQuat(v, q):
+    res = np.zeros(3)
+    mujoco_py.functions.mju_rotVecQuat(res, v, q)
+    return res

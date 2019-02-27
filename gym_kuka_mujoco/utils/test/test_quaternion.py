@@ -34,9 +34,19 @@ def test_quatAdd():
     q2_ = quatAdd(q1, v)
     assert np.allclose(q2, q2_)
 
+def test_rotVecQuat():
+    q = random_quat()
+    v = np.random.random(3)
+    mat = quat2Mat(q)
+    v_rot = mat.dot(v)
+    v_rot_ = rotVecQuat(v, q)
+    assert np.allclose(v_rot, v_rot_)
+
 
 if __name__ == '__main__':
     test_random_quat()
     test_subQuat()
     test_quatInegrate()
+    test_quatAdd()
+    test_rotVecQuat()
     print('tests passed')
