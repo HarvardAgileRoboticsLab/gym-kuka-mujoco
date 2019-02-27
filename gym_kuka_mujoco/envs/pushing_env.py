@@ -56,7 +56,10 @@ class PushingEnv(kuka_env.KukaEnv):
         # Set the initial conditions
         if random_init_pos_file is None:
             self.init_qpos_kuka = [
-                np.array([-3.08291276e-02,  8.00410366e-01, -6.76915982e-04, -1.33038224e+00, 5.73359368e-04, 1.01080023e+00, -3.16050986e-02]), # positioned to the -y and +x of the skinny long block
+            np.array([-0.39644391,  0.90374878,  0.29834325, -1.32769707,  0.32136548 , 1.0627125, -0.37159982])  # positioned to the -y, +x, -z, and oriented pi/6 rad toward the skinny long block
+                # np.array([-0.18183141,  0.82372004,  0.12119514, -1.36660597,  0.13291881,  0.97885664, -0.17394202])  # positioned to the -y, +x, -z, and oriented 0.2 rad toward the skinny long block
+                # np.array([-3.09971876e-02,  8.27156181e-01, -3.99097887e-04, -1.33895589e+00, 3.54769752e-04,  9.75480647e-01, -3.14663096e-02]) # positioned to the -y, +x, -z of the skinny long block
+                # np.array([-3.08291276e-02,  8.00410366e-01, -6.76915982e-04, -1.33038224e+00, 5.73359368e-04, 1.01080023e+00, -3.16050986e-02]), # positioned to the -y and +x of the skinny long block
                 # np.array([ 2.42308236, -1.01571971, 1.13996587, 1.56773622, 2.17062176, 1.20969055, 0.61193454]), # positioned to the -y and +x of the skinny block
                 # np.array([-0.07025654, 0.6290658, -0.00323965, -1.64794655, 0.0025054, 0.86458435, -0.07450195]), # positioned to the -y and +x of the block
                 # np.array([ 0.74946844, 0.98614739, 1.88508577, 1.80629075, 1.02973813, -1.18159247, 2.28928049]), # positioned to the -y of the block
@@ -68,7 +71,8 @@ class PushingEnv(kuka_env.KukaEnv):
             self.init_qpos_kuka = np.load(random_init_pos_file)
 
         self.init_qpos_block = np.array([.7, 0, 1.2, 1, 0, 0, 0])
-        self.table_height = self.init_qpos_block[2]
+        self.table_height = self.init_qpos_block[2] - 0.02
+        # import pdb; pdb.set_trace()
 
         # self.block_target_position = np.array([.7, .1, 1.2, 0.70710678118, 0, 0, 0.70710678118])
         # self.block_target_position = np.array([.7, .1, 1.2, 0., 0., 0., 1.])
@@ -89,7 +93,7 @@ class PushingEnv(kuka_env.KukaEnv):
             reward += reward_info['block_pos_reward']
         if self.rot_reward:
             rot_err = subQuat(self.data.qpos[self.block_pos_idx][3:], self.block_target_position[3:])
-            reward_info['block_rot_reward'] = -np.linalg.norm(rot_err)/20.0
+            reward_info['block_rot_reward'] = -np.linalg.norm(rot_err)/10.0
             reward += reward_info['block_rot_reward']
         if self.pos_vel_reward:
             raise NotImplementedError

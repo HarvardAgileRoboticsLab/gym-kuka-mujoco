@@ -44,20 +44,29 @@ class PDController(BaseController):
             self.sim_qvel_idx = get_qvel_indices(sim.model, controlled_joints)
             self.sim_actuators_idx = get_actuator_indices(sim.model, controlled_joints)
             self.sim_joint_idx = get_joint_indices(sim.model, controlled_joints)
-
-            self.self_qpos_idx = get_qpos_indices(self.model, controlled_joints)
-            self.self_qvel_idx = get_qvel_indices(self.model, controlled_joints)
-            self.self_actuators_idx = get_actuator_indices(self.model, controlled_joints)
+            if hasattr(self, 'model'):
+                self.self_qpos_idx = get_qpos_indices(self.model, controlled_joints)
+                self.self_qvel_idx = get_qvel_indices(self.model, controlled_joints)
+                self.self_actuators_idx = get_actuator_indices(self.model, controlled_joints)
+            else:
+                self.self_qpos_idx = get_qpos_indices(self.sim.model, controlled_joints)
+                self.self_qvel_idx = get_qvel_indices(self.sim.model, controlled_joints)
+                self.self_actuators_idx = get_actuator_indices(self.sim.model, controlled_joints)
         else:
             assert self.model.nv == self.model.nu, "if the number of degrees of freedom is different than the number of actuators you must specify the controlled_joints"
-            self.sim_qpos_idx = range(self.model.nq)
-            self.sim_qvel_idx = range(self.model.nv)
-            self.sim_actuators_idx = range(self.model.nu)
-            self.sim_joint_idx = range(self.model.nu)
-
-            self.self_qpos_idx = range(self.model.nq)
-            self.self_qvel_idx = range(self.model.nv)
-            self.self_actuators_idx = range(self.model.nu)
+            self.sim_qpos_idx = range(self.sim.model.nq)
+            self.sim_qvel_idx = range(self.sim.model.nv)
+            self.sim_actuators_idx = range(self.sim.model.nu)
+            self.sim_joint_idx = range(self.sim.model.nu)
+            
+            if hasattr(self, 'model'):
+                self.self_qpos_idx = range(self.model.nq)
+                self.self_qvel_idx = range(self.model.nv)
+                self.self_actuators_idx = range(self.model.nu)
+            else:
+                self.self_qpos_idx = range(self.sim.model.nq)
+                self.self_qvel_idx = range(self.sim.model.nv)
+                self.self_actuators_idx = range(self.sim.model.nu)
 
         # # Get the controlled joints
         # if controlled_joints:
@@ -125,8 +134,8 @@ class PDController(BaseController):
         # Add gravity compensation if necessary
         if self.gravity_comp:
             self.gravity_comp_sim.data.qpos[:] = self.sim.data.qpos[:].copy()
-            self.gravity_comp_sim.data.qvel[:] = np.zeros(self.model.nv)
-            self.gravity_comp_sim.data.qacc[:] = np.zeros(self.model.nv)
+            self.gravity_comp_sim.data.qvel[:] = np.zeros_like(self.self_qvel_idx)
+            self.gravity_comp_sim.data.qacc[:] = np.zeros_like(self.self_qvel_idx)
             mujoco_py.functions.mj_inverse(self.model, self.gravity_comp_sim.data)
             torque += self.gravity_comp_sim.data.qfrc_inverse[self.sim_actuators_idx].copy()
 

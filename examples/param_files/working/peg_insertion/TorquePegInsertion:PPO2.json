@@ -23,6 +23,7 @@
         "gravity": false,
         "observe_joints": true,
         "in_peg_frame": true,
+        "init_randomness": 0.03,
         "controller": "DirectTorqueController",
         "controller_options": {
             "action_scaling": 2.2
