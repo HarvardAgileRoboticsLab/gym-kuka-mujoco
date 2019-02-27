@@ -149,7 +149,6 @@ class PegInsertionEnv(kuka_env.KukaEnv):
         else:
             obs = np.zeros(0)
 
-
         # Return superclass observation stacked with the ft observation.
         if not self.initialized:
             ft_obs = np.zeros(6)
@@ -175,6 +174,9 @@ class PegInsertionEnv(kuka_env.KukaEnv):
     def _get_target_obs(self):
         # Compute relative position error
         pos, rot = forwardKinSite(self.sim, ['peg_tip','hole_base','hole_top'])
+        peg_tip_id = self.model.site_name2id('peg_tip')
+        jacp, jacr = forwardKinJacobianSite(self.sim, peg_tip_id, recompute=False)
+        
         if self.use_rel_pos_err:
             pos_obs = pos[1] - pos[0]
             quat_peg_tip = mat2Quat(rot[0])
@@ -186,11 +188,16 @@ class PegInsertionEnv(kuka_env.KukaEnv):
             rot_obs = mat2Quat(rot[1])
             hole_top_obs = pos[2]
 
+        peg_tip_lin_vel = jacp.dot(self.sim.data.qvel)
+        peg_tip_rot_vel = jacr.dot(self.sim.data.qvel)
+
         if self.in_peg_frame:
             pos_obs = rot[0].T.dot(pos_obs)
             hole_top_obs = rot[0].T.dot(hole_top_obs)
+            peg_tip_lin_vel = rot[0].T.dot(peg_tip_lin_vel)
+            peg_tip_rot_vel = rot[0].T.dot(peg_tip_rot_vel)
         
-        return np.concatenate([pos_obs, rot_obs, hole_top_obs])
+        return np.concatenate([pos_obs, rot_obs, peg_tip_lin_vel, peg_tip_rot_vel, hole_top_obs])
 
     def _reset_state(self):
         '''
