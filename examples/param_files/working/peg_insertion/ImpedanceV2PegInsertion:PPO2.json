@@ -27,8 +27,8 @@
         "controller": "ImpedanceControllerV2",
         "controller_options": {
             "model_path": "full_peg_insertion_experiment_no_collision_no_gravity.xml",
-            "pos_scale": 0.3,
-            "rot_scale": 0.1,
+            "pos_scale": 0.9,
+            "rot_scale": 0.3,
             "stiffness": [2.0, 2.0, 2.0, 6.0, 6.0, 6.0],
             "site_name": "peg_tip",
             "in_ee_frame": true

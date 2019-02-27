@@ -154,6 +154,17 @@ class PushingEnv(kuka_env.KukaEnv):
             # Return superclass observation.
             obs = super(PushingEnv, self)._get_state_obs()
 
+        if not self.initialized:
+            ee_lin_vel_obs = np.zeros(3)
+            ee_rot_vel_obs = np.zeros(3)
+        else:
+            peg_tip_id = self.model.site_name2id('peg_tip')
+            jacp, jacr = forwardKinJacobianSite(self.sim, peg_tip_id, recompute=False)
+            ee_lin_vel_obs = jacp.dot(self.sim.data.qvel)
+            ee_rot_vel_obs = jacr.dot(self.sim.data.qvel)
+        
+        obs = np.concatenate([ee_lin_vel_obs, ee_rot_vel_obs])
+
         # Return superclass observation stacked with the ft observation.
         if not self.initialized:
             ft_obs = np.zeros(6)
