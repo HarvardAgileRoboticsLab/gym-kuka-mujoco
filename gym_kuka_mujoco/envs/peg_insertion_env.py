@@ -172,17 +172,19 @@ class PegInsertionEnv(kuka_env.KukaEnv):
 
     def _get_target_obs(self):
         # Compute relative position error
-        pos, rot = forwardKinSite(self.sim, ['peg_tip','hole_base'])
+        pos, rot = forwardKinSite(self.sim, ['peg_tip','hole_base','hole_top'])
         if self.use_rel_pos_err:
             pos_obs = pos[1] - pos[0]
             quat_peg_tip = mat2Quat(rot[0])
             quat_hole_base = mat2Quat(rot[1])
             rot_obs = subQuat(quat_hole_base, quat_peg_tip).copy()            
+            hole_top_obs = pos[2] - pos[0]
         else:
             pos_obs = pos[1].copy()
             rot_obs = mat2Quat(rot[1])
+            hole_top_obs = pos[2]
         
-        return np.concatenate([pos_obs, rot_obs])
+        return np.concatenate([pos_obs, rot_obs, hole_top_obs])
 
     def _reset_state(self):
         '''
