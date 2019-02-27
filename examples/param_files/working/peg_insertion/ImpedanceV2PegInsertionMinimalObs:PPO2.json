@@ -16,14 +16,14 @@
         "logarithmic_cost": true,
         "quadratic_cost": true,
         "quadratic_rot_cost": true,
-        "hole_id": 25,
+        "hole_id": 50,
         "random_target": true,
         "random_hole_file": "random_reachable_holes_small_randomness.npy",
         "use_rel_pos_err": true,
         "gravity": false,
         "observe_joints": false,
         "in_peg_frame": true,
-        "init_randomness": 0.03,
+        "init_randomness": 0.01,
         "controller": "ImpedanceControllerV2",
         "controller_options": {
             "model_path": "full_peg_insertion_experiment_no_collision_no_gravity.xml",
@@ -39,7 +39,7 @@
         "success"
     ],
     "learning_options": {
-        "total_timesteps": 1000000
+        "total_timesteps": 10000000
     },
     "n_env": 8,
     "policy_type": "MlpPolicy"
