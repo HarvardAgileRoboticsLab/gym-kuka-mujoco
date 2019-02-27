@@ -28,12 +28,15 @@ class ImpedanceControllerV2(BaseController):
                  stiffness=None,
                  damping='auto',
                  null_space_damping=1.0,
-                 controlled_joints=None):
+                 controlled_joints=None,
+                 in_ee_frame=False):
         super(ImpedanceControllerV2, self).__init__(sim)
 
         # Create a model for control
         model_path = os.path.join(kuka_asset_dir(), model_path)
         self.model = mujoco_py.load_model_from_path(model_path)
+
+        self.in_ee_frame = in_ee_frame
 
         # Construct the action space.
         high_pos = pos_limit*np.ones(3)
@@ -99,6 +102,10 @@ class ImpedanceControllerV2(BaseController):
 
         pos, mat = forwardKinSite(self.sim, self.site_name, recompute=False)
         quat = mat2Quat(mat)
+        
+        if self.in_ee_frame:
+            dx = mat.dot(dx)
+
         self.pos_set = pos + dx
         self.quat_set = quatAdd(quat, dr)
 
