@@ -25,6 +25,7 @@ class PegInsertionEnv(kuka_env.KukaEnv):
                  linear_cost=False,
                  logarithmic_cost=False,
                  sparse_cost=False,
+                 observe_joints=True,
                  random_hole_file='random_reachable_holes_small_randomness.npy',
                  **kwargs):
         
@@ -39,6 +40,7 @@ class PegInsertionEnv(kuka_env.KukaEnv):
         self.logarithmic_cost = logarithmic_cost
         self.sparse_cost = sparse_cost
         self.quadratic_rot_cost = quadratic_rot_cost
+        self.observe_joints = observe_joints
         
         # Resolve the models path based on the hole_id.
         gravity_string = '' if gravity else '_no_gravity'
@@ -140,7 +142,10 @@ class PegInsertionEnv(kuka_env.KukaEnv):
         '''
 
         # Return superclass observation.
-        obs = super(PegInsertionEnv, self)._get_state_obs()
+        if self.observe_joints:
+            obs = super(PegInsertionEnv, self)._get_state_obs()
+        else:
+            obs = np.zeros(0)
 
 
         # Return superclass observation stacked with the ft observation.
