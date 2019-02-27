@@ -23,6 +23,7 @@
         "gravity": false,
         "observe_joints": false,
         "in_peg_frame": true,
+        "init_randomness": 0.03,
         "controller": "ImpedanceControllerV2",
         "controller_options": {
             "model_path": "full_peg_insertion_experiment_no_collision_no_gravity.xml",

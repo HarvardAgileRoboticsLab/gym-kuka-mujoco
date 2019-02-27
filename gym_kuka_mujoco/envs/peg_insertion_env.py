@@ -28,6 +28,7 @@ class PegInsertionEnv(kuka_env.KukaEnv):
                  observe_joints=True,
                  in_peg_frame=False,
                  random_hole_file='random_reachable_holes_small_randomness.npy',
+                 init_randomness=0.01,
                  **kwargs):
         
         # Store arguments.
@@ -43,6 +44,7 @@ class PegInsertionEnv(kuka_env.KukaEnv):
         self.quadratic_rot_cost = quadratic_rot_cost
         self.observe_joints = observe_joints
         self.in_peg_frame = in_peg_frame
+        self.init_randomness = init_randomness
         
         # Resolve the models path based on the hole_id.
         gravity_string = '' if gravity else '_no_gravity'
@@ -211,11 +213,11 @@ class PegInsertionEnv(kuka_env.KukaEnv):
             self.set_state(qpos, qvel)
             self.sim.forward()
         else:
-            qpos = self.good_states[-1] + self.np_random.uniform(-.01,.01,7)
+            qpos = self.good_states[-1] + self.np_random.uniform(-self.init_randomness,self.init_randomness,7)
             self.set_state(qpos, qvel)
             self.sim.forward()
             while self.sim.data.ncon > 0:
-                qpos = self.good_states[-1] + self.np_random.uniform(-.01,.01,7)
+                qpos = self.good_states[-1] + self.np_random.uniform(-self.init_randomness,self.init_randomness,7)
                 self.set_state(qpos, qvel)
                 self.sim.forward()
 
