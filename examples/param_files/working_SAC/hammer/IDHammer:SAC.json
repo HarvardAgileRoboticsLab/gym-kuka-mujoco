@@ -2,7 +2,7 @@
     "actor_options": {
     },
     "alg": "SAC",
-    "env": "PegInsertionEnv",
+    "env": "HammerEnv",
     "env_options": {
         "frame_skip": 10,
         "timestep": 0.01,
