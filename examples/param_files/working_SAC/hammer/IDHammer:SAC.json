@@ -11,10 +11,13 @@
         "pos_reward": true,
         "random_target": false,
         "use_rel_pos_err": false,
+        "sac_reward_scale":100.0,
         "controller": "RelativeInverseDynamicsController",
         "controller_options": {
             "model_path": "full_hammer_experiment_no_collision_no_gravity.xml",
-            "action_limit": 0.35,
+            // "action_limit": 0.35,
+            // "action_limit": 5.0, // this works but seems high
+            "action_limit": 3.0,
             "controlled_joints": ["kuka_joint_1", "kuka_joint_2", "kuka_joint_3", "kuka_joint_4", "kuka_joint_5", "kuka_joint_6", "kuka_joint_7"]
         }
     },
@@ -22,7 +25,7 @@
         "nail_depth"
     ],
     "learning_options": {
-        "total_timesteps": 1000000
+        "total_timesteps": 500000
     },
     "n_env": 1,
     "vectorized": false,

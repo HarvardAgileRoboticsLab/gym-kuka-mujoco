@@ -11,11 +11,14 @@
         "pos_reward": true,
         "random_target": false,
         "use_rel_pos_err": false,
+        "sac_reward_scale":100.0,
         "controller": "ImpedanceControllerV2",
         "controller_options": {
             "model_path": "full_hammer_experiment_no_collision_no_gravity.xml",
-            "pos_scale": 0.5,
-            "rot_scale": 0.2,
+            // "pos_limit": 0.5,
+            // "rot_limit": 0.2,
+            "pos_limit": 1.5,
+            "rot_limit": 0.6,
             "stiffness": [2.0, 2.0, 2.0, 6.0, 6.0, 6.0],
             "site_name": "hammer_tip",
             "controlled_joints": ["kuka_joint_1", "kuka_joint_2", "kuka_joint_3", "kuka_joint_4", "kuka_joint_5", "kuka_joint_6", "kuka_joint_7"]
@@ -26,7 +29,7 @@
         "nail_depth"
     ],
     "learning_options": {
-        "total_timesteps": 1000000
+        "total_timesteps": 500000
     },
     "n_env": 1,
     "vectorized": false,

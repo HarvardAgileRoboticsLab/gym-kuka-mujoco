@@ -89,7 +89,8 @@ class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
             total_reward = 0
             total_reward_info = dict()
             for _ in range(self.frame_skip):
-                self.sim.data.ctrl[:] = self._get_torque()
+                torque = self._get_torque()
+                self.sim.data.ctrl[:] = np.clip(torque, -300, 300)
                 self.sim.step()
                 if not np.all(np.isfinite(self.sim.data.qpos)):
                     print("Warning: simulation step returned inf or nan.")
