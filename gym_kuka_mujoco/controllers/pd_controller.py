@@ -133,9 +133,9 @@ class PDController(BaseController):
 
         # Add gravity compensation if necessary
         if self.gravity_comp:
-            self.gravity_comp_sim.data.qpos[:] = self.sim.data.qpos[:].copy()
-            self.gravity_comp_sim.data.qvel[:] = np.zeros_like(self.self_qvel_idx)
-            self.gravity_comp_sim.data.qacc[:] = np.zeros_like(self.self_qvel_idx)
+            self.gravity_comp_sim.data.qpos[self.self_qpos_idx] = self.sim.data.qpos[self.sim_qpos_idx].copy()
+            self.gravity_comp_sim.data.qvel[self.self_qvel_idx] = np.zeros_like(self.self_qvel_idx)
+            self.gravity_comp_sim.data.qacc[self.self_qvel_idx] = np.zeros_like(self.self_qvel_idx)
             mujoco_py.functions.mj_inverse(self.model, self.gravity_comp_sim.data)
             torque += self.gravity_comp_sim.data.qfrc_inverse[self.sim_actuators_idx].copy()
 
