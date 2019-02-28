@@ -8,7 +8,7 @@ from .assets import kuka_asset_dir
 from gym_kuka_mujoco.controllers import controller_registry
 
 class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
-    
+    default_info = dict()
     def __init__(self,
                  controller,
                  controller_options,
@@ -112,7 +112,7 @@ class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
             reward = 0
             obs = np.zeros_like(self.observation_space.low)
             done = True
-            info = {}
+            info = self.default_info
 
         return obs, total_reward, done, info
 

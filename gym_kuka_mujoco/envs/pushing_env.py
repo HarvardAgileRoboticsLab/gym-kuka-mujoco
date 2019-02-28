@@ -12,7 +12,10 @@ from gym_kuka_mujoco.utils.mujoco_utils import get_qpos_indices, get_qvel_indice
 
 
 class PushingEnv(kuka_env.KukaEnv):
-    
+    default_info = {
+        "block_pos_dist": -1.0,
+        "block_rot_dist": -1.0
+    }
     def __init__(self,
                  *args,
                  obs_scaling=0.1,
