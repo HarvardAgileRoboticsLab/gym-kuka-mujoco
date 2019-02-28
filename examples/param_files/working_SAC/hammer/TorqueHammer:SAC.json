@@ -11,17 +11,20 @@
         "pos_reward": true,
         "random_target": false,
         "use_rel_pos_err": false,
-        "controller": "DirectTorqueController",
+        "sac_reward_scale":100.0,
+        "controller": "SACTorqueController",
         "controller_options": {
-            "action_scaling": 2.2
+            "action_scaling": 2.2,
+            "action_limit": 0.02
         }
     },
     "info_keywords": [
         "nail_depth"
     ],
     "learning_options": {
-        "total_timesteps": 1000000
+        "total_timesteps": 250000
     },
-    "n_env": 8,
+    "n_env": 1,
+    "vectorized": false,
     "policy_type": "MlpPolicy"
 }
