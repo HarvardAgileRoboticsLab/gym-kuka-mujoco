@@ -17,7 +17,7 @@
             "pos_scale": 0.5,
             "rot_scale": 0.2,
             "stiffness": [2.0, 2.0, 2.0, 6.0, 6.0, 6.0],
-            "site_name": "peg_tip"
+            "site_name": "hammer_tip"
         }
 
     },
