@@ -16,7 +16,7 @@
         "logarithmic_cost": true,
         "quadratic_cost": true,
         "quadratic_rot_cost": true,
-        "hole_id": 50,
+        "hole_id": 25,
         "random_target": true,
         "random_hole_file": "random_reachable_holes_small_randomness.npy",
         "use_rel_pos_err": true,
