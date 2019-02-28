@@ -13,7 +13,7 @@
         "frame_skip": 10,
         "timestep": 0.01,
         "time_limit": 2.0,
-        "logarithmic_cost": true,
+        "logarithmic_cost": false,
         "quadratic_cost": true,
         "quadratic_rot_cost": true,
         "hole_id": 25,
@@ -37,7 +37,7 @@
         "success"
     ],
     "learning_options": {
-        "total_timesteps": 10000000
+        "total_timesteps": 1000000
     },
     "n_env": 8,
     "policy_type": "MlpPolicy"
