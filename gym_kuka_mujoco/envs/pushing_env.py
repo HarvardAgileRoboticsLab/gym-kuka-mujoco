@@ -29,6 +29,7 @@ class PushingEnv(kuka_env.KukaEnv):
                  contact_reward=False,
                  use_ft_sensor=False,
                  random_init_pos_file=None,
+                 reward_scale=1.0,
                  **kwargs):
         
         # Store arguments.
@@ -42,6 +43,7 @@ class PushingEnv(kuka_env.KukaEnv):
         self.peg_tip_height_reward = peg_tip_height_reward
         self.peg_tip_orientation_reward = peg_tip_orientation_reward
         self.contact_reward = contact_reward
+        self.reward_scale = reward_scale
 
         # Resolve the models path based on the hole_id.
         kwargs['model_path'] = kwargs.get('model_path', 'full_pushing_experiment.xml')
@@ -133,7 +135,8 @@ class PushingEnv(kuka_env.KukaEnv):
                     break
             reward_info['contact_reward'] = contact*.1
             reward += reward_info['contact_reward']
-        return reward, reward_info
+        
+        return reward*self.reward_scale, reward_info
 
     def _get_info(self):
         info = dict()
