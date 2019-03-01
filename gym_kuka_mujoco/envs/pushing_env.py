@@ -94,11 +94,11 @@ class PushingEnv(kuka_env.KukaEnv):
 
         if self.pos_reward:
             pos_err = self.data.qpos[self.block_pos_idx][:3] - self.block_target_position[:3]
-            reward_info['block_pos_reward'] = -np.linalg.norm(pos_err)
+            reward_info['block_pos_reward'] = -np.linalg.norm(pos_err)*10
             reward += reward_info['block_pos_reward']
         if self.rot_reward:
             rot_err = subQuat(self.data.qpos[self.block_pos_idx][3:], self.block_target_position[3:])
-            reward_info['block_rot_reward'] = -np.linalg.norm(rot_err)/10.0
+            reward_info['block_rot_reward'] = -np.linalg.norm(rot_err)
             reward += reward_info['block_rot_reward']
         if self.pos_vel_reward:
             raise NotImplementedError
