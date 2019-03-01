@@ -97,6 +97,9 @@ class PDController(BaseController):
             low = low_pos
             high = high_pos
 
+        low *= action_limit
+        high *= action_limit
+
         # Scale the actions proportionally to the subtree mass.
         self.action_space = gym.spaces.Box(low, high, dtype=np.float32)
 
