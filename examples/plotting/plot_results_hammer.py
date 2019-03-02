@@ -51,7 +51,7 @@ plot_data(impedance_data, X_EPISODES, 'nail_depth', window=500, max_idx=20000, l
 plt.legend(fontsize=16)
 plt.xlabel('Episodes', fontsize=16)
 plt.ylabel('Nail Depth (m)', fontsize=16)
-plt.title('PPO', fontsize=20)
+plt.title('Hammer (PPO)', fontsize=20)
 
 # Load the SAC data.
 # Torque
@@ -88,9 +88,9 @@ plot_data(torque_data, X_EPISODES, 'nail_depth', window=250, max_idx=5000, label
 plot_data(pd_data, X_EPISODES, 'nail_depth', window=250, max_idx=5000, label="PD")
 plot_data(id_data, X_EPISODES, 'nail_depth', window=250, max_idx=5000 ,label="ID")
 plot_data(impedance_data, X_EPISODES, 'nail_depth', window=100, max_idx=5000, label="impedance")
-# plt.legend(fontsize=24)
-plt.xlabel('Episodes', fontsize=24)
-plt.ylabel('Nail Depth (m)', fontsize=24)
-plt.title('SAC', fontsize=30)
+# plt.legend(fontsize=16)
+plt.xlabel('Episodes', fontsize=16)
+# plt.ylabel('Nail Depth (m)', fontsize=16)
+plt.title('Hammer (SAC)', fontsize=20)
 plt.show()
 # import pdb; pdb.set_trace()
