@@ -5,7 +5,7 @@ from gym import spaces
 import mujoco_py
 
 from gym_kuka_mujoco.envs.assets import kuka_asset_dir
-from gym_kuka_mujoco.utils.quaternion import identity_quat, subQuat, quatIntegrate, mat2Quat
+from gym_kuka_mujoco.utils.quaternion import identity_quat, subQuat, quatAdd, mat2Quat
 from gym_kuka_mujoco.utils.kinematics import forwardKinSite, forwardKinJacobianSite
 from .base_controller import BaseController
 from . import register_controller
@@ -20,18 +20,23 @@ class ImpedanceControllerV2(BaseController):
     def __init__(self,
                  sim,
                  pos_scale=1.0,
-                 rot_scale=0.5,
-                 pos_limit=10.0,
-                 rot_limit=10.0,
+                 rot_scale=0.3,
+                 pos_limit=1.0,
+                 rot_limit=1.0,
                  model_path='full_kuka_no_collision_no_gravity.xml',
                  site_name='ee_site',
-                 stiffness=1.0,
-                 controlled_joints=None):
+                 stiffness=None,
+                 damping='auto',
+                 null_space_damping=1.0,
+                 controlled_joints=None,
+                 in_ee_frame=False):
         super(ImpedanceControllerV2, self).__init__(sim)
 
         # Create a model for control
         model_path = os.path.join(kuka_asset_dir(), model_path)
         self.model = mujoco_py.load_model_from_path(model_path)
+
+        self.in_ee_frame = in_ee_frame
 
         # Construct the action space.
         high_pos = pos_limit*np.ones(3)
@@ -53,8 +58,17 @@ class ImpedanceControllerV2(BaseController):
         self.pos_set = np.zeros(3)
         self.quat_set = identity_quat.copy()
 
-        self.stiffness = np.ones(6)*stiffness
-        self.damping = 0.
+        if stiffness is None:
+            self.stiffness = np.array([1.0, 1.0, 1.0, 0.3, 0.3, 0.3])
+        else:
+            self.stiffness = np.ones(6)*stiffness
+
+        if damping=='auto':
+            self.damping = 2*np.sqrt(self.stiffness)
+        else:
+            self.damping = np.ones(6)*damping
+
+        self.null_space_damping = null_space_damping
 
         # Get the position, velocity, and actuator indices for the model.
         if controlled_joints is not None:
@@ -88,9 +102,12 @@ class ImpedanceControllerV2(BaseController):
 
         pos, mat = forwardKinSite(self.sim, self.site_name, recompute=False)
         quat = mat2Quat(mat)
+        
+        if self.in_ee_frame:
+            dx = mat.dot(dx)
 
         self.pos_set = pos + dx
-        self.quat_set = quatIntegrate(quat, dr)
+        self.quat_set = quatAdd(quat, dr)
 
     def get_torque(self):
         '''
@@ -100,19 +117,24 @@ class ImpedanceControllerV2(BaseController):
         pos, mat = forwardKinSite(self.sim, self.site_name, recompute=False)
         quat = mat2Quat(mat)
         dx = self.pos_set - pos
-        dr = subQuat(self.quat_set, quat)
+        dr = subQuat(self.quat_set, quat) # Original
         dframe = np.concatenate((dx,dr))
 
         # Compute generalized forces from a virtual external force.
         jpos, jrot = forwardKinJacobianSite(self.sim, self.site_name, recompute=False)
         J = np.vstack((jpos[:,self.sim_qvel_idx], jrot[:,self.sim_qvel_idx]))
-        impedance_acc_des = J.T.dot(np.linalg.solve(J.dot(J.T) + 1e-6*np.eye(6), self.stiffness*dframe))
+        cartesian_acc_des = self.stiffness*dframe - self.damping*J.dot(self.sim.data.qvel[self.sim_qvel_idx])
+        impedance_acc_des = J.T.dot(np.linalg.solve(J.dot(J.T) + 1e-6*np.eye(6), cartesian_acc_des))
 
-        # external_force = J.T.dot(self.stiffness*dframe) # virtual force on the end effector
+        # Add damping in the null space of the the Jacobian
+        projection_matrix = J.T.dot(np.linalg.solve(J.dot(J.T), J))
+        projection_matrix = np.eye(projection_matrix.shape[0]) - projection_matrix
+        null_space_vel = projection_matrix.dot(self.sim.data.qvel[self.sim_qvel_idx])
+        impedance_acc_des += -self.null_space_damping*null_space_vel # null space damping
 
         # Cancel other dynamics and add virtual damping using inverse dynamics.
         acc_des = np.zeros(self.sim.model.nv)
-        acc_des[self.sim_qvel_idx] = -self.damping*self.sim.data.qvel[self.sim_qvel_idx] + impedance_acc_des
+        acc_des[self.sim_qvel_idx] = impedance_acc_des
         self.sim.data.qacc[:] = acc_des
         mujoco_py.functions.mj_inverse(self.model, self.sim.data)
         id_torque = self.sim.data.qfrc_inverse[self.sim_actuators_idx].copy()

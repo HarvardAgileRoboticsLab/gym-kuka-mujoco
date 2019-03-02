@@ -18,12 +18,13 @@ class HammerEnv(kuka_env.KukaEnv):
                  use_rel_pos_err=False,
                  pos_reward=True,
                  vel_reward=False,
+                 sac_reward_scale=1.0,
                  **kwargs):
-        
         # Store arguments.
         self.obs_scaling = obs_scaling
         self.use_ft_sensor = use_ft_sensor
         self.use_rel_pos_err = use_rel_pos_err
+        self.sac_reward_scale = sac_reward_scale
         
         # Resolve the models path based on the hole_id.
         kwargs['model_path'] = kwargs.get('model_path', 'full_hammer_experiment_no_gravity.xml')
@@ -54,7 +55,7 @@ class HammerEnv(kuka_env.KukaEnv):
             reward_info['nail_vel_reward'] = -self.data.qvel[self.nail_idx]
             reward += reward_info['nail_vel_reward']
 
-        return reward, reward_info
+        return reward*self.sac_reward_scale, reward_info # *100 for SAC
 
     def _get_info(self):
         info = dict()

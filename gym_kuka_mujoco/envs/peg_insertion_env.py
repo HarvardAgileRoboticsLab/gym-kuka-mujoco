@@ -6,7 +6,7 @@ from gym_kuka_mujoco.envs import kuka_env
 from gym_kuka_mujoco.utils.kinematics import forwardKin, forwardKinSite, forwardKinJacobianSite
 from gym_kuka_mujoco.utils.insertion import hole_insertion_samples
 from gym_kuka_mujoco.utils.projection import rotate_cost_by_matrix
-from gym_kuka_mujoco.utils.quaternion import mat2Quat, subQuat
+from gym_kuka_mujoco.utils.quaternion import mat2Quat, subQuat, quatAdd
 from gym_kuka_mujoco.envs.assets import kuka_asset_dir
 
 class PegInsertionEnv(kuka_env.KukaEnv):
@@ -20,11 +20,15 @@ class PegInsertionEnv(kuka_env.KukaEnv):
                  use_ft_sensor=False,
                  use_rel_pos_err=False,
                  quadratic_cost=True,
+                 quadratic_rot_cost=True,
                  regularize_pose=False,
                  linear_cost=False,
                  logarithmic_cost=False,
                  sparse_cost=False,
+                 observe_joints=True,
+                 in_peg_frame=False,
                  random_hole_file='random_reachable_holes_small_randomness.npy',
+                 init_randomness=0.01,
                  **kwargs):
         
         # Store arguments.
@@ -37,6 +41,10 @@ class PegInsertionEnv(kuka_env.KukaEnv):
         self.linear_cost = linear_cost
         self.logarithmic_cost = logarithmic_cost
         self.sparse_cost = sparse_cost
+        self.quadratic_rot_cost = quadratic_rot_cost
+        self.observe_joints = observe_joints
+        self.in_peg_frame = in_peg_frame
+        self.init_randomness = init_randomness
         
         # Resolve the models path based on the hole_id.
         gravity_string = '' if gravity else '_no_gravity'
@@ -48,7 +56,7 @@ class PegInsertionEnv(kuka_env.KukaEnv):
         
 
         self.Q_pos = np.diag([100,100,100])
-        self.Q_rot = np.diag([1,1,1])
+        self.Q_rot = np.diag([30,30,30])
         if self.regularize_pose:
             self.Q_pose_reg = np.eye(7)
 
@@ -88,7 +96,10 @@ class PegInsertionEnv(kuka_env.KukaEnv):
         reward = 0.
 
         # reward_info['quaternion_reward'] = -rot_err.dot(Q_rot).dot(rot_err)
-        
+        if self.quadratic_rot_cost:
+            reward_info['quadratic_orientation_reward'] = -rot_err.dot(Q_rot).dot(rot_err)
+            reward += reward_info['quadratic_orientation_reward']
+
         if self.quadratic_cost:
             reward_info['quadratic_position_reward'] = -pos_err.dot(Q_pos).dot(pos_err)
             reward += reward_info['quadratic_position_reward']
@@ -135,13 +146,14 @@ class PegInsertionEnv(kuka_env.KukaEnv):
         '''
 
         # Return superclass observation.
-        obs = super(PegInsertionEnv, self)._get_state_obs()
-
+        if self.observe_joints:
+            obs = super(PegInsertionEnv, self)._get_state_obs()
+        else:
+            obs = np.zeros(0)
 
         # Return superclass observation stacked with the ft observation.
         if not self.initialized:
             ft_obs = np.zeros(6)
-            pos_err = np.zeros(3)
         else:
             # Compute F/T sensor data
             ft_obs = self.sim.data.sensordata
@@ -152,35 +164,88 @@ class PegInsertionEnv(kuka_env.KukaEnv):
         if self.use_ft_sensor:
             obs = np.concatenate([obs, ft_obs])
 
+        # End effector position
+        pos, rot = forwardKinSite(self.sim, ['peg_tip','hole_base','hole_top'])
+        
+        if self.use_rel_pos_err:
+            pos_obs = pos[1] - pos[0]
+            quat_peg_tip = mat2Quat(rot[0])
+            quat_hole_base = mat2Quat(rot[1])
+            rot_obs = subQuat(quat_hole_base, quat_peg_tip).copy()            
+            hole_top_obs = pos[2] - pos[0]
+        else:
+            # TODO: we probably also want the EE position in the world
+            pos_obs = pos[1].copy()
+            rot_obs = mat2Quat(rot[1])
+            hole_top_obs = pos[2]
+
+        # End effector velocity
+        peg_tip_id = self.model.site_name2id('peg_tip')
+        jacp, jacr = forwardKinJacobianSite(self.sim, peg_tip_id, recompute=False)
+        peg_tip_lin_vel = jacp.dot(self.sim.data.qvel)
+        peg_tip_rot_vel = jacr.dot(self.sim.data.qvel)
+        
+        # Transform into end effector frame
+        if self.in_peg_frame:
+            pos_obs = rot[0].T.dot(pos_obs)
+            hole_top_obs = rot[0].T.dot(hole_top_obs)
+            peg_tip_lin_vel = rot[0].T.dot(peg_tip_lin_vel)
+            peg_tip_rot_vel = rot[0].T.dot(peg_tip_rot_vel)
+
+        obs = np.concatenate([obs, pos_obs, rot_obs, peg_tip_lin_vel, peg_tip_rot_vel, hole_top_obs])
+
         return obs
+
+# def test_quatInegrate():
+#     q2 = random_quat()
+#     v = subQuat(q2, identity_quat)
+#     q2_ = quatIntegrate(identity_quat, v)
+#     assert np.allclose(q2, q2_), 'quatIntegrate test failed'
 
     def _get_target_obs(self):
         # Compute relative position error
-        pos, rot = forwardKinSite(self.sim, ['peg_tip','hole_base'])
-
-        if self.use_rel_pos_err:
-            pos_obs = pos[0] - pos[1]
-            quat_peg_tip = mat2Quat(rot[0])
-            quat_hole_base = mat2Quat(rot[1])
-            rot_obs = subQuat(quat_peg_tip, quat_hole_base)
-        else:
-            pos_obs = pos[1].copy()
-            rot_obs = mat2Quat(rot[1])
+        # pos, rot = forwardKinSite(self.sim, ['peg_tip','hole_base','hole_top'])
         
-        return np.concatenate([pos_obs, rot_obs])
+        # if self.use_rel_pos_err:
+        #     pos_obs = pos[1] - pos[0]
+        #     quat_peg_tip = mat2Quat(rot[0])
+        #     quat_hole_base = mat2Quat(rot[1])
+        #     rot_obs = subQuat(quat_hole_base, quat_peg_tip).copy()            
+        #     hole_top_obs = pos[2] - pos[0]
+        # else:
+        #     pos_obs = pos[1].copy()
+        #     rot_obs = mat2Quat(rot[1])
+        #     hole_top_obs = pos[2]
+
+
+        # if self.in_peg_frame:
+        #     pos_obs = rot[0].T.dot(pos_obs)
+        #     hole_top_obs = rot[0].T.dot(hole_top_obs)
+        #     peg_tip_lin_vel = rot[0].T.dot(peg_tip_lin_vel)
+        #     peg_tip_rot_vel = rot[0].T.dot(peg_tip_rot_vel)
+        
+        return np.zeros(0)
+        # return np.concatenate([pos_obs, rot_obs, peg_tip_lin_vel, peg_tip_rot_vel, hole_top_obs])
 
     def _reset_state(self):
         '''
         Reset the robot state and return the observation.
         '''
 
+        qvel = np.zeros(7)
+
         if self.sample_good_states and self.np_random.uniform() < 0.5:
             qpos = self.np_random.choice(self.good_states)
+            self.set_state(qpos, qvel)
+            self.sim.forward()
         else:
-            qpos = self.good_states[-1] + self.np_random.uniform(-.01,.01,7)
-        
-        qvel = np.zeros(7)
-        self.set_state(qpos, qvel)
+            qpos = self.good_states[-1] + self.np_random.uniform(-self.init_randomness,self.init_randomness,7)
+            self.set_state(qpos, qvel)
+            self.sim.forward()
+            while self.sim.data.ncon > 0:
+                qpos = self.good_states[-1] + self.np_random.uniform(-self.init_randomness,self.init_randomness,7)
+                self.set_state(qpos, qvel)
+                self.sim.forward()
 
     def _reset_target(self):
         '''

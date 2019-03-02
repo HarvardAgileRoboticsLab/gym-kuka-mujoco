@@ -10,17 +10,17 @@
     "alg": "PPO2",
     "env": "PegInsertionEnv",
     "env_options": {
-        "controller": "RelativeInverseDynamicsController",
-        "controller_options": {
-            "model_path": "full_peg_insertion_experiment_no_collision.xml"
-        },
         "frame_skip": 50,
         "time_limit": 2.0,
         "logarithmic_cost": true,
         "quadratic_cost": true,
         "hole_id": 50,
         "random_target": true,
-        "use_rel_pos_err": true
+        "use_rel_pos_err": true,
+        "controller": "RelativeInverseDynamicsController",
+        "controller_options": {
+            "model_path": "full_peg_insertion_experiment_no_collision.xml"
+        }
     },
     "info_keywords": [
         "tip_distance",

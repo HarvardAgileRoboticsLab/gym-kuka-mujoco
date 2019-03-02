@@ -1,0 +1,37 @@
+{
+    "actor_options": {
+    },
+    "alg": "SAC",
+    "env": "PushingEnv",
+    "env_options": {
+        "frame_skip": 10,
+        "timestep": 0.01,
+        "time_limit": 2.0,
+        "random_target": false,
+        "use_rel_pos_err": true,
+        "pos_reward": true,
+        "rot_reward": true,
+        "peg_tip_height_reward": true,
+        "peg_tip_orientation_reward": true,
+        "contact_reward": false,
+        "reward_scale": 10.0,
+        "controller": "RelativePDController",
+        "controller_options": {
+            "set_velocity": false,
+            "kp": 0.27,
+            "action_scale": 2.0,
+            "action_limit": 0.08,
+            "gravity_comp_model_path": "full_pushing_experiment_no_collision.xml",
+            "controlled_joints": ["kuka_joint_1", "kuka_joint_2", "kuka_joint_3", "kuka_joint_4", "kuka_joint_5", "kuka_joint_6", "kuka_joint_7"]
+        }
+    },
+    "info_keywords": [
+        "block_pos_dist",
+        "block_rot_dist"
+    ],
+    "learning_options": {
+        "total_timesteps": 1000000
+    },
+    "n_env": 1,
+    "policy_type": "MlpPolicy"
+}

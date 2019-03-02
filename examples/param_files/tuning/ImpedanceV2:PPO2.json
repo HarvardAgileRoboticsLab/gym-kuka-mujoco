@@ -1,0 +1,24 @@
+{
+    "actor_options": {},
+    "alg": "PPO2",
+    "env": "KukaEnv",
+    "env_options": {
+        "controller": "ImpedanceControllerV2",
+        "controller_options": {
+            "model_path": "full_kuka_no_collision_no_gravity.xml",
+            "pos_scale": 0.3,
+            "rot_scale": 0.1,
+            "stiffness": [2.0, 2.0, 2.0, 6.0, 6.0, 6.0],
+            "site_name": "ee_site"
+        },
+        "model_path": "full_kuka_mesh_collision_no_gravity.xml",
+        "frame_skip": 50,
+        "time_limit": 2.0
+    },
+    "learning_options": {
+        "total_timesteps": 1000000
+    },
+    "n_env": 1,
+    "vectorized": false,
+    "policy_type": "MlpPolicy"
+}

@@ -1,0 +1,26 @@
+{
+    "actor_options": {},
+    "alg": "PPO2",
+    "env": "KukaEnv",
+    "env_options": {
+        "controller": "RelativePDController",
+        "controller_options": {
+            "set_velocity": false,
+            "kp": 0.27,
+            "action_scale": 0.4
+        },
+        "model_path": "full_kuka_mesh_collision_no_gravity.xml",
+        "frame_skip": 50,
+        "time_limit": 2.0
+    },
+    "info_keywords": [
+        "tip_distance",
+        "success"
+    ],
+    "learning_options": {
+        "total_timesteps": 1000000
+    },
+    "n_env": 1,
+    "vectorized": false,
+    "policy_type": "MlpPolicy"
+}

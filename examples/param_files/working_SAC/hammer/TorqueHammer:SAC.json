@@ -1,0 +1,30 @@
+{
+    "actor_options": {
+    },
+    "alg": "SAC",
+    "env": "HammerEnv",
+    "env_options": {
+        "frame_skip": 10,
+        "timestep": 0.01,
+        "time_limit": 3.0,
+        "vel_reward": true,
+        "pos_reward": true,
+        "random_target": false,
+        "use_rel_pos_err": false,
+        "sac_reward_scale":100.0,
+        "controller": "SACTorqueController",
+        "controller_options": {
+            "action_scaling": 2.2,
+            "action_limit": 0.02
+        }
+    },
+    "info_keywords": [
+        "nail_depth"
+    ],
+    "learning_options": {
+        "total_timesteps": 250000
+    },
+    "n_env": 1,
+    "vectorized": false,
+    "policy_type": "MlpPolicy"
+}

@@ -13,7 +13,7 @@
       <geom contype="0" conaffinity="0"/>
     </default>
     <default class="collision">
-      <geom contype="1" conaffinity="1" friction=".6 0.005 0.0001"/>
+      <geom contype="0" conaffinity="0"/>
     </default>
     <site rgba="1 0 0 .5"/>
   </default> 
@@ -29,7 +29,7 @@
     <body name="kuka_table" pos="0 0 1">
       <geom class="collision" type="box" size=".5 .5 .5" pos="0 0 -.5" />
       <body name="kuka_base" pos=".2 0 0">
-        <include file="kuka/kuka_no_collision_peg_ee.xml"/>
+        <include file="kuka/kuka_mesh_collision_peg_ee.xml"/>
       </body>
     </body>
     <include file="pushing/block_collision.xml"/>

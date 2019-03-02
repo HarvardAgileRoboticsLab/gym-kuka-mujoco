@@ -47,6 +47,7 @@ def replay_model(env, model, deterministic=True, num_episodes=None, record=False
     # Simulate forward.
     obs = env.reset()
     while episode_count < num_episodes:
+        # import pdb; pdb.set_trace()
         action, _states = model.predict(obs, deterministic=deterministic)
         clipped_action = np.clip(action, env.action_space.low,
                                  env.action_space.high)
