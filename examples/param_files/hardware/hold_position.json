@@ -1,0 +1,51 @@
+{
+    "actor_options": {
+        "ent_coef": 0.00,
+        "gamma": 1.0,
+        "learning_rate": 0.001,
+        "n_steps": 256,
+        "verbose": 0,
+        "cliprange":0.2
+    },
+    "alg": "PPO2",
+    "env": "HoldPositionEnv",
+    "env_options": {
+        "controller": "FullImpedanceController",
+        "controller_options": {
+            "model_path": "full_peg_insertion_experiment_no_collision_no_gravity.xml",
+            "site_name": "peg_tip",
+            "nominal_pos": [0.75339679, 0.0066934, 1.71026305],
+            "nominal_quat": [ 0.51204704, -0.23795296, 0.82446926, -0.03790317],
+            "nominal_qpos": [ 1.57079633, -0.52359878, -1.04719755, -1.57079633, 2.35619449, -0.78539816, 0.0],
+            "pos_limit": 0.1,
+            "rot_limit": 0.1,
+            "pos_scale": 1.0,
+            "rot_scale": 1.0,
+            "stiffness": 10.0,
+            "damping": 0.7
+        },
+        "init_randomness" : 0.3,
+        "joint_force_randomness" : 0.0,
+        "frame_skip": 50,
+        "time_limit": 2.0,
+        "init_qpos": [ 1.57079633, -0.52359878, -1.04719755, -1.57079633, 2.35619449, -0.78539816, 0.0],
+        "use_qpos_cost": false,
+        "use_qvel_cost": false,
+        "use_pos_cost": true,
+        "use_rot_cost": true,
+        "use_joint_observation": false,
+        "use_rel_pose_observation": true
+    },
+    "info_keywords": [
+        "qpos_dist",
+        "qvel_dist",
+        "pos_dist",
+        "rot_dist",
+        "success"
+    ],
+    "learning_options": {
+        "total_timesteps": 2000000
+    },
+    "n_env": 8,
+    "policy_type": "MlpPolicy"
+}

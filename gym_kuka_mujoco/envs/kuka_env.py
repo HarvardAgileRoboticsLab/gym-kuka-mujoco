@@ -90,6 +90,7 @@ class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
             total_reward_info = dict()
             for _ in range(self.frame_skip):
                 self.sim.data.ctrl[:] = self._get_torque()
+                self.sim.data.qfrc_applied[:] = self._get_random_applied_force()
                 self.sim.step()
                 if not np.all(np.isfinite(self.sim.data.qpos)):
                     print("Warning: simulation step returned inf or nan.")
@@ -191,6 +192,9 @@ class KukaEnv(mujoco_env.MujocoEnv, utils.EzPickle):
             'distance': dist,
             'velocity': velocity
         }
+
+    def _get_random_applied_force(self):
+        return np.zeros(self.model.nv)
 
     '''
     Reset and helper methods. Only overwrite the helper methods in subclasses.

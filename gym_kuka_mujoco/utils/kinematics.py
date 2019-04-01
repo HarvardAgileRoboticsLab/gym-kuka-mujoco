@@ -17,7 +17,7 @@ def forwardKin(sim, pos, quat, body_id, recompute=True):
     # Compute Kinematics and
     if recompute: 
         mujoco_py.functions.mj_kinematics(sim.model, sim.data)
-    mujoco_py.functions.mj_local2Global(sim.data, xpos, xrot, pos, quat, body_id)
+    mujoco_py.functions.mj_local2Global(sim.data, xpos, xrot, pos, quat, body_id, False)
 
     # Reshape the rotation matrix and return.
     xrot = xrot.reshape(3,3)
@@ -57,7 +57,7 @@ def forwardKinJacobian(sim, pos, body_id, recompute=True):
     # Compute Kinematics and
     if recompute: 
         sim.forward()
-    mujoco_py.functions.mj_local2Global(sim.data, xpos, xrot, pos, identity_quat, body_id)
+    mujoco_py.functions.mj_local2Global(sim.data, xpos, xrot, pos, identity_quat, body_id, False)
     mujoco_py.functions.mj_jac(sim.model, sim.data, jacp, jacr, xpos, body_id)
 
     # Reshape the jacobian matrices and return.

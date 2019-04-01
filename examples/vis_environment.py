@@ -45,5 +45,6 @@ if __name__ == '__main__':
         model = SAC(params['policy_type'], vec_env, **params['actor_options'])
     else:
         raise NotImplementedError
+
     
     replay_model(env, model, deterministic=args.deterministic)
