@@ -13,15 +13,15 @@
         "frame_skip": 10,
         "timestep": 0.01,
         "time_limit": 2.0,
-        "logarithmic_cost": true,
+        "logarithmic_cost": false,
         "quadratic_cost": true,
         "quadratic_rot_cost": true,
-        "hole_id": 50,
+        "hole_id": 25,
         "random_target": true,
         "random_hole_file": "random_reachable_holes_small_randomness.npy",
         "use_rel_pos_err": true,
         "gravity": false,
-        "observe_joints": true,
+        "observe_joints": false,
         "in_peg_frame": true,
         "init_randomness": 0.01,
         "controller": "ImpedanceControllerV2",
@@ -39,7 +39,7 @@
         "success"
     ],
     "learning_options": {
-        "total_timesteps": 10000000
+        "total_timesteps": 500000
     },
     "n_env": 8,
     "policy_type": "MlpPolicy"

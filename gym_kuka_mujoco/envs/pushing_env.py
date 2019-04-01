@@ -12,7 +12,10 @@ from gym_kuka_mujoco.utils.mujoco_utils import get_qpos_indices, get_qvel_indice
 
 
 class PushingEnv(kuka_env.KukaEnv):
-    
+    default_info = {
+        "block_pos_dist": -1.0,
+        "block_rot_dist": -1.0
+    }
     def __init__(self,
                  *args,
                  obs_scaling=0.1,
@@ -26,6 +29,7 @@ class PushingEnv(kuka_env.KukaEnv):
                  contact_reward=False,
                  use_ft_sensor=False,
                  random_init_pos_file=None,
+                 reward_scale=1.0,
                  **kwargs):
         
         # Store arguments.
@@ -39,6 +43,7 @@ class PushingEnv(kuka_env.KukaEnv):
         self.peg_tip_height_reward = peg_tip_height_reward
         self.peg_tip_orientation_reward = peg_tip_orientation_reward
         self.contact_reward = contact_reward
+        self.reward_scale = reward_scale
 
         # Resolve the models path based on the hole_id.
         kwargs['model_path'] = kwargs.get('model_path', 'full_pushing_experiment.xml')
@@ -89,11 +94,11 @@ class PushingEnv(kuka_env.KukaEnv):
 
         if self.pos_reward:
             pos_err = self.data.qpos[self.block_pos_idx][:3] - self.block_target_position[:3]
-            reward_info['block_pos_reward'] = -np.linalg.norm(pos_err)
+            reward_info['block_pos_reward'] = -np.linalg.norm(pos_err)*10
             reward += reward_info['block_pos_reward']
         if self.rot_reward:
             rot_err = subQuat(self.data.qpos[self.block_pos_idx][3:], self.block_target_position[3:])
-            reward_info['block_rot_reward'] = -np.linalg.norm(rot_err)/10.0
+            reward_info['block_rot_reward'] = -np.linalg.norm(rot_err)
             reward += reward_info['block_rot_reward']
         if self.pos_vel_reward:
             raise NotImplementedError
@@ -130,7 +135,8 @@ class PushingEnv(kuka_env.KukaEnv):
                     break
             reward_info['contact_reward'] = contact*.1
             reward += reward_info['contact_reward']
-        return reward, reward_info
+        
+        return reward*self.reward_scale, reward_info
 
     def _get_info(self):
         info = dict()
@@ -153,6 +159,17 @@ class PushingEnv(kuka_env.KukaEnv):
         else:
             # Return superclass observation.
             obs = super(PushingEnv, self)._get_state_obs()
+
+        if not self.initialized:
+            ee_lin_vel_obs = np.zeros(3)
+            ee_rot_vel_obs = np.zeros(3)
+        else:
+            peg_tip_id = self.model.site_name2id('peg_tip')
+            jacp, jacr = forwardKinJacobianSite(self.sim, peg_tip_id, recompute=False)
+            ee_lin_vel_obs = jacp.dot(self.sim.data.qvel)
+            ee_rot_vel_obs = jacr.dot(self.sim.data.qvel)
+        
+        obs = np.concatenate([ee_lin_vel_obs, ee_rot_vel_obs])
 
         # Return superclass observation stacked with the ft observation.
         if not self.initialized:
