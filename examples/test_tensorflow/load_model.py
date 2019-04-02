@@ -1,7 +1,6 @@
 import os
 import sys
 
-import tensorflow as tf
 import cloudpickle
 
 sys.path.insert(0, os.path.abspath('..'))
