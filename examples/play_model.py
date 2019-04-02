@@ -7,30 +7,31 @@ from stable_baselines import PPO2, SAC
 from stable_baselines.common.vec_env import DummyVecEnv
 
 from gym_kuka_mujoco.envs import *
+from gym_kuka_mujoco.utils.load_model import load_params, load_model
 
 from experiment_files import (get_latest_experiment_dir, get_model,
                               get_latest_checkpoint, get_params)
 
 
-def load_params(params_path):
-    with open(params_path) as f:
-        data = json.load(f)
-    return data
+# def load_params(params_path):
+#     with open(params_path) as f:
+#         data = json.load(f)
+#     return data
 
 
-def load_model(model_path, params):
-    env_cls = globals()[params['env']]
-    orig_env = env_cls(**params['env_options'])
-    env = DummyVecEnv([lambda: orig_env])
+# def load_model(model_path, params):
+#     env_cls = globals()[params['env']]
+#     orig_env = env_cls(**params['env_options'])
+#     env = DummyVecEnv([lambda: orig_env])
 
-    if params['alg'] == 'PPO2':
-        model = PPO2.load(model_path, env=env)
-    elif params['alg'] == 'SAC':
-        model = SAC.load(model_path, env=env)
-    else:
-        raise NotImplementedError
+#     if params['alg'] == 'PPO2':
+#         model = PPO2.load(model_path, env=env)
+#     elif params['alg'] == 'SAC':
+#         model = SAC.load(model_path, env=env)
+#     else:
+#         raise NotImplementedError
 
-    return orig_env, model
+#     return orig_env, model
 
 def replay_model(env, model, deterministic=True, num_episodes=None, record=False, render=True):
     # Don't record data forever.

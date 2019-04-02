@@ -2,10 +2,10 @@ import os
 import sys
 
 import cloudpickle
+from gym_kuka_mujoco.utils.load_model import load_params, load_model
 
 sys.path.insert(0, os.path.abspath('..'))
 from experiment_files import get_latest_experiment_dir, get_params, get_model, get_latest_checkpoint
-from play_model import load_params, load_model
 
 # Get the model path.
 log_dir = os.path.join(os.environ['OPENAI_LOGDIR'], 'stable', '2019-04-01', "18:45:39.122285")
