@@ -31,8 +31,6 @@ def load_model(model_path, params):
         raise NotImplementedError
 
     return orig_env, model
-    replay_model(orig_env, model)
-
 
 def replay_model(env, model, deterministic=True, num_episodes=None, record=False, render=True):
     # Don't record data forever.
