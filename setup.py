@@ -6,7 +6,7 @@ with open('requirements.txt') as f:
 
 def get_files_recursive(root, ext='.xml'):
     matches = []
-    for path, files, dirs in os.walk(root):
+    for path, dirs, files in os.walk(root):
         matches.extend([os.path.join(path, f) for f in files if ext in f])
     return matches
     
