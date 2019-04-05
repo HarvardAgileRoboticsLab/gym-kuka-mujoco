@@ -1,5 +1,6 @@
 import os
 from setuptools import setup, find_packages
+from glob import glob
 
 with open('requirements.txt') as f:
     required = f.read().splitlines()
