@@ -11,7 +11,7 @@ def get_files_recursive(root, ext='.xml'):
     return matches
     
     
-print(matches)
+print(get_files_recursive('./gym_kuka_env/envs/assets', ext='.xml'))
 
 setup(name='gym_kuka_mujoco',
       version='0.0.1',
