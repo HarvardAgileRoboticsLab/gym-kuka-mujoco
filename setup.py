@@ -19,6 +19,5 @@ setup(name='gym_kuka_mujoco',
       install_requires=required,
       packages=find_packages(),
       package_data={'': glob('./gym_kuka_env/envs/asssets/*.xml')
-                      + glob('./gym_kuka_env/envs/asssets/peg/*.xml')},
-      include_package_data=True
+                      + glob('./gym_kuka_env/envs/asssets/peg/*.xml')}
 )
