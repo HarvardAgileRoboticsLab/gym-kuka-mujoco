@@ -5,8 +5,8 @@ with open('requirements.txt') as f:
 
 setup(name='gym_kuka_mujoco',
       version='0.0.1',
-      install_requires=required,  # And any other dependencies foo needs
+      install_requires=required,
       packages=find_packages(),
-      package_data={'': ['gym_kuka_mujoco/envs/assets/*']},
+      package_data={'gym_kuka_mujoco.envs.assets': ['*.xml']},
       include_package_data=True
 )
