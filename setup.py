@@ -10,6 +10,9 @@ def get_files_recursive(root, ext='.xml'):
         matches.extend([os.path.join(path, f) for f in files if ext in f])
     return matches
     
+    
+print(matches)
+
 setup(name='gym_kuka_mujoco',
       version='0.0.1',
       install_requires=required,
